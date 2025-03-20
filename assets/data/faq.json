@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "question": "What is the Erbel app?",
+        "answer": "Erbel is a scheduling app designed to help users organize their daily tasks and manage appointments. It features calendar integration, customizable reminders, and task management tools to streamline your schedule."
+    },
+    {
+        "id": 2,
+        "question": "How much does Erbel cost?",
+        "answer": "Erbel is available for free with essential features. A premium version with additional features and enhanced support can be purchased for £.50."
+    },
+    {
+        "id": 3,
+        "question": "What features are included in Erbel?",
+        "answer": "Erbel includes task scheduling, calendar integration, customizable reminders, and task categorization. The premium version offers advanced features such as cloud syncing and priority customer support."
+    },
+    {
+        "id": 4,
+        "question": "What devices are compatible with Erbel?",
+        "answer": "Erbel is compatible with both Android and iOS devices. You can download it from the Google Play Store or the Apple App Store."
+    },
+    {
+        "id": 5,
+        "question": "Can I use Erbel offline?",
+        "answer": "Yes, Erbel can be used offline for scheduling and managing tasks. However, features like cloud syncing and updates require an internet connection."
+    },
+    {
+        "id": 6,
+        "question": "How can I contact support for Erbel?",
+        "answer": "For support, visit the 'Help' section within the app or contact us via email at support@suftnet.com. Additional support is available through our website."
+    },    
+    {
+        "id": 8,
+        "question": "How do I set up reminders in Erbel?",
+        "answer": "To set up reminders in Erbel, go to the 'Reminders' section, create a new reminder, and specify the time and date. You can also set recurring reminders for regularly scheduled tasks."
+    },   
+    {
+        "id": 9,
+        "question": "How does Erbel protect my data?",
+        "answer": "Erbel uses strong encryption to safeguard your data. Your information is securely stored on your device and, if you use cloud features, it is encrypted during transfer and storage."
+    }
+]

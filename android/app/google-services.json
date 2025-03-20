@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "935467341582",
+    "project_id": "snatchichat",
+    "storage_bucket": "snatchichat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935467341582:android:a8f93403c0703fdf52295f",
+        "android_client_info": {
+          "package_name": "com.suftnet.snatchi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGInmrVvQiSHghWzAMCi3mBGO07FBfnno"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
