@@ -23,8 +23,6 @@ import {
   ScrollView,
   Platform,
   KeyboardAvoidingView,
-  TouchableOpacity,
-  Text,
 } from 'react-native';
 import {useNavigation, useRoute, CommonActions} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -47,6 +45,7 @@ import {useTaskComments} from '../../hooks/useTaskComments';
 import {validate} from '../../validator';
 import {useAppContext} from '../../hooks/appContext';
 import {Swipeable} from 'react-native-gesture-handler';
+import MapScreen from '../../components/map';
 
 const Task = () => {
   const {user} = useAppContext();
@@ -297,6 +296,13 @@ const Task = () => {
       </XStack>
     </YStack>
   );
+
+  const location = {
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  };
 
   const NameInitialCircle = ({name}) => {
     const initial = name ? name.charAt(0).toUpperCase() : 'A';
@@ -763,7 +769,7 @@ const Task = () => {
                 </StyledCycle>
               </Pressable>
             </XStack> */}
-         
+
             <KeyboardAvoidingView>
               <XStack flex={1}>
                 <StyledSpacer marginHorizontal={2} />
@@ -805,7 +811,7 @@ const Task = () => {
                 return (
                   <Swipeable
                     key={item._id}
-                    renderRightActions={() => 
+                    renderRightActions={() =>
                       renderRightActions(item._id, item.author?._id)
                     }>
                     <RenderComment item={item} key={index} />

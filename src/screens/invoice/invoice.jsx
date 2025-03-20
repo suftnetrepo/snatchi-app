@@ -25,7 +25,7 @@ import uuid from 'react-native-uuid';
 import {formatCurrency, dateConverter} from '../../utils/help';
 import {useInvoice} from '../../hooks/useInvoice';
 import {ScrollView} from 'react-native';
-import {itemValidator} from '../../validator/invoiceValidator';
+import {itemValidator, invoiceValidator} from '../../validator/invoiceValidator';
 
 const Invoice = () => {
   const navigator = useNavigation();
@@ -48,9 +48,8 @@ const Invoice = () => {
   const [openPanel, setPanel] = useState(false);
   const [itemFields, setItemFields] = useState(itemValidator.fields);
   const [errorMessages, setErrorMessages] = useState({});
+  const [errorMainMessages, setErrorMainMessages] = useState({});
   const params = route.params;
-
-  console.log('............................itemFields', itemFields);
 
   useEffect(() => {
     params?.invoice && handleEditItem(params?.invoice);
@@ -109,6 +108,14 @@ const Invoice = () => {
   };
 
   const onSubmit = () => {
+    setErrorMainMessages({});
+    const {hasError, errors} = validate(fields, invoiceValidator.rules);
+  
+    if (hasError) {
+      setErrorMainMessages(errors);
+      return false;
+    }
+
     fields.totalAmount = calculateTotal();
     fields.subtotal = calculateSubtotal();
     fields.tax = calculateTax();
@@ -198,14 +205,35 @@ const Invoice = () => {
           paddingVertical={16}
           marginHorizontal={8}
           backgroundColor={theme.colors.gray[1]}>
+          <StyledInput
+            label={'Description'}
+            labelProps={{
+              fontSize: theme.fontSize.small,
+            }}
+            keyboardType="default"
+            placeholder="Enter short description about invoice"
+            returnKeyType="next"
+            maxLength={100}
+            fontSize={theme.fontSize.small}
+            borderColor={theme.colors.gray[400]}
+            backgroundColor={theme.colors.gray[1]}
+            borderRadius={8}
+            paddingHorizontal={16}
+            value={fields.invoice_description}
+            placeholderTextColor={theme.colors.gray[400]}
+            height={40}Shell
+            onChangeText={value => onChange('invoice_description', value)}
+            error={errorMainMessages?.invoice_description ? true : false}
+          />
           <StyledText
             paddingHorizontal={6}
-            marginTop={8}
+            marginTop={4}
+            marginBottom={4}
             fontWeight={theme.fontWeight.normal}
             fontSize={theme.fontSize.small}
             textAlign="left"
             readOnly
-            color={theme.colors.gray[800]}>
+            color={theme.colors.gray[700]}>
             Issue Date
           </StyledText>
           <XStack justifyContent="flex-start" alignItems="center">
@@ -463,86 +491,87 @@ const Invoice = () => {
             {fields?.items.map((item, index) => {
               return (
                 <XStack
-                backgroundColor={theme.colors.gray[1]}
-                justifyContent="space-between"
-                alignItems="center"
-                paddingVertical={8}
-                paddingHorizontal={8}>
-                <StyledInput
-                  flex={2}
-                  keyboardType="default"
-                  placeholder=""
-                  returnKeyType="next"
-                  maxLength={10}
-                  fontSize={theme.fontSize.nano}
-                  borderColor={theme.colors.gray[400]}
+                  key={item._id}
                   backgroundColor={theme.colors.gray[1]}
-                  borderRadius={8}
-                  paddingHorizontal={8}
-                  marginHorizontal={1}
-                  value={item.date}
-                  placeholderTextColor={theme.colors.gray[300]}
-                  readOnly
-                />
-                <StyledInput
-                  flex={2}
-                  keyboardType="default"
-                  placeholder=""
-                  returnKeyType="next"
-                  maxLength={100}
-                  fontSize={theme.fontSize.nano}
-                  borderColor={theme.colors.gray[400]}
-                  backgroundColor={theme.colors.gray[1]}
-                  borderRadius={8}
-                  paddingHorizontal={8}
-                  marginHorizontal={1}
-                  value={item.description}
-                  placeholderTextColor={theme.colors.gray[300]}
-                  readOnly
-                />
-                <StyledInput
-                  flex={1}
-                  keyboardType="numeric"
-                  placeholder=""
-                  returnKeyType="next"
-                  inputMode="numeric"
-                  maxLength={50}
-                  fontSize={theme.fontSize.nano}
-                  borderColor={theme.colors.gray[400]}
-                  backgroundColor={theme.colors.gray[1]}
-                  borderRadius={8}
-                  paddingHorizontal={8}
-                  marginHorizontal={1}
-                  value={item.hour ? item.hour.toFixed() : ''}
-                  placeholderTextColor={theme.colors.gray[300]}
-                  readOnly
-                />
-                <StyledInput
-                  flex={1}
-                  keyboardType="numeric"
-                  placeholder=""
-                  returnKeyType="next"
-                  maxLength={50}
-                  fontSize={theme.fontSize.nano}
-                  borderColor={theme.colors.gray[400]}
-                  backgroundColor={theme.colors.gray[1]}
-                  borderRadius={8}
-                  paddingHorizontal={2}
-                  marginHorizontal={1}
-                  value={item.rate ? item.rate.toFixed() : ''}
-                  placeholderTextColor={theme.colors.gray[300]}
-                  readOnly
-                />
-                <StyledSpacer marginLeft={4} />
-                <Icon
-                  name="cancel"
-                  size={32}
-                  color={theme.colors.cyan[500]}
-                  onPress={() => {
-                    onDeleteItem(item._id)
-                  }}
-                />
-              </XStack>
+                  justifyContent="space-between"
+                  alignItems="center"
+                  paddingVertical={8}
+                  paddingHorizontal={8}>
+                  <StyledInput
+                    flex={2}
+                    keyboardType="default"
+                    placeholder=""
+                    returnKeyType="next"
+                    maxLength={10}
+                    fontSize={theme.fontSize.nano}
+                    borderColor={theme.colors.gray[400]}
+                    backgroundColor={theme.colors.gray[1]}
+                    borderRadius={8}
+                    paddingHorizontal={8}
+                    marginHorizontal={1}
+                    value={item.date}
+                    placeholderTextColor={theme.colors.gray[300]}
+                    readOnly
+                  />
+                  <StyledInput
+                    flex={2}
+                    keyboardType="default"
+                    placeholder=""
+                    returnKeyType="next"
+                    maxLength={100}
+                    fontSize={theme.fontSize.nano}
+                    borderColor={theme.colors.gray[400]}
+                    backgroundColor={theme.colors.gray[1]}
+                    borderRadius={8}
+                    paddingHorizontal={8}
+                    marginHorizontal={1}
+                    value={item.description}
+                    placeholderTextColor={theme.colors.gray[300]}
+                    readOnly
+                  />
+                  <StyledInput
+                    flex={1}
+                    keyboardType="numeric"
+                    placeholder=""
+                    returnKeyType="next"
+                    inputMode="numeric"
+                    maxLength={50}
+                    fontSize={theme.fontSize.nano}
+                    borderColor={theme.colors.gray[400]}
+                    backgroundColor={theme.colors.gray[1]}
+                    borderRadius={8}
+                    paddingHorizontal={8}
+                    marginHorizontal={1}
+                    value={item.hour ? item.hour.toFixed() : ''}
+                    placeholderTextColor={theme.colors.gray[300]}
+                    readOnly
+                  />
+                  <StyledInput
+                    flex={1}
+                    keyboardType="numeric"
+                    placeholder=""
+                    returnKeyType="next"
+                    maxLength={50}
+                    fontSize={theme.fontSize.nano}
+                    borderColor={theme.colors.gray[400]}
+                    backgroundColor={theme.colors.gray[1]}
+                    borderRadius={8}
+                    paddingHorizontal={2}
+                    marginHorizontal={1}
+                    value={item.rate ? item.rate.toFixed() : ''}
+                    placeholderTextColor={theme.colors.gray[300]}
+                    readOnly
+                  />
+                  <StyledSpacer marginLeft={4} />
+                  <Icon
+                    name="cancel"
+                    size={32}
+                    color={theme.colors.cyan[500]}
+                    onPress={() => {
+                      onDeleteItem(item._id);
+                    }}
+                  />
+                </XStack>
               );
             })}
 

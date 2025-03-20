@@ -1,8 +1,15 @@
-import uuid from 'react-native-uuid';
-
 const invoiceValidator = {
   rules: {
-    text: {},
+    invoice_description: [
+      {
+        pattern: /^.+$/,
+        message: 'description is required',
+      },
+      {
+        pattern: /^.{0,50}$/,
+        message: 'description must not be more than 50 characters',
+      },
+    ],
   },
   fields: {
     issueDate: new Date(),
@@ -56,14 +63,14 @@ const itemValidator = {
   },
   reset: () => {
     return {
-      _id:'',
+      _id: '',
       description: '',
       hour: '',
       rate: '',
     };
   },
   fields: {
-    _id:'',
+    _id: '',
     description: '',
     hour: '',
     rate: '',

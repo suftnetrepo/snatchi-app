@@ -101,6 +101,7 @@ const useInvoice = (flag = false) => {
   };
 
   async function handleFetchInvoices() {
+    setState(prev => ({...prev, loading: true, error: null}));
     const {success, data, errorMessage} = await zat(
       INVOICE.fetchMyInvoices,
       null,

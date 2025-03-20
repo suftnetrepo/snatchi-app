@@ -172,6 +172,14 @@ const Invoices = () => {
                 />
               </StyledCycle>
             </XStack>
+            <XStack paddingHorizontal={8}>
+              <StyledText
+                fontWeight={theme.fontWeight.normal}
+                fontSize={theme.fontSize.small}
+                color={theme.colors.gray[600]}>
+                {invoice.invoice_description}
+              </StyledText>
+            </XStack>
           </YStack>
 
           {selected === invoice._id && (
@@ -200,7 +208,7 @@ const Invoices = () => {
                   justifyContent="space-between"
                   alignItems="center"
                   paddingVertical={12}
-                  paddingHorizontal={8}>
+                  paddingHorizontal={16}>
                   <StyledText
                     flex={3}
                     fontWeight={theme.fontWeight.normal}
@@ -243,7 +251,7 @@ const Invoices = () => {
                         justifyContent="space-between"
                         alignItems="center"
                         paddingVertical={8}
-                        paddingHorizontal={8}>
+                        paddingHorizontal={16}>
                         <StyledText
                           flex={3}
                           fontWeight={theme.fontWeight.normal}
@@ -294,7 +302,7 @@ const Invoices = () => {
                   justifyContent="space-between"
                   alignItems="center"
                   paddingTop={8}
-                  paddingHorizontal={2}>
+                  paddingHorizontal={8}>
                   <StyledText
                     flex={3}
                     paddingHorizontal={8}
@@ -327,7 +335,7 @@ const Invoices = () => {
                   alignItems="center"
                   paddingTop={8}
                   paddingBottom={8}
-                  paddingHorizontal={2}>
+                  paddingHorizontal={8}>
                   <StyledText
                     flex={3}
                     paddingHorizontal={8}
@@ -359,7 +367,7 @@ const Invoices = () => {
                   justifyContent="space-between"
                   alignItems="center"
                   paddingBottom={8}
-                  paddingHorizontal={2}>
+                  paddingHorizontal={8}>
                   <StyledText
                     flex={3}
                     paddingHorizontal={8}
