@@ -12,7 +12,8 @@ import {
   StyledText,
   StyledButton,
 } from 'fluent-styles';
-import {theme} from '../../utils/theme';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import {fontStyles, theme} from '../../utils/theme';
 import {validatorRules} from './validatorRules';
 import {useSecure} from '../../hooks/useSecure';
 import {useNavigation} from '@react-navigation/native';
@@ -62,10 +63,28 @@ const Login = () => {
         justifyContent="flex-start"
         alignItems="center">
         <StyledSpacer marginVertical={64} />
-        <StyledImage
+
+        <YStack
+          marginHorizontal={16}
+          justifyContent="center"
+          alignItems="center">
+          <StyledImage
           borderWidth={0}
           source={require('../../../assets/img/icons8-login-100-2.png')}></StyledImage>
+          <StyledText
+            paddingVertical={16}
+            paddingHorizontal={16}
+            fontFamily={fontStyles.Roboto_Regular}
+            fontWeight={theme.fontWeight.normal}
+            color={theme.colors.gray[400]}
+            textAlign="center"
+            fontSize={theme.fontSize.normal}>
+           Enter your registered email address to receive a One-Time Password (OTP)
+          </StyledText>
+        </YStack>
+
         <StyledSpacer marginVertical={16} />
+
         <StyledInput
           label={'Email address'}
           keyboardType="default"

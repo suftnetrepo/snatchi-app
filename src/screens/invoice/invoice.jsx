@@ -16,6 +16,7 @@ import {
   StyledCheckBox,
   StyledButton,
   validate,
+  StyledSpinner,
 } from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {fontStyles, theme} from '../../utils/theme';
@@ -25,7 +26,10 @@ import uuid from 'react-native-uuid';
 import {formatCurrency, dateConverter} from '../../utils/help';
 import {useInvoice} from '../../hooks/useInvoice';
 import {ScrollView} from 'react-native';
-import {itemValidator, invoiceValidator} from '../../validator/invoiceValidator';
+import {
+  itemValidator,
+  invoiceValidator,
+} from '../../validator/invoiceValidator';
 
 const Invoice = () => {
   const navigator = useNavigation();
@@ -40,6 +44,7 @@ const Invoice = () => {
     handleReset,
     success,
     handleEditInvoice,
+    loading,
   } = useInvoice();
   const [selectedIssueDate, setSelectedIssueDate] = useState(new Date());
   const [selecteDate, setSelectedDate] = useState(new Date());
@@ -54,6 +59,11 @@ const Invoice = () => {
   useEffect(() => {
     params?.invoice && handleEditItem(params?.invoice);
   }, [params?.invoice]);
+
+  console.log(
+    '..................................................invoice',
+    params?.invoice,
+  );
 
   const handleChange = (name, value) => {
     setItemFields(prevState => ({
@@ -110,7 +120,7 @@ const Invoice = () => {
   const onSubmit = () => {
     setErrorMainMessages({});
     const {hasError, errors} = validate(fields, invoiceValidator.rules);
-  
+
     if (hasError) {
       setErrorMainMessages(errors);
       return false;
@@ -174,18 +184,23 @@ const Invoice = () => {
           : 'New Invoice'}
       </StyledText>
       <StyledSpacer flex={1} />
-      <StyledCycle
-        height={48}
-        width={48}
-        borderColor={theme.colors.cyan[500]}
-        backgroundColor={theme.colors.cyan[500]}>
-        <Icon
-          name="done"
-          size={25}
-          color={theme.colors.gray[1]}
-          onPress={() => onSubmit()}
-        />
-      </StyledCycle>
+      <StyledSpacer marginHorizontal={2} />
+      {params?.invoice &&
+        params?.invoice?.status !== 'Paid' &&
+        params?.invoice?.status !== 'Cancelled' && (
+          <StyledCycle
+            height={48}
+            width={48}
+            borderColor={theme.colors.cyan[500]}
+            backgroundColor={theme.colors.cyan[500]}>
+            <Icon
+              name="done"
+              size={25}
+              color={theme.colors.gray[1]}
+              onPress={() => onSubmit()}
+            />
+          </StyledCycle>
+        )}
     </XStack>
   );
 
@@ -221,7 +236,8 @@ const Invoice = () => {
             paddingHorizontal={16}
             value={fields.invoice_description}
             placeholderTextColor={theme.colors.gray[400]}
-            height={40}Shell
+            height={40}
+            Shell
             onChangeText={value => onChange('invoice_description', value)}
             error={errorMainMessages?.invoice_description ? true : false}
           />
@@ -764,6 +780,7 @@ const Invoice = () => {
           }}
         />
       )}
+      {loading && <StyledSpinner />}
     </StyledSafeAreaView>
   );
 };

@@ -297,13 +297,6 @@ const Task = () => {
     </YStack>
   );
 
-  const location = {
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  };
-
   const NameInitialCircle = ({name}) => {
     const initial = name ? name.charAt(0).toUpperCase() : 'A';
     const color = randomColor();

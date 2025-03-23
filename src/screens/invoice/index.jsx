@@ -27,8 +27,10 @@ import {
 } from '../../utils/help';
 import {useInvoice} from '../../hooks/useInvoice';
 import {Swipeable} from 'react-native-gesture-handler';
+import useInvoicePDF from '../../hooks/useInvoicePDF';
 
 const Invoices = () => {
+  const {shareInvoice} = useInvoicePDF();
   const navigator = useNavigation();
   const {data, loading, error, handleDelete} = useInvoice(true);
 
@@ -58,6 +60,7 @@ const Invoices = () => {
         My Invoices
       </StyledText>
       <StyledSpacer flex={1} />
+
       <StyledCycle
         height={48}
         width={48}
@@ -128,6 +131,20 @@ const Invoices = () => {
                   </XStack>
                 </YStack>
               </XStack>
+              <Pressable onPress={() => shareInvoice(invoice)}>
+                <StyledCycle
+                  height={48}
+                  width={48}
+                  borderColor={theme.colors.gray[300]}
+                  backgroundColor={theme.colors.gray[1]}>
+                  <Icon
+                    name="share"
+                    size={25}
+                    color={theme.colors.gray[600]}
+                    onPress={() => shareInvoice(invoice)}
+                  />
+                </StyledCycle>
+              </Pressable>
               <Pressable
                 onPress={() =>
                   navigator.navigate('new-invoice', {

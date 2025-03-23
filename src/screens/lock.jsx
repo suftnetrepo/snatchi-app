@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, { useState, useRef } from 'react';
 import {
   YStack,
   XStack,
@@ -11,23 +11,23 @@ import {
   StyledButton,
   StyledCycle,
 } from 'fluent-styles';
-import {Animated, Pressable, Vibration} from 'react-native';
-import {theme} from '../utils/theme';
-import {fontStyles} from '../utils/fontStyles';
-import {useSecure} from '../hooks/useSecure';
-import {useNavigation, useRoute} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useAppContext} from '../hooks/appContext';
-import {useUserChat} from '../hooks/useChat';
+import { Animated, Pressable, Vibration } from 'react-native';
+import { theme } from '../utils/theme';
+import { fontStyles } from '../utils/fontStyles';
+import { useSecure } from '../hooks/useSecure';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useAppContext } from '../hooks/appContext';
+import { useUserChat } from '../hooks/useChat';
 
 const Keypad = () => {
   const route = useRoute();
   const navigator = useNavigation();
-  const {login} = useAppContext();
-  const {error, loading, handleVerifyCode, handleReset} = useSecure();
+  const { login } = useAppContext();
+  const { error, loading, handleVerifyCode, handleReset } = useSecure();
   const [pin, setPin] = useState('');
-  const {email} = route.params;
-  const {handleChatSignIn} = useUserChat();
+  const { email } = route.params;
+  const { handleChatSignIn } = useUserChat();
   const shakeAnimation = useRef(new Animated.Value(0)).current;
 
   const triggerShake = () => {
@@ -72,10 +72,10 @@ const Keypad = () => {
       setPin(pin + num);
 
       if (passCode.length === 6) {
-        handleVerifyCode({code: passCode, email: email}).then(async result => {
+        handleVerifyCode({ code: passCode, email: email }).then(async result => {
           if (result) {
             await login(result);
-            handleChatSignIn(email, '123456!').then(() => {});
+            handleChatSignIn(email, '123456!').then(() => { });
             navigator.navigate('bottom-tabs');
           }
         });
@@ -109,7 +109,7 @@ const Keypad = () => {
         fontWeight={theme.fontWeight.normal}
         color={theme.colors.gray[600]}
         fontSize={theme.fontSize.normal}>
-        Verify Code
+        OTP Verification
       </StyledText>
       <StyledSpacer flex={1} />
     </XStack>
@@ -117,17 +117,44 @@ const Keypad = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader marginHorizontal={8} statusProps={{translucent: true}}>
+      <StyledHeader marginHorizontal={8} statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
       </StyledHeader>
       <YStack flex={1} justifyContent="center" alignItems="center">
-        <StyledImage
-          borderWidth={0}
-          source={require('../../assets/img/icons8-secure-100.png')}></StyledImage>
+        <YStack
+          marginHorizontal={16}
+          justifyContent="center"
+          alignItems="center">
+          <StyledImage
+            borderWidth={0}
+            source={require('../../assets/img/icons8-secure-100.png')}></StyledImage>
+
+          <StyledText
+            paddingTop={16}
+            paddingHorizontal={24}
+            fontFamily={fontStyles.Roboto_Regular}
+            fontWeight={theme.fontWeight.normal}
+            color={theme.colors.gray[400]}
+            textAlign="center"
+            fontSize={theme.fontSize.normal}>
+          Enter the 6-digit OTP sent to your registered email address.
+          </StyledText>
+          <StyledText
+            paddingVertical={2}
+            paddingHorizontal={16}
+            fontFamily={fontStyles.Roboto_Regular}
+            fontWeight={theme.fontWeight.medium}
+            color={theme.colors.gray[800]}
+            textAlign="center"
+            fontSize={theme.fontSize.normal}>
+            {email}
+          </StyledText>
+        </YStack>
+
         <StyledSpacer marginVertical={16} />
-        <Animated.View style={{transform: [{translateX: shakeAnimation}]}}>
+        <Animated.View style={{ transform: [{ translateX: shakeAnimation }] }}>
           <XStack marginBottom={20}>
             {[0, 1, 2, 3, 4, 5].map((_, index) => (
               <YStack
