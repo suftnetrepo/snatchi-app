@@ -14,6 +14,7 @@ import {
   StyledOkDialog,
   StyledButton,
   StyledInput,
+  StyledDialog,
 } from 'fluent-styles';
 import {theme} from '../../utils/theme';
 import {fontStyles} from '../../utils/fontStyles';
@@ -23,6 +24,7 @@ import {
   ScrollView,
   Platform,
   KeyboardAvoidingView,
+  Dimensions,
 } from 'react-native';
 import {useNavigation, useRoute, CommonActions} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -45,9 +47,13 @@ import {useTaskComments} from '../../hooks/useTaskComments';
 import {validate} from '../../validator';
 import {useAppContext} from '../../hooks/appContext';
 import {Swipeable} from 'react-native-gesture-handler';
-import MapScreen from '../../components/map';
+import ImageViewerWithZoom from '../../components/imageViewer';
+
+const {width} = Dimensions.get('window');
 
 const Task = () => {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const {user} = useAppContext();
   const [visible, setVisible] = useState(true);
   const route = useRoute();
@@ -80,12 +86,6 @@ const Task = () => {
   const handleShow = async () => {
     if (modalizeRef.current) {
       modalizeRef.current.open();
-    }
-  };
-
-  const handleClose = async () => {
-    if (modalizeRef.current) {
-      modalizeRef.current.close();
     }
   };
 
@@ -477,49 +477,62 @@ const Task = () => {
                 </StyledText>
               }
             />
-            {attachments.map((item, index) => {
-              return (
-                <StyledCard
-                  key={index}
-                  borderRadius={16}
-                  marginBottom={8}
-                  borderColor={theme.colors.gray[200]}
-                  backgroundColor={theme.colors.gray[1]}
-                  borderWidth={1}>
-                  <XStack
-                    paddingVertical={8}
-                    paddingHorizontal={8}
-                    justifyContent="space-between"
-                    alignItems="center"
-                    gap={4}>
-                    <XStack
-                      justifyContent="flex-start"
-                      alignItems="center"
-                      gap={8}>
-                      <FileIcon fileType={item.document_type} />
-                      <StyledText
-                        fontFamily={fontStyles.Roboto_Regular}
-                        fontWeight={theme.fontWeight.normal}
-                        fontSize={theme.fontSize.medium}
-                        color={theme.colors.gray[600]}>
-                        {item.document_name}
-                      </StyledText>
-                    </XStack>
-                    <StyledCycle
-                      height={32}
-                      width={32}
-                      borderColor={theme.colors.gray[300]}>
-                      <FontAwesome
-                        name="chevron-right"
-                        size={12}
-                        color={theme.colors.gray[600]}
-                        onPress={() => handleDeepLink(item.secure_url)}
-                      />
-                    </StyledCycle>
-                  </XStack>
-                </StyledCard>
-              );
-            })}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {attachments.map((item, index) => {
+                return (
+                  <Pressable
+                    key={index}
+                    style={{width: width - 32}}
+                    onPress={() => {
+                      setModalVisible(true);
+                      setSelectedImageIndex(index);
+                    }}>
+                    <StyledCard
+                      borderRadius={16}
+                      marginBottom={8}
+                      marginHorizontal={8}
+                      borderColor={theme.colors.gray[200]}
+                      backgroundColor={theme.colors.gray[1]}
+                      borderWidth={1}>
+                      <XStack
+                        paddingVertical={8}
+                        paddingHorizontal={8}
+                        justifyContent="space-between"
+                        alignItems="center"
+                        gap={4}>
+                        <XStack
+                          justifyContent="flex-start"
+                          alignItems="center"
+                          gap={8}>
+                          <FileIcon fileType={item.document_type} />
+                          <StyledText
+                            fontFamily={fontStyles.Roboto_Regular}
+                            fontWeight={theme.fontWeight.normal}
+                            fontSize={theme.fontSize.medium}
+                            color={theme.colors.gray[600]}>
+                            {item.document_name}
+                          </StyledText>
+                        </XStack>
+                        <StyledCycle
+                          height={32}
+                          width={32}
+                          borderColor={theme.colors.gray[300]}>
+                          <FontAwesome
+                            name="chevron-right"
+                            size={12}
+                            color={theme.colors.gray[600]}
+                            onPress={() => {
+                              setModalVisible(true);
+                              setSelectedImageIndex(index);
+                            }}
+                          />
+                        </StyledCycle>
+                      </XStack>
+                    </StyledCard>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
             <StyledSeparator
               left={
                 <StyledText
@@ -683,52 +696,52 @@ const Task = () => {
             </XStack>
           </YStack>
         </StyledCard>
-        <StyledCard
-          borderRadius={16}
-          flex={1}
-          borderColor={theme.colors.gray[100]}
-          backgroundColor={theme.colors.gray[100]}
-          marginHorizontal={16}
-          borderWidth={1}>
-          <YStack
-            justifyContent="flex-start"
-            alignItems="start"
-            paddingHorizontal={8}
-            paddingVertical={8}>
-            <XStack justifyContent="flex-start" alignItems="start">
-              <StyledText
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.small}
-                color={theme.colors.gray[600]}>
-                Comments
-              </StyledText>
-              <StyledSpacer marginHorizontal={2} />
-              <StyledText
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.small}
-                color={theme.colors.gray[800]}>
-                ({comments.length})
-              </StyledText>
-            </XStack>
-            <XStack justifyContent="flex-start" alignItems="center">
-              <Icon
-                name="account-circle"
-                size={48}
-                color={theme.colors.gray[300]}
-              />
-              <StyledSpacer marginHorizontal={3} />
-              <XStack
-                flex={1}
-                justifyContent="flex-start"
-                alignItems="center"
-                borderColor={theme.colors.gray[100]}
-                backgroundColor={theme.colors.gray[1]}
-                borderRadius={32}
-                paddingHorizontal={16}
-                paddingVertical={8}>
-                <Pressable onPress={handleShow}>
+        <Pressable onPress={handleShow}>
+          <StyledCard
+            borderRadius={16}
+            flex={1}
+            borderColor={theme.colors.gray[100]}
+            backgroundColor={theme.colors.gray[100]}
+            marginHorizontal={16}
+            borderWidth={1}>
+            <YStack
+              justifyContent="flex-start"
+              alignItems="start"
+              paddingHorizontal={8}
+              paddingVertical={8}>
+              <XStack justifyContent="flex-start" alignItems="start">
+                <StyledText
+                  fontFamily={fontStyles.Roboto_Regular}
+                  fontWeight={theme.fontWeight.normal}
+                  fontSize={theme.fontSize.small}
+                  color={theme.colors.gray[600]}>
+                  Comments
+                </StyledText>
+                <StyledSpacer marginHorizontal={2} />
+                <StyledText
+                  fontFamily={fontStyles.Roboto_Regular}
+                  fontWeight={theme.fontWeight.normal}
+                  fontSize={theme.fontSize.small}
+                  color={theme.colors.gray[800]}>
+                  ({comments.length})
+                </StyledText>
+              </XStack>
+              <XStack justifyContent="flex-start" alignItems="center">
+                <Icon
+                  name="account-circle"
+                  size={48}
+                  color={theme.colors.gray[300]}
+                />
+                <StyledSpacer marginHorizontal={3} />
+                <XStack
+                  flex={1}
+                  justifyContent="flex-start"
+                  alignItems="center"
+                  borderColor={theme.colors.gray[100]}
+                  backgroundColor={theme.colors.gray[1]}
+                  borderRadius={32}
+                  paddingHorizontal={16}
+                  paddingVertical={8}>
                   <StyledText
                     fontFamily={fontStyles.Roboto_Regular}
                     fontWeight={theme.fontWeight.normal}
@@ -736,11 +749,11 @@ const Task = () => {
                     color={theme.colors.gray[400]}>
                     Add comments...
                   </StyledText>
-                </Pressable>
+                </XStack>
               </XStack>
-            </XStack>
-          </YStack>
-        </StyledCard>
+            </YStack>
+          </StyledCard>
+        </Pressable>
       </ScrollView>
       <>
         <Modalize
@@ -751,18 +764,6 @@ const Task = () => {
             paddingHorizontal={8}
             paddingVertical={16}
             backgroundColor={theme.colors.gray[100]}>
-            {/* <XStack justifyContent="flex-end" alignItems="center">
-              <Pressable onPress={handleClose}>
-                <StyledCycle
-                  height={48}
-                  width={48}
-                  borderColor={theme.colors.gray[800]}
-                  backgroundColor={theme.colors.gray[800]}>
-                  <Icon name="close" size={24} color={theme.colors.gray[1]} />
-                </StyledCycle>
-              </Pressable>
-            </XStack> */}
-
             <KeyboardAvoidingView>
               <XStack flex={1}>
                 <StyledSpacer marginHorizontal={2} />
@@ -834,6 +835,18 @@ const Task = () => {
             handleReset();
           }}
         />
+      )}
+      {modalVisible && (
+        <StyledDialog visible>
+          <ImageViewerWithZoom
+            images={attachments.map(item => ({
+              url: item.secure_url,
+              description: item.document_name,
+            }))}
+            selectedIndex={selectedImageIndex}
+            onClose={() => setModalVisible(false)}
+          />
+        </StyledDialog>
       )}
     </StyledSafeAreaView>
   );

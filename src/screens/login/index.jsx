@@ -12,7 +12,6 @@ import {
   StyledText,
   StyledButton,
 } from 'fluent-styles';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import {fontStyles, theme} from '../../utils/theme';
 import {validatorRules} from './validatorRules';
 import {useSecure} from '../../hooks/useSecure';

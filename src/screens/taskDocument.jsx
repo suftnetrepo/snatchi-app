@@ -149,11 +149,11 @@ const TaskDocument = () => {
         </XStack>
         <StyledSpacer marginVertical={8} />
         <StyledInput
-          label={'Title'}
+          label={'Description'}
           keyboardType="default"
-          placeholder="Enter photo title"
+          placeholder="Enter short description about photo"
           returnKeyType="next"
-          maxLength={50}
+          maxLength={200}
           fontSize={theme.fontSize.normal}
           borderColor={theme.colors.gray[800]}
           backgroundColor={theme.colors.gray[1]}
