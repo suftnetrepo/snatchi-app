@@ -18,7 +18,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useChatMessage} from '../../hooks/useChat';
 import ChatRoomScrollView from '../../components/chatRooms';
 import {StyledMIcon} from '../../components/icon';
-import { Pressable } from 'react-native';
+import {Pressable} from 'react-native';
 
 const Chat = () => {
   const navigator = useNavigation();
@@ -30,6 +30,7 @@ const Chat = () => {
       <Bubble
         {...props}
         wrapperStyle={{
+          left: {backgroundColor: theme.colors.gray[200]},
           right: {
             backgroundColor: theme.colors.cyan[500],
           },
@@ -38,6 +39,13 @@ const Chat = () => {
           right: {
             color: '#fff',
           },
+          left: {
+            color: theme.colors.gray[700],
+          },
+        }}
+        containerStyle={{
+          right: { alignItems: 'flex-end', width: '100%' },
+  left: { alignItems: 'flex-start', width: '100%' },
         }}
       />
     );
@@ -113,10 +121,6 @@ const Chat = () => {
           onPress={async room_id => await handleFetchMessages(room_id)}
         />
       </YStack>
-      <YStack
-        paddingHorizontal={16}
-        justifyContent="flex-start"
-        alignItems="flex-start"></YStack>
       <GiftedChat
         messages={[...messages].reverse()}
         onSend={newMessages =>

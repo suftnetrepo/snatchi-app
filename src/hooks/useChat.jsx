@@ -10,7 +10,7 @@ import {
   addDoc,
   getDocs,
   where,
-  serverTimestamp
+  serverTimestamp,
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
@@ -19,6 +19,7 @@ import {
 } from 'firebase/auth';
 import {db, auth} from '../../firebase';
 import {store} from '../utils/asyncStorage';
+import {convertTimestampToDate} from '../utils/help';
 
 const useUserChat = () => {
   const [state, setState] = useState({
@@ -148,7 +149,6 @@ const useChatRoom = user_id => {
     }
   };
 
-
   useEffect(() => {
     user_id && handleFetchChatRooms(user_id);
   }, [user_id]);
@@ -166,7 +166,7 @@ const useChatMessage = chatRoomId => {
     messages: [],
     loading: false,
     error: null,
-    room_id : ''
+    room_id: '',
   });
 
   const handleError = error => {
@@ -186,7 +186,17 @@ const useChatMessage = chatRoomId => {
           ...doc.data(),
         }));
         setState(pre => {
-          return {...pre, messages: messages, loading: false, room_id : chatRoomId};
+          return {
+            ...pre,
+            messages: messages.map(message => {
+              return {
+                ...message,
+                createdAt: convertTimestampToDate(message.timestamp),
+              };
+            }),
+            loading: false,
+            room_id: chatRoomId,
+          };
         });
       });
 
@@ -199,10 +209,9 @@ const useChatMessage = chatRoomId => {
   const handleSend = async (chatRoomId, senderId, newMessages) => {
     let imageURL = null;
 
-   const message = newMessages[0]
+    const message = newMessages[0];
 
     try {
-      
       // imageURL = await handleUploadImage(image);
       const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
       const newMessage = {
@@ -213,7 +222,7 @@ const useChatMessage = chatRoomId => {
         timestamp: serverTimestamp(),
         isRead: false,
         user: {
-          _id: senderId
+          _id: senderId,
         },
       };
 

@@ -117,7 +117,6 @@ export function registerListenerWithFCM() {
   const unsubscribe = messaging().onMessage(async remoteMessage => {
     if (__DEV__)
       console.log('onMessage Received : ', JSON.stringify(remoteMessage));
-
     if (remoteMessage) {
      await saveLocation(remoteMessage);
     }
@@ -149,21 +148,20 @@ export function registerListenerWithFCM() {
 
 const saveLocation = async remoteMessage => {
   try {
-    const {projectId, userId, name, role} = remoteMessage.data;
+    const {projectId, userId, first_name,last_name, role} = remoteMessage.data;
     if (!projectId || !userId) {
       return;
     }
 
     const location = await getStore("location");
 
-    console.log("...............................", location)
-
     if(!location) return 
 
     const locationData = {
       projectId,
       userId,
-      name,
+      first_name,
+      last_name,
       role,
       latitude: location?.latitude,
       longitude: location?.longitude,
