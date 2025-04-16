@@ -2,28 +2,35 @@ name: React Native CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
 
 jobs:
   build:
+    name: Install and Validate Dependencies
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
+
+      - name: Install yarn
+        run: npm install -g yarn
+
+      - name: Fix React Native CLI version (prevent build break)
+        run: yarn add @react-native-community/cli@15.1.2 --dev
 
       - name: Install dependencies
         run: yarn install
 
-      - name: Lint (Optional)
-        run: yarn lint || echo "Lint skipped"
+      - name: Run ESLint (optional)
+        run: yarn lint || true
 
-      - name: Run tests (Optional)
-        run: yarn test || echo "No tests yet"
+      - name: Run Jest tests (optional)
+        run: yarn test || true
