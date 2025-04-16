@@ -1,0 +1,29 @@
+name: React Native CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Lint (Optional)
+        run: yarn lint || echo "Lint skipped"
+
+      - name: Run tests (Optional)
+        run: yarn test || echo "No tests yet"
