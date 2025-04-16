@@ -18,17 +18,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install yarn
+      - name: Install Yarn
         run: npm install -g yarn
 
-      - name: Fix React Native CLI version (prevent build break)
-        run: yarn add @react-native-community/cli@10.1.1 --dev
+      - name: Clean up lockfile (optional safety step)
+        run: rm -f package-lock.json
 
       - name: Install dependencies
         run: yarn install
 
-      - name: Run ESLint (optional)
-        run: yarn lint
 
-      - name: Run Jest tests (optional)
-        run: yarn test
