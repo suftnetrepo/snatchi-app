@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
   build:
-    name: Install and Validate Dependencies
     runs-on: ubuntu-latest
 
     steps:
@@ -18,19 +16,19 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install yarn
         run: npm install -g yarn
 
       - name: Fix React Native CLI version (prevent build break)
-        run: yarn add @react-native-community/cli@15.1.2 --dev
+        run: yarn add @react-native-community/cli@10.1.1 --dev
 
       - name: Install dependencies
         run: yarn install
 
       - name: Run ESLint (optional)
-        run: yarn lint || true
+        run: yarn lint
 
       - name: Run Jest tests (optional)
-        run: yarn test || true
+        run: yarn test
