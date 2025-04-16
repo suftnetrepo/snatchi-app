@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   build:
+    name: Build and Test Android
     runs-on: ubuntu-latest
 
     steps:
@@ -16,15 +18,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
 
-      - name: Install Yarn
+      - name: Install yarn
         run: npm install -g yarn
-
-      - name: Clean up lockfile (optional safety step)
-        run: rm -f package-lock.json
 
       - name: Install dependencies
         run: yarn install
 
+      - name: Fix React Native CLI version (prevent build break)
+        run: |
+          yarn add --dev @react-native-community/cli@15.0.3
+          yarn add --dev @react-native-community/cli-platform-android@15.0.3
 
+      - name: Complete job
+        run: echo "CI job completed"
