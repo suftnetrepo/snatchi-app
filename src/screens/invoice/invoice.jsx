@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {
   YStack,
@@ -25,11 +25,12 @@ import DatePicker from 'react-native-date-picker';
 import uuid from 'react-native-uuid';
 import {formatCurrency, dateConverter} from '../../utils/help';
 import {useInvoice} from '../../hooks/useInvoice';
-import {ScrollView} from 'react-native';
+import {Pressable, ScrollView} from 'react-native';
 import {
   itemValidator,
   invoiceValidator,
 } from '../../validator/invoiceValidator';
+import BottomSheet from '../../components/bottomSheet';
 
 const Invoice = () => {
   const navigator = useNavigation();
@@ -51,19 +52,16 @@ const Invoice = () => {
   const [openIssueDate, setOpenIssueDate] = useState(false);
   const [openDate, setOpenDate] = useState(false);
   const [openPanel, setPanel] = useState(false);
+  const [onShow, setOnShow] = useState(false);
   const [itemFields, setItemFields] = useState(itemValidator.fields);
   const [errorMessages, setErrorMessages] = useState({});
   const [errorMainMessages, setErrorMainMessages] = useState({});
+    const bottomSheetModalRef = useRef(null);
   const params = route.params;
 
   useEffect(() => {
     params?.invoice && handleEditItem(params?.invoice);
   }, [params?.invoice]);
-
-  console.log(
-    '..................................................invoice',
-    params?.invoice,
-  );
 
   const handleChange = (name, value) => {
     setItemFields(prevState => ({
@@ -204,6 +202,110 @@ const Invoice = () => {
     </XStack>
   );
 
+  const RenderOptions = () => {
+    const options = [
+      {label: 'AV System Design Consultation', icon: 'design_services'},
+      {label: 'Site Survey & Needs Analysis', icon: 'place'},
+      {label: 'System Schematic Design', icon: 'schema'},
+      {
+        label: 'Audio & Video Signal Flow Design',
+        icon: 'settings_input_component',
+      },
+      {label: 'Equipment Specification & BOM', icon: 'list_alt'},
+      {label: 'Rack Elevation Drawings', icon: 'vertical_align_top'},
+      {label: 'Technical Documentation', icon: 'description'},
+      {label: 'Display Mounting & Installation', icon: 'tv'},
+      {label: 'Projector Installation', icon: 'videocam'},
+      {label: 'Video Wall Setup', icon: 'grid_on'},
+      {label: 'Cable Pulling & Termination', icon: 'cable'},
+      {label: 'Rack Assembly & Wiring', icon: 'developer_board'},
+      {label: 'Speaker Installation & Tuning', icon: 'volume_up'},
+      {label: 'AV Control Panel Mounting', icon: 'tune'},
+      {label: 'Equipment Rack Installation', icon: 'storage'},
+      {label: 'Microphone System Setup', icon: 'mic'},
+      {label: 'Video Conferencing Equipment Install', icon: 'video_call'},
+      {label: 'Control System Programming', icon: 'code'},
+      {label: 'DSP Configuration', icon: 'equalizer'},
+      {label: 'Matrix Switcher Configuration', icon: 'swap_horiz'},
+      {label: 'Touch Panel GUI Programming', icon: 'touch_app'},
+      {label: 'Video Processor Configuration', icon: 'settings'},
+      {label: 'Audio Tuning & Calibration', icon: 'volume_down'},
+      {
+        label: 'Wireless Microphone Channel Coordination',
+        icon: 'settings_input_antenna',
+      },
+      {label: 'AV System Testing', icon: 'check_circle'},
+      {label: 'Signal Path Verification', icon: 'track_changes'},
+      {label: 'Audio Level Calibration', icon: 'volume_mute'},
+      {label: 'Room Acoustic Tuning', icon: 'surround_sound'},
+      {label: 'Final System Commissioning', icon: 'done_all'},
+      {label: 'Client Sign-Off Walkthrough', icon: 'how_to_reg'},
+      {label: 'Onsite End-User Training', icon: 'school'},
+      {label: 'System Operations Manual Delivery', icon: 'menu_book'},
+      {label: 'AV System Handover Meeting', icon: 'handshake'},
+      {label: 'Remote Training Session', icon: 'cast_for_education'},
+      {label: 'Scheduled Preventive Maintenance', icon: 'event'},
+      {label: 'Emergency Callout Service', icon: 'warning'},
+      {label: 'Remote System Diagnostics', icon: 'wifi'},
+      {label: 'Firmware Updates & Patch Management', icon: 'system_update'},
+      {label: 'Reconfiguration or System Optimization', icon: 'build_circle'},
+      {label: 'Supply of AV Equipment', icon: 'inventory_2'},
+      {label: 'Supply of Cables & Accessories', icon: 'electrical_services'},
+      {label: 'Supply of Control Interfaces', icon: 'settings_remote'},
+      {label: 'Supply of Mounting Hardware', icon: 'construction'},
+      {label: 'Delivery & Logistics Charges', icon: 'local_shipping'},
+      {label: 'AV Project Management', icon: 'assignment'},
+      {label: 'Change Request Management', icon: 'change_circle'},
+      {label: 'CAD/As-Built Documentation', icon: 'architecture'},
+      {label: 'Travel & Accommodation', icon: 'flight'},
+      {label: 'Day Rate (Onsite Support)', icon: 'access_time'},
+      {label: 'Hourly Labour Charge', icon: 'attach_money'},
+    ];
+
+    return (
+      <>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {options.map((item, index) => {
+            return (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  handleChange('description', item.label);
+                  bottomSheetModalRef.current?.dismiss();
+                  setOnShow(false);
+                }}>
+                <XStack justifyContent="flex-start" alignItems="center" >
+                  <StyledText
+                    paddingHorizontal={6}
+                    marginTop={4}
+                    marginBottom={4}
+                    fontWeight={
+                      fields.description === item.label
+                        ? theme.fontWeight.bold
+                        : theme.fontWeight.normal
+                    }
+                    fontSize={theme.fontSize.small}
+                    textAlign="left"
+                    readOnly
+                    color={theme.colors.gray[700]}>
+                    {item.label}
+                  </StyledText>
+                  <StyledSpacer flex={1} />
+                  <StyledMIcon
+                    size={16}
+                    name="chevron-right"
+                    color={theme.colors.gray[800]}
+                  />
+                </XStack>
+              </Pressable>
+            );
+          })}
+           <StyledSpacer marginVertical={56} />
+        </ScrollView>
+      </>
+    );
+  };
+
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[200]}>
       <StyledHeader skipAndroid={true} statusProps={{translucent: true}}>
@@ -304,25 +406,48 @@ const Invoice = () => {
               borderRadius={16}
               paddingHorizontal={16}
               paddingVertical={16}>
-              <StyledInput
-                label={'Item'}
-                labelProps={{
-                  fontSize: theme.fontSize.small,
-                }}
-                keyboardType="default"
-                placeholder=""
-                returnKeyType="next"
-                maxLength={200}
+              <StyledText
+                paddingHorizontal={6}
+                marginTop={4}
+                marginBottom={4}
+                fontWeight={theme.fontWeight.normal}
                 fontSize={theme.fontSize.small}
-                borderColor={theme.colors.gray[400]}
-                backgroundColor={theme.colors.gray[1]}
-                borderRadius={8}
-                paddingHorizontal={8}
-                value={itemFields.description}
-                placeholderTextColor={theme.colors.gray[300]}
-                onChangeText={value => handleChange('description', value)}
-                error={!!errorMessages?.description}
-              />
+                textAlign="left"
+                readOnly
+                color={theme.colors.gray[700]}>
+                Item
+              </StyledText>
+              <XStack justifyContent="flex-start" alignItems="center">
+                <StyledInput
+                  keyboardType="default"
+                  placeholder=""
+                  returnKeyType="next"
+                  maxLength={200}
+                  fontSize={theme.fontSize.small}
+                  borderColor={theme.colors.gray[400]}
+                  backgroundColor={theme.colors.gray[1]}
+                  borderRadius={8}
+                  paddingHorizontal={8}
+                  value={itemFields.description}
+                  placeholderTextColor={theme.colors.gray[300]}
+                  onChangeText={value => handleChange('description', value)}
+                  error={!!errorMessages?.description}
+                  flex={1}
+                />
+                <StyledSpacer marginHorizontal={2} />
+                <StyledCycle
+                  height={32}
+                  width={32}
+                  borderColor={theme.colors.cyan[500]}
+                  backgroundColor={theme.colors.cyan[500]}>
+                  <StyledMIcon
+                    size={16}
+                    name="search"
+                    color={theme.colors.gray[50]}
+                    onPress={() => setOnShow(true)}
+                  />
+                </StyledCycle>
+              </XStack>
               <YStack>
                 <StyledText
                   paddingHorizontal={8}
@@ -781,6 +906,15 @@ const Invoice = () => {
         />
       )}
       {loading && <StyledSpinner />}
+      <BottomSheet
+        title="Select Task options"
+        onSetShow={setOnShow}
+        onShow={onShow}
+        bottomSheetModalRef={bottomSheetModalRef}
+        snapPoints={['25%', '50%', '80%']}>
+        <RenderOptions />
+       
+      </BottomSheet>
     </StyledSafeAreaView>
   );
 };

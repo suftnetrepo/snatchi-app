@@ -27,8 +27,6 @@ const useTask = () => {
 
   async function handleMyTasks(date) {
 
-    console.log("..........................date", date)
-
     setState(prev => ({...prev, loading: true}));
     const {success, data, errorMessage} = await zat(
       MYTASK_HOST_ADDRESS.myTasks,
@@ -50,6 +48,30 @@ const useTask = () => {
       handleError(errorMessage || 'Failed to fetch the task.');
     }
   }
+
+  async function handleMyRecentTasks(date) {
+
+    setState(prev => ({...prev, loading: true}));
+    const {success, data, errorMessage} = await zat(
+      MYTASK_HOST_ADDRESS.myTasks,
+      null,
+      VERBS.GET,
+      {
+        action: 'myRecentTasks'
+      },
+    );
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: data,
+        loading: false,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
 
   const handleAggregate = async () => {
     const {data, success, errorMessage} = await zat(
@@ -82,7 +104,7 @@ const useTask = () => {
   }
 
   useEffect(() => {
-    handleMyTasks(dateConverter(new Date(),true)).then(() => {});
+    handleMyRecentTasks().then(() => {});
   }, []);
 
   return {
@@ -90,7 +112,8 @@ const useTask = () => {
     handleMyTasks,
     handleReset,
     handleAggregate,
-    handleEdit
+    handleEdit,
+    handleMyRecentTasks
   };
 };
 

@@ -57,8 +57,8 @@ const Dashboard = ({recentTasks, navigate}) => {
           <XStack justifyContent="space-between" alignItems="center" gap={1}>
             <StyledText
               fontFamily={fontStyles.Roboto_Regular}
-              fontWeight={theme.fontWeight.medium}
-              fontSize={theme.fontSize.normal}
+              fontWeight={theme.fontWeight.normal}
+              fontSize={theme.fontSize.medium}
               flex={1}
               color={theme.colors.gray[600]}>
               {name}
