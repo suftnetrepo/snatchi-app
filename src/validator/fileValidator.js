@@ -1,13 +1,13 @@
 const fileValidator = {
     rules: {
-      document_name: [
-        { pattern: /^.+$/, message: 'Document title is required' },
-        { pattern: /^.{0,50}$/, message: 'Document title must not exceed 100 characters' }
+      name: [
+        { pattern: /^.+$/, message: 'Document name is required' },
+        { pattern: /^.{0,50}$/, message: 'Document name must not exceed 100 characters' }
       ],
     },
     fields: {
-      document_name: '',
-      document_type: 'image',
+      name: '',
+      description: '',
       file: '',
       fileName: ''   
     }

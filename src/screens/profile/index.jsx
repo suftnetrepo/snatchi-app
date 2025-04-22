@@ -21,7 +21,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useAppContext} from '../../hooks/appContext';
 import {validate} from '../../validator';
 import {ImagePickerModal} from '../../components/imagePickerModal';
-import { Pressable } from 'react-native';
+import {Pressable} from 'react-native';
 
 const Profile = () => {
   const navigator = useNavigation();
@@ -109,6 +109,20 @@ const Profile = () => {
         My Profile
       </StyledText>
       <StyledSpacer flex={1} />
+      <StyledCycle
+        height={48}
+        width={48}
+        borderColor={theme.colors.cyan[500]}
+        backgroundColor={theme.colors.cyan[500]}>
+        <Icon
+          name="file-upload"
+          size={25}
+          color={theme.colors.gray[1]}
+          onPress={() => {
+            navigator.navigate('user-documents');
+          }}
+        />
+      </StyledCycle>
     </XStack>
   );
 

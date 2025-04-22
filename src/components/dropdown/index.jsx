@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {YStack, StyledSpacer, StyledText, isValidNumber} from 'fluent-styles';
+import {YStack, StyledSpacer, StyledText, isValidNumber, isValidColor} from 'fluent-styles';
 import DropDownPicker from 'react-native-dropdown-picker';
 import {styled} from '../../utils/styled';
 import {theme} from '../../utils/theme';

@@ -5,10 +5,12 @@ import Login from '../screens/login';
 import Keypad from '../screens/lock';
 import task from '../screens/task';
 import chat from '../screens/chat';
-import taskDocument from '../screens/taskDocument';
+import taskDocument from '../screens/task/taskDocument';
 import helpCenter from '../screens/settings/helpCenter';
 import BottomTabs from './BottomNavigation';
 import Invoice from '../screens/invoice/invoice';
+import UserDocuments from '../screens/profile/document';
+import UploadUserDocument from '../screens/profile/document/upload';
 
 const Stack = createStackNavigator();
 function Navigator() {
@@ -17,6 +19,20 @@ function Navigator() {
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="user-documents"
+        component={UserDocuments}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="upload-user-documents"
+        component={UploadUserDocument}
         options={{
           headerShown: false,
         }}

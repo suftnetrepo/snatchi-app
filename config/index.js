@@ -46,6 +46,12 @@ export const USER_HOST_ADDRESS = {
   removeOne: `${HOST_API_ADDRESS}task_document/`
 }
 
+export const USER_DOCUMENTS = {
+  uploadOne: `${HOST_API_ADDRESS}user/document`,
+  addOne: `${HOST_API_ADDRESS}user/document`,
+  fetch: `${HOST_API_ADDRESS}user/document`,
+  removeOne: `${HOST_API_ADDRESS}user/document`
+};
 export const VERBS = {
   POST: 'POST',
   GET: 'GET',

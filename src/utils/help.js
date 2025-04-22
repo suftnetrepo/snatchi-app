@@ -381,6 +381,22 @@ const taskStatusArray = [
   {label: 'Canceled', value: 'Canceled'},
 ];
 
+const personalDocumentsArray = [
+  { label: 'NI Number / Social Security', value: 'NINumber' },
+  { label: 'Passport', value: 'Passport' },
+  { label: 'Driver’s License', value: 'DriversLicense' },
+  { label: 'Work Permit / Visa', value: 'WorkPermit' },
+  { label: 'Professional Certificates', value: 'ProfessionalCertificates' },
+  { label: 'ID Card', value: 'IDCard' },
+  { label: 'Proof of Address', value: 'ProofOfAddress' },
+  { label: 'CV / Resume', value: 'CVResume' },
+  { label: 'DBS / Background Check', value: 'BackgroundCheck' },
+  { label: 'Emergency Contact Info', value: 'EmergencyContactInfo' },
+  { label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate' },
+  { label: 'Insurance Certificate', value: 'InsuranceCertificate' },
+  { label: 'Vaccination Record', value: 'VaccinationRecord' },
+];
+
 const timeAgo = date => {
   const now = new Date();
   const past = new Date(date);
@@ -508,5 +524,6 @@ export {
   timeAgo,
   randomColor,
   formatReadableDate,
-  convertTimestampToDate
+  convertTimestampToDate,
+  personalDocumentsArray
 };

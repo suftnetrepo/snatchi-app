@@ -118,21 +118,6 @@ const Task = () => {
     });
   };
 
-  const handleDeepLink = async url => {
-    try {
-      const supported = await Linking.canOpenURL(url);
-
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        if (__DEV__) console.error("Don't know how to open this URL: " + url);
-      }
-    } catch (error) {
-      if (__DEV__)
-        console.error('An error occurred while opening the URL: ', error);
-    }
-  };
-
   const FileIcon = ({fileType}) => {
     let icon;
     let color;
