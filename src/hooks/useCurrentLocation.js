@@ -1,62 +1,81 @@
-import { useEffect, useState } from "react";
-import useLocation from "./useLocation";
+import {useEffect, useState} from 'react';
+import {getStore} from '../utils/asyncStorage';
 
 const useCurrentLocation = () => {
-    const [state, setState] = useState({
-        data: '',
+  const [state, setState] = useState({
+    data: '',
+    loading: false,
+    error: {},
+    success: false,
+  });
+
+  const reverseGeocode = async () => {
+    try {
+
+      const location = await getStore('location')
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`,
+      );
+      const selectedAddress = await response.json();
+
+      if (selectedAddress.address) {
+        setState(pre => {
+          return {
+            ...pre,
+            data: {
+              addressLine1:
+                selectedAddress?.address.suburb ||
+                selectedAddress?.address.place ||
+                selectedAddress?.address.municipality,
+              town:
+                selectedAddress?.address.town || selectedAddress?.address.city,
+              county:
+                selectedAddress?.address.county ||
+                selectedAddress?.address.state,
+              postcode:
+                selectedAddress?.address.country_code === 'gb' ||
+                selectedAddress?.address.country_code === 'us'
+                  ? selectedAddress?.address.postcode
+                  : '',
+              country: selectedAddress?.address.country,
+              completeAddress: selectedAddress?.display_name,
+              location: {
+                type: 'Point',
+                coordinates: [
+                  parseFloat(selectedAddress?.lat) || 0,
+                  parseFloat(selectedAddress?.lon) || 0,
+                ],
+              },
+            },
+            loading: false,
+            success: true,
+          };
+        });
+      } else {
+        setState(pre => {
+          return {
+            ...pre,
+            success: false,
+            loading: false,
+          };
+        });
+      }
+    } catch (error) {
+      setState(pre => ({
+        ...pre,
         loading: false,
-        error: {},
-        success: false
-    })
-    const {location} = useLocation()
-
-    const reverseGeocode = async (latitude, longitude) => {
-        try {
-            setState((pre) => {
-                return {
-                    ...pre,
-                    loading: true
-                }
-            })
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-            const json = await response.json();
-         
-            if (json.address) {               
-                setState((pre) => {
-                    return {
-                        ...pre,
-                        data: json.address,
-                        loading: false,
-                        success: true,
-                    }
-                })
-            } else {
-                setState((pre) => {
-                    return {
-                        ...pre,
-                        success: false,
-                        loading: false
-                    }
-                })
-            }
-        } catch (error) {
-            setState((pre) => ({
-                ...pre,
-                loading: false,
-                error: 'Failed to fetch address.',
-            }));
-        }
-    };
-
-    useEffect(() => {
-        if (location?.latitude && location?.longitude)
-            reverseGeocode(location?.latitude, location?.longitude);
-    }, [location?.latitude, location?.longitude]);
-
-    return {
-        ...state
+        error: 'Failed to fetch address.',
+      }));
     }
-}
+  };
 
-export { useCurrentLocation }
+  useEffect(() => {
+    reverseGeocode();
+  }, []);
 
+  return {
+    ...state,
+  };
+};
+
+export {useCurrentLocation};

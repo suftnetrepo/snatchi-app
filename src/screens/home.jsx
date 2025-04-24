@@ -10,6 +10,7 @@ import {
   StyledButton,
 } from 'fluent-styles';
 import {StyledMIcon} from '../components/icon';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {theme} from '../utils/theme';
 import {fontStyles} from '../utils/fontStyles';
 import {useNavigation, CommonActions} from '@react-navigation/native';
@@ -20,12 +21,14 @@ import Today from '../components/today';
 import {useFocus} from '../hooks/useFocus';
 import {Platform, ScrollView} from 'react-native';
 import {useTask} from '../hooks/useTask';
+import {useAttendance} from '../hooks/useAttendance';
 import CalendarCard from '../components/calender/calenderCard';
 import Dashboard from '../components/dashboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {Pressable} from 'react-native';
 
 const Home = ({route}) => {
+  const {handleAddAttendance} = useAttendance(false);
   const {setTabBarVisible} = route.params || {};
   const navigate = useNavigation();
   const {user} = useAppContext();
@@ -74,9 +77,25 @@ const Home = ({route}) => {
             {toWordCase(user?.first_name)} {toWordCase(user?.last_name)}
           </StyledText>
         </YStack>
+        <StyledSpacer flex={1} />
         <XStack>
-          <StyledSpacer marginHorizontal={2} />
+          <Pressable onPress={() => {}}>
+            <StyledCycle
+          
+              width={48}
+              height={48}
+              backgroundColor={theme.colors.orange[300]}
+              borderColor={theme.colors.orange[300]}>
+              <Icon
+                size={24}
+                name="clock-in"
+                color={theme.colors.gray[100]}
+                onPress={() => {}}
+              />
+            </StyledCycle>
+          </Pressable>
         </XStack>
+        <StyledSpacer marginHorizontal={4} />
         <XStack>
           <Pressable
             onPress={() => {
@@ -92,6 +111,7 @@ const Home = ({route}) => {
               borderWidth={1}
               width={48}
               height={48}
+           
               borderColor={theme.colors.gray[300]}>
               <StyledMIcon
                 size={24}
@@ -103,7 +123,8 @@ const Home = ({route}) => {
                       index: 0,
                       routes: [{name: 'login'}],
                     }),
-                  )}}
+                  );
+                }}
               />
             </StyledCycle>
           </Pressable>

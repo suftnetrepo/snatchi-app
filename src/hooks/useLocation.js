@@ -1,4 +1,4 @@
-import {useEffect } from 'react';
+import {useEffect} from 'react';
 import {Platform, PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import {store} from '../utils/asyncStorage';
@@ -33,12 +33,52 @@ const useLocation = () => {
         position => {
           const {latitude, longitude} = position.coords;
           store('location', {latitude, longitude}).then(() => {});
+          storeAddress(latitude, longitude).then(()=> {})
         },
         error => {
           handlePermissionDenied();
         },
         {enableHighAccuracy: true, timeout: 90000, maximumAge: 10000},
       );
+    };
+
+    const storeAddress = async (latitude, longitude) => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        );
+        const selectedAddress = await response.json();
+
+        if (selectedAddress.address) {
+          store('address', {
+            addressLine1:
+              selectedAddress?.address.suburb ||
+              selectedAddress?.address.place ||
+              selectedAddress?.address.municipality,
+            town:
+              selectedAddress?.address.town || selectedAddress?.address.city,
+            county:
+              selectedAddress?.address.county || selectedAddress?.address.state,
+            postcode:
+              selectedAddress?.address.country_code === 'gb' ||
+              selectedAddress?.address.country_code === 'us'
+                ? selectedAddress?.address.postcode
+                : '',
+            country: selectedAddress?.address.country,
+            completeAddress: selectedAddress?.display_name,
+            location: {
+              type: 'Point',
+              coordinates: [
+                parseFloat(selectedAddress?.lat) || 0,
+                parseFloat(selectedAddress?.lon) || 0,
+              ],
+            },
+          }).then(() => {});
+        }
+      } catch (error) {
+        if(__DEV__)
+          console.error(error)
+      }
     };
 
     const handlePermissionDenied = () => {
@@ -51,7 +91,7 @@ const useLocation = () => {
     requestLocationPermission();
   }, []);
 
-  return ;
+  return;
 };
 
 export default useLocation;

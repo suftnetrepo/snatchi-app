@@ -136,7 +136,7 @@ const useInvoice = (flag = false) => {
 
       return true;
     } else {
-      handleError(errorMessage || 'Failed to aading invoice.');
+      handleError(errorMessage || 'Failed to adding invoice.');
       return false;
     }
   };
