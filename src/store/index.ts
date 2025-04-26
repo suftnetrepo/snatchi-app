@@ -1,25 +1,24 @@
+import { observable } from '@legendapp/state';
 
-import {observable} from '@legendapp/state';
-
-interface appState {
+interface AppState {
   objects: Map<string, any>;
 }
 
-const initialize = {
-  objects: new Map(),
-};
-
-const state = observable<appState>(initialize);
+const initialize = { objects: new Map<string, any>() };
+const state = observable(initialize);
 
 const useUtil = () => {
   const clear = () => {
-    state.set(initialize);
+    // Create a new Map instance to ensure the change is detected
+    state.objects.set(new Map<string, any>());
   };
 
   const set = (key: string, obj: any) => {
-    const objects = state.objects.get();
-    objects.set(key, obj);
-    state.objects.set(objects);
+    // Create a new Map with all existing entries plus the new one
+    const currentObjects = state.objects.get();
+    const newObjects = new Map(currentObjects);
+    newObjects.set(key, obj);
+    state.objects.set(newObjects);
   };
 
   const get = (key: string) => {
@@ -28,17 +27,14 @@ const useUtil = () => {
   };
 
   const remove = (key: string) => {
-    const objects = state.objects.get();
-    objects.delete(key);
-    state.objects.set(objects);
+    // Create a new Map without the removed entry
+    const currentObjects = state.objects.get();
+    const newObjects = new Map(currentObjects);
+    newObjects.delete(key);
+    state.objects.set(newObjects);
   };
 
-  return {
-    clear,
-    set,
-    get,
-    remove
-  }
+  return { clear, set, get, remove };
 };
 
-export {useUtil, state};
+export { useUtil, state };

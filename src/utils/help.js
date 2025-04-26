@@ -493,7 +493,16 @@ const convertTimestampToDate = (timestamp) => {
   return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 };
 
+const isSameDay = (storedDate, currentDate) => {
+  return (
+    storedDate.getFullYear() === currentDate.getFullYear() &&
+    storedDate.getMonth() === currentDate.getMonth() &&
+    storedDate.getDate() === currentDate.getDate()
+  );
+};
+
 export {
+  isSameDay,
   haversineDistance,
   priorityBackgroundColorHelper,
   priorityTextColorHelper,

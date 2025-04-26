@@ -54,9 +54,9 @@ export const USER_DOCUMENTS = {
 };
 
 export const ATTENDANCE = {
-  addOne: `${HOST}attendance`,
-  fetch: `${HOST}attendance`,
-  removeOne: `${HOST}attendance/`
+  addOne: `${HOST_API_ADDRESS}attendance`,
+  fetch: `${HOST_API_ADDRESS}attendance`,
+  removeOne: `${HOST_API_ADDRESS}attendance/`
 };
 
 

@@ -10,7 +10,7 @@ import {
   StyledButton,
 } from 'fluent-styles';
 import {StyledMIcon} from '../components/icon';
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {theme} from '../utils/theme';
 import {fontStyles} from '../utils/fontStyles';
 import {useNavigation, CommonActions} from '@react-navigation/native';
@@ -21,14 +21,14 @@ import Today from '../components/today';
 import {useFocus} from '../hooks/useFocus';
 import {Platform, ScrollView} from 'react-native';
 import {useTask} from '../hooks/useTask';
-import {useAttendance} from '../hooks/useAttendance';
 import CalendarCard from '../components/calender/calenderCard';
 import Dashboard from '../components/dashboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {Pressable} from 'react-native';
+import {useTimeSheet} from '../hooks/useTimeSheet';
 
 const Home = ({route}) => {
-  const {handleAddAttendance} = useAttendance(false);
+  const {initialState, handleAddTimeSheet} = useTimeSheet();
   const {setTabBarVisible} = route.params || {};
   const navigate = useNavigation();
   const {user} = useAppContext();
@@ -78,23 +78,23 @@ const Home = ({route}) => {
           </StyledText>
         </YStack>
         <StyledSpacer flex={1} />
-        <XStack>
-          <Pressable onPress={() => {}}>
-            <StyledCycle
-          
-              width={48}
-              height={48}
-              backgroundColor={theme.colors.orange[300]}
-              borderColor={theme.colors.orange[300]}>
-              <Icon
-                size={24}
-                name="clock-in"
-                color={theme.colors.gray[100]}
-                onPress={() => {}}
-              />
-            </StyledCycle>
-          </Pressable>
-        </XStack>
+        {initialState === 'checkin' && (
+          <Icon
+            size={48}
+            name="clock-time-four-outline"
+            color={theme.colors.gray[800]}
+            onPress={() => handleAddTimeSheet(user, 'checkin')}
+          />
+        )}
+        {initialState === 'checkout' && (
+          <Icon
+            size={48}
+            name="clock"
+            color={theme.colors.purple[600]}
+            onPress={() => handleAddTimeSheet(user, 'checkout')}
+          />
+        )}
+
         <StyledSpacer marginHorizontal={4} />
         <XStack>
           <Pressable
@@ -109,9 +109,8 @@ const Home = ({route}) => {
             <StyledCycle
               paddingHorizontal={10}
               borderWidth={1}
-              width={48}
-              height={48}
-           
+              width={46}
+              height={46}
               borderColor={theme.colors.gray[300]}>
               <StyledMIcon
                 size={24}
