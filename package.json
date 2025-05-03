@@ -44,6 +44,7 @@
     "moment": "^2.30.1",
     "react": "18.3.1",
     "react-native": "0.77.0",
+    "react-dom": "^19.1.0",
     "react-native-calendar-strip": "^2.2.6",
     "react-native-circular-progress-indicator": "^4.4.2",
     "react-native-date-picker": "^5.0.10",
@@ -62,6 +63,7 @@
     "react-native-maps": "^1.20.1",
     "react-native-modal-datetime-picker": "^17.1.0",
     "react-native-modalize": "^2.1.1",
+    "react-native-pager-view": "^6.7.1",
     "react-native-permissions": "^3.10.1",
     "react-native-picker-select": "^9.3.1",
     "react-native-push-notification": "^8.1.1",
@@ -73,11 +75,15 @@
     "react-native-share": "^12.0.9",
     "react-native-svg": "^15.3.0",
     "react-native-swiper": "^1.6.0",
+    "react-native-tab-view": "^4.0.10",
     "react-native-toast-notifications": "^3.4.0",
     "react-native-uuid": "^2.0.3",
     "react-native-vector-icons": "^9.2.0",
     "rn-fetch-blob": "^0.12.0",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "@gluestack-style/react": "latest",
+    "@gluestack-ui/config": "latest",
+    "@gluestack-ui/themed": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

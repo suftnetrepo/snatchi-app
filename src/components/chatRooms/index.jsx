@@ -3,14 +3,17 @@ import {XStack, StyledText, StyledButton, StyledSpacer} from 'fluent-styles';
 import {ScrollView, useWindowDimensions} from 'react-native';
 import {fontStyles, theme} from '../../utils/theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useChatContext} from '../../hooks/ChatContext';
 import {useChatRoom} from '../../hooks/useChat';
+import { useAppContext } from '../../hooks/appContext';
+import { useChatContext } from '../../hooks/ChatContext';
 
 const ChatRoomScrollView = ({onPress}) => {
   const { width } = useWindowDimensions()
   const [selected, setSelected] = useState();
-  const {currentChatUser} = useChatContext();
+  const { currentChatUser }= useChatContext()
   const {data} = useChatRoom(currentChatUser?.uid);
+
+  console.log('.....................data', data);
 
   const handleSelect = room_id => {
     setSelected(room_id);

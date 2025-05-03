@@ -1,9 +1,4 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-redeclare */
-/* eslint-disable no-import-assign */
-/* eslint-disable react/prop-types */
-/* eslint-disable prettier/prettier */
+
 import React from 'react'
 import { View } from 'react-native'
 import { StatusBar } from 'react-native'

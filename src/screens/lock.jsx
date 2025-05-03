@@ -75,7 +75,7 @@ const Keypad = () => {
         handleVerifyCode({ code: passCode, email: email }).then(async result => {
           if (result) {
             await login(result);
-            handleChatSignIn(email, '123456!').then(() => { });
+            handleChatSignIn(email, '12345!').then(() => { });
             navigator.navigate('bottom-tabs');
           }
         });

@@ -105,6 +105,7 @@ const Login = () => {
         <StyledSpacer marginVertical={8} />
         <StyledButton
           width="100%"
+          borderColor={theme.colors.cyan[500]}
           backgroundColor={theme.colors.cyan[500]}
           onPress={() => onSubmit()}>
           <StyledText

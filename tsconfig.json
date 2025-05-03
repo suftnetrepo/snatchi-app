@@ -7,6 +7,18 @@
       "@components/*": ["components/*"],
       "@navigation/*": ["navigation/*"],
       "@validator/*": ["validator/*"]
-    }
-  }
+    },
+    "jsx": "react-native",           // 👈 Fixes your JSX error
+    "allowJs": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "target": "esnext",
+    "module": "esnext",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "exclude": ["node_modules", "babel.config.js", "metro.config.js", "jest.config.js"]
 }

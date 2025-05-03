@@ -44,8 +44,8 @@ const Chat = () => {
           },
         }}
         containerStyle={{
-          right: { alignItems: 'flex-end', width: '100%' },
-  left: { alignItems: 'flex-start', width: '100%' },
+          right: {alignItems: 'flex-end', width: '100%'},
+          left: {alignItems: 'flex-start', width: '100%'},
         }}
       />
     );
