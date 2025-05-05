@@ -382,19 +382,19 @@ const taskStatusArray = [
 ];
 
 const personalDocumentsArray = [
-  { label: 'NI Number / Social Security', value: 'NINumber' },
-  { label: 'Passport', value: 'Passport' },
-  { label: 'Driver’s License', value: 'DriversLicense' },
-  { label: 'Work Permit / Visa', value: 'WorkPermit' },
-  { label: 'Professional Certificates', value: 'ProfessionalCertificates' },
-  { label: 'ID Card', value: 'IDCard' },
-  { label: 'Proof of Address', value: 'ProofOfAddress' },
-  { label: 'CV / Resume', value: 'CVResume' },
-  { label: 'DBS / Background Check', value: 'BackgroundCheck' },
-  { label: 'Emergency Contact Info', value: 'EmergencyContactInfo' },
-  { label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate' },
-  { label: 'Insurance Certificate', value: 'InsuranceCertificate' },
-  { label: 'Vaccination Record', value: 'VaccinationRecord' },
+  {label: 'NI Number / Social Security', value: 'NINumber'},
+  {label: 'Passport', value: 'Passport'},
+  {label: 'Driver’s License', value: 'DriversLicense'},
+  {label: 'Work Permit / Visa', value: 'WorkPermit'},
+  {label: 'Professional Certificates', value: 'ProfessionalCertificates'},
+  {label: 'ID Card', value: 'IDCard'},
+  {label: 'Proof of Address', value: 'ProofOfAddress'},
+  {label: 'CV / Resume', value: 'CVResume'},
+  {label: 'DBS / Background Check', value: 'BackgroundCheck'},
+  {label: 'Emergency Contact Info', value: 'EmergencyContactInfo'},
+  {label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate'},
+  {label: 'Insurance Certificate', value: 'InsuranceCertificate'},
+  {label: 'Vaccination Record', value: 'VaccinationRecord'},
 ];
 
 const timeAgo = date => {
@@ -480,9 +480,11 @@ function haversineDistance(coords1, coords2) {
   return result;
 }
 
-const convertTimestampToDate = (timestamp) => {
+const convertTimestampToDate = timestamp => {
   if (!timestamp) return;
-  const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000)
+  const date = new Date(
+    timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
+  );
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
   const day = String(date.getDate()).padStart(2, '0');
@@ -501,7 +503,77 @@ const isSameDay = (storedDate, currentDate) => {
   );
 };
 
+function formatMessageTimestamp(timestamp) {
+  if (!timestamp || typeof timestamp.seconds !== 'number') {
+    return '';
+  }
+
+  const date = new Date(
+    timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
+  );
+  const now = new Date();
+
+  const isToday = date.toDateString() === now.toDateString();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  const isThisWeek = now - date < 7 * 24 * 60 * 60 * 1000;
+
+  if (isToday) {
+    return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  }
+
+  if (isYesterday) {
+    return 'Yesterday';
+  }
+
+  if (isThisWeek) {
+    const days = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+    return days[date.getDay()];
+  }
+
+  return date.toLocaleDateString();
+}
+
+function getRelativeTimeString(timestamp) {
+  const date = new Date(
+    timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
+  );
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes}m ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours}h ago`;
+  } else {
+    return formatMessageTimestamp(timestamp);
+  }
+}
+
+function capitalizeFirstLetter(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export {
+  capitalizeFirstLetter,
+  formatMessageTimestamp,
+  getRelativeTimeString,
   isSameDay,
   haversineDistance,
   priorityBackgroundColorHelper,
@@ -534,5 +606,5 @@ export {
   randomColor,
   formatReadableDate,
   convertTimestampToDate,
-  personalDocumentsArray
+  personalDocumentsArray,
 };

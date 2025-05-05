@@ -6,7 +6,7 @@ import Home from '../screens/home';
 import Profile from '../screens/profile';
 import Invoices from '../screens/invoice';
 import Settings from '../screens/settings';
-import Chat from '../screens/chat';
+import Messaging from '../screens/messaging';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,8 +65,8 @@ export default function BottomTabs() {
       />
 
       <Tab.Screen
-        name="chat"
-        component={Chat}
+        name="messaging"
+        component={Messaging}
         initialParams={{setTabBarVisible}}
         options={{
           tabBarIcon: ({focused}) => {

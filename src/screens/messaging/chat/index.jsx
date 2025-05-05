@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect} from 'react';
 import {
   YStack,
   XStack,
@@ -8,22 +8,26 @@ import {
   StyledText,
   StyledCycle,
 } from 'fluent-styles';
-import {theme} from '../../utils/theme';
-import {fontStyles} from '../../utils/fontStyles';
+import {theme} from '../../../utils/theme';
+import {fontStyles} from '../../../utils/fontStyles';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useChatContext} from '../../hooks/ChatContext';
+import {useChatContext, ChatContextProvider} from '../../../hooks/ChatContext';
 import {GiftedChat, Send, Bubble} from 'react-native-gifted-chat';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useChatMessage} from '../../hooks/useChat';
-import ChatRoomScrollView from '../../components/chatRooms';
-import {StyledMIcon} from '../../components/icon';
+import {useChatMessage} from '../../../hooks/useChat';
+import {StyledMIcon} from '../../../components/icon';
 import {Pressable} from 'react-native';
 
-const Chat = () => {
+const MyChat = ({route}) => {
   const navigator = useNavigation();
   const {messages, room_id, handleFetchMessages, handleSend} = useChatMessage();
   const {currentChatUser} = useChatContext();
+  const {room} = route.params;
+
+  useEffect(()=> {
+    room && handleFetchMessages(room?.id)
+  },[room])
 
   const renderBubble = props => {
     return (
@@ -113,14 +117,6 @@ const Chat = () => {
         </StyledHeader.Full>
       </StyledHeader>
 
-      <YStack
-        paddingHorizontal={16}
-        justifyContent="flex-start"
-        alignItems="flex-start">
-        <ChatRoomScrollView
-          onPress={async room_id => await handleFetchMessages(room_id)}
-        />
-      </YStack>
       <GiftedChat
         messages={[...messages].reverse()}
         onSend={newMessages =>
@@ -137,6 +133,14 @@ const Chat = () => {
         scrollToBottomComponent={scrollToBottomComponent}
       />
     </StyledSafeAreaView>
+  );
+};
+
+const Chat = ({route}) => {
+  return (
+    <ChatContextProvider>
+      <MyChat route={route} />
+    </ChatContextProvider>
   );
 };
 

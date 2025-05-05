@@ -1,5 +1,6 @@
 import {createConfig} from '@gluestack-ui/themed';
 import {config as defaultConfig} from '@gluestack-ui/config';
+import { fontStyles, theme } from './src/utils/theme';
 
 const glueStackConfigUi = createConfig({
   ...defaultConfig,
@@ -241,6 +242,33 @@ const glueStackConfigUi = createConfig({
     },
     components: {
      
+    },
+    fonts: {
+      ...defaultConfig.tokens.fonts,
+      crimson: {
+        regular: fontStyles.crimson_text_regular,
+        bold: fontStyles.crimson_text_bold,
+        italic: fontStyles.crimson_text_italic,
+      },
+      roboto: {
+        regular: fontStyles.Roboto_Regular,
+        bold: fontStyles.Roboto_Bold,
+        italic: fontStyles.Roboto_Italic,
+      },
+    },
+    fontSizes: {
+      ...defaultConfig.tokens.fontSizes,
+      xs: 12,
+      sm: 14,
+      md: 16,
+      lg: 20,
+      xl: 24,
+      '2xl': 30,
+      ...theme.fontSize
+    },
+    fontWeights: {
+      ...defaultConfig.tokens.fontWeights,
+      ...theme.fontWeight
     },
   },
 } as const);

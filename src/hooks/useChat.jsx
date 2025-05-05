@@ -105,6 +105,7 @@ const useUserChat = () => {
 const useChatRoom = user_id => {
   const [state, setState] = useState({
     data: [],
+    dataCopy: [],
     loading: false,
     error: null,
   });
@@ -121,13 +122,23 @@ const useChatRoom = user_id => {
     });
   };
 
+  const handleFilterChatRooms = query => {
+    setState(prev => ({
+      ...prev,
+      data:
+        (query === 'group' || query === 'direct')
+          ? prev.dataCopy.filter(j => j.type === query)
+          : prev.dataCopy,
+      error: null,
+    }));
+  };
+
   const handleFetchChatRooms = userId => {
     try {
       const chatRoomsRef = collection(db, 'chats');
       const chatRoomsQuery = query(
         chatRoomsRef,
         where('users', 'array-contains', userId || 0),
-        // orderBy('lastUpdated', 'desc')
       );
 
       const unsubscribe = onSnapshot(chatRoomsQuery, snapshot => {
@@ -139,6 +150,7 @@ const useChatRoom = user_id => {
         setState(prev => ({
           ...prev,
           data: chatRooms,
+          dataCopy :chatRooms,
           error: null,
         }));
       });
@@ -155,6 +167,7 @@ const useChatRoom = user_id => {
 
   return {
     ...state,
+    handleFilterChatRooms,
     handleReset,
     handleError,
     handleFetchChatRooms,

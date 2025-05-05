@@ -4,13 +4,13 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Login from '../screens/login';
 import Keypad from '../screens/lock';
 import task from '../screens/task';
-import chat from '../screens/chat';
 import taskDocument from '../screens/task/taskDocument';
 import helpCenter from '../screens/settings/helpCenter';
 import BottomTabs from './BottomNavigation';
 import Invoice from '../screens/invoice/invoice';
 import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
+import Chat from '../screens/messaging/chat';
 
 const Stack = createStackNavigator();
 function Navigator() {
@@ -37,9 +37,9 @@ function Navigator() {
           headerShown: false,
         }}
       />
-      <Stack.Screen
+       <Stack.Screen
         name="chat"
-        component={chat}
+        component={Chat}
         options={{
           headerShown: false,
         }}

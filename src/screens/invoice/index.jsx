@@ -438,7 +438,7 @@ const Invoices = () => {
             showsVerticalScrollIndicator={false}
             data={data}
             keyExtractor={item => item._id}
-            renderItem={({item, index}) => {
+            renderItem={({item}) => {
               return <Render invoice={item} key={item._id} />;
             }}
           />
