@@ -20,6 +20,9 @@ const MyMessaging = () => {
   const {data, handleFilterChatRooms} = useChatRoom(currentChatUser?.uid);
 
   const RenderChatRoom = ({room}) => {
+    const unreadCount = room?.unreadCount
+      ? room?.unreadCount[currentChatUser?.uid]
+      : 0;
     return (
       <Pressable
         onPress={() =>
@@ -45,12 +48,12 @@ const MyMessaging = () => {
             height={40}
             borderColor={
               room?.type === 'group'
-                ? theme.colors.yellow[400]
+                ? theme.colors.blueGray[400]
                 : theme.colors.rose[400]
             }
             bgColor={
               room?.type === 'group'
-                ? theme.colors.yellow[400]
+                ? theme.colors.blueGray[400]
                 : theme.colors.rose[400]
             }>
             <StyledMIcon
@@ -58,11 +61,12 @@ const MyMessaging = () => {
               size={24}
               color={
                 room?.type === 'group'
-                  ? theme.colors.gray[600]
+                  ? theme.colors.gray[100]
                   : theme.colors.gray[200]
               }
             />
           </Cycle>
+          <VStack justifyContent="start" alignItems="start">
           <Text
             paddingHorizontal={8}
             fontSize={'$sm'}
@@ -71,11 +75,38 @@ const MyMessaging = () => {
             fontFamily="$crimson.bold">
             {room?.name}
           </Text>
-          <Spacer flex={1} />
-
-          <Text color="$gray400" paddingHorizontal={8} size={'xs'}>
-            {formatMessageTimestamp(room?.lastMessageTimestamp)}
+          <Text
+            paddingHorizontal={8}
+            fontSize={'$xs'}
+            color="$gray400"
+            fontWeight={'$normal'}
+            fontFamily="$crimson.regular">
+            {room?.lastMessage}
           </Text>
+          
+          </VStack>
+         
+          <Spacer flex={1} />
+          <VStack justifyContent="center" alignItems="center">
+            <Text color="$gray400" paddingHorizontal={8} size={'xs'}>
+              {formatMessageTimestamp(room?.lastMessageTimestamp)}
+            </Text>
+            {unreadCount > 0 && (
+              <Cycle
+                width={20}
+                height={20}
+                borderColor={
+                  theme.colors.orange[400]
+                }
+                bgColor={
+                  theme.colors.orange[400]
+                }>
+                <Text color="$gray100" size={'xs'}>
+                  {unreadCount}
+                </Text>
+              </Cycle>
+            )}
+          </VStack>
         </HStack>
       </Pressable>
     );

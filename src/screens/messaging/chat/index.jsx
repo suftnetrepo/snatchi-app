@@ -1,4 +1,4 @@
-import React, { useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {
   YStack,
   XStack,
@@ -18,6 +18,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useChatMessage} from '../../../hooks/useChat';
 import {StyledMIcon} from '../../../components/icon';
 import {Pressable} from 'react-native';
+import { Cycle } from '../../../components/gluestack/cycle';
 
 const MyChat = ({route}) => {
   const navigator = useNavigation();
@@ -25,9 +26,9 @@ const MyChat = ({route}) => {
   const {currentChatUser} = useChatContext();
   const {room} = route.params;
 
-  useEffect(()=> {
-    room && handleFetchMessages(room?.id)
-  },[room])
+  useEffect(() => {
+    room && handleFetchMessages(room?.id);
+  }, [room]);
 
   const renderBubble = props => {
     return (
@@ -82,25 +83,44 @@ const MyChat = ({route}) => {
       alignItems="center"
       backgroundColor={theme.colors.gray[50]}>
       <Pressable onPress={() => navigator.goBack()}>
-        <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.gray[200]}>
-          <StyledMIcon
+      <StyledMIcon
             name="arrow-back"
             size={15}
             color={theme.colors.gray[800]}
             onPress={() => navigator.goBack()}
           />
-        </StyledCycle>
       </Pressable>
       <StyledSpacer marginHorizontal={2} />
+      <Cycle
+        width={40}
+        height={40}
+        borderColor={
+          room?.type === 'group'
+            ? theme.colors.yellow[400]
+            : theme.colors.rose[400]
+        }
+        bgColor={
+          room?.type === 'group'
+            ? theme.colors.yellow[400]
+            : theme.colors.rose[400]
+        }>
+        <StyledMIcon
+          name={room?.type === 'group' ? 'people' : 'person'}
+          size={24}
+          color={
+            room?.type === 'group'
+              ? theme.colors.gray[600]
+              : theme.colors.gray[200]
+          }
+        />
+      </Cycle>
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
         color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
-        Chat
+        paddingHorizontal ={4}
+        fontSize={theme.fontSize.small}>
+        {room?.name}
       </StyledText>
       <StyledSpacer flex={1} />
     </XStack>

@@ -11,6 +11,9 @@ import {
   getDocs,
   where,
   serverTimestamp,
+  updateDoc,
+  getDoc,
+  Timestamp
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
@@ -19,7 +22,7 @@ import {
 } from 'firebase/auth';
 import {db, auth} from '../../firebase';
 import {store} from '../utils/asyncStorage';
-import {convertTimestampToDate} from '../utils/help';
+import {convertTimestampToDate, truncate} from '../utils/help';
 
 const useUserChat = () => {
   const [state, setState] = useState({
@@ -183,6 +186,7 @@ const useChatMessage = chatRoomId => {
   });
 
   const handleError = error => {
+    console.log("..........................error", error)
     setState(pre => {
       return {...pre, error: error, loading: false};
     });
@@ -225,8 +229,14 @@ const useChatMessage = chatRoomId => {
     const message = newMessages[0];
 
     try {
-      // imageURL = await handleUploadImage(image);
+      const timestamp = Timestamp.now();
       const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
+      const roomRef = doc(db, 'chats', chatRoomId);
+      const roomSnap = await getDoc(roomRef);
+
+      const roomData = roomSnap.data();
+      const usersInRoom = roomData.users || [];
+
       const newMessage = {
         _id: new Date().getTime().toString(),
         senderId,
@@ -240,6 +250,24 @@ const useChatMessage = chatRoomId => {
       };
 
       await addDoc(messagesRef, newMessage);
+
+
+      console.log(".....................usersInRoom", usersInRoom)
+
+      const unreadCountUpdates = {};
+      usersInRoom.forEach((userId) => {
+        if (userId !== senderId) {
+          const currentCount = roomData.unreadCount?.[userId] || 0;
+          unreadCountUpdates[`unreadCount.${userId}`] = currentCount + 1;
+        }
+      });
+
+      await updateDoc(roomRef, {
+        lastMessage: truncate(message?.text),
+        lastMessageTimestamp: timestamp,
+        lastMessageSentBy: senderId,
+        ...unreadCountUpdates
+      });
 
       return true;
     } catch (error) {

@@ -21,7 +21,7 @@ import EmptyView from '../shared/empty';
 import {useTask} from '../../hooks/useTask';
 
 const CalendarCard = ({date, onSelect}) => {
-  const {handleMyTasks, data} = useTask();
+  const {handleMyTasks, data} = useTask(false);
 
   useEffect(() => {
     async function loadCurrentEvents() {

@@ -6,7 +6,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {capitalizeFirstLetter} from '../../utils/help';
 
 const ChatRoomScrollView = ({onPress}) => {
-  const [selected, setSelected] = useState()
+  const [selected, setSelected] = useState();
 
   const handleSelect = room => {
     setSelected(room);
@@ -15,13 +15,7 @@ const ChatRoomScrollView = ({onPress}) => {
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <XStack
-      flex={1}
-        paddingHorizontal={6}
-        marginVertical={8}
-        borderRadius={32}
-        backgroundColor={theme.colors.gray[100]}
-        paddingVertical={6}>
+      <XStack flex={1} paddingHorizontal={6} paddingVertical={6}>
         {['All', 'direct', 'group'].map((room, index) => {
           return (
             <Fragment key={index}>

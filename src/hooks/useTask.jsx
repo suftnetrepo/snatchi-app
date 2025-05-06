@@ -3,7 +3,7 @@ import {MYTASK_HOST_ADDRESS, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {useUtil} from '../store';
 
-const useTask = () => {
+const useTask = (flag = true) => {
   const {set} = useUtil();
   const [state, setState] = useState({
     data: [],
@@ -116,8 +116,8 @@ const useTask = () => {
   }
 
   useEffect(() => {
-    handleMyRecentTasks().then(() => {});
-  }, []);
+    flag && handleMyRecentTasks().then(() => {});
+  }, [flag]);
 
   return {
     ...state,
