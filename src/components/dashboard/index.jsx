@@ -63,7 +63,7 @@ const Dashboard = ({recentTasks, navigate}) => {
               color={theme.colors.gray[600]}>
               {name}
             </StyledText>
-
+       <StyledSpacer marginHorizontal={2} />
             <StyledCycle
               height={48}
               width={48}

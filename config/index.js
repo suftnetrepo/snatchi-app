@@ -59,6 +59,9 @@ export const ATTENDANCE = {
   removeOne: `${HOST_API_ADDRESS}attendance/`
 };
 
+export const USER_HOST_USER_STATUS = {
+  action: `${HOST_API_ADDRESS}user/status`,
+ }
 
 export const VERBS = {
   POST: 'POST',

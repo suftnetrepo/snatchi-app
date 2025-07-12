@@ -33,7 +33,7 @@ const Login = () => {
     }
 
     if (
-      fields.user_name === 'Abel.aghorighor@suftnet.com' ||
+      fields.user_name === 'kabelsus@gmail.com' ||
       fields.user_name === 'abel.aghorighor@suftnet.com'
     ) {
       navigator.navigate('keypad', {

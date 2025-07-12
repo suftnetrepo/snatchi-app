@@ -135,12 +135,12 @@ const Invoices = () => {
                 <StyledCycle
                   height={48}
                   width={48}
-                  borderColor={theme.colors.gray[300]}
-                  backgroundColor={theme.colors.gray[1]}>
+                  borderColor={theme.colors.red[200]}
+                  backgroundColor={theme.colors.red[200]}>
                   <Icon
                     name="share"
                     size={25}
-                    color={theme.colors.gray[600]}
+                    color={theme.colors.red[300]}
                     onPress={() => shareInvoice(invoice)}
                   />
                 </StyledCycle>
@@ -155,7 +155,8 @@ const Invoices = () => {
                   height={48}
                   width={48}
                   marginHorizontal={8}
-                  borderColor={theme.colors.gray[300]}>
+                  backgroundColor={theme.colors.orange[200]}
+                  borderColor={theme.colors.orange[200]}>
                   <StyledMIcon
                     size={16}
                     name={'create'}
@@ -171,7 +172,8 @@ const Invoices = () => {
               <StyledCycle
                 height={48}
                 width={48}
-                borderColor={theme.colors.gray[300]}>
+                  backgroundColor={theme.colors.gray[200]}
+                borderColor={theme.colors.gray[200]}>
                 <StyledMIcon
                   size={32}
                   name={
