@@ -7,6 +7,7 @@ import Profile from '../screens/profile';
 import Invoices from '../screens/invoice';
 import Settings from '../screens/settings';
 import Messaging from '../screens/messaging';
+import MyCalendar from '../screens/calendar';
 
 const Tab = createBottomTabNavigator();
 
@@ -94,6 +95,24 @@ export default function BottomTabs() {
                 size={32}
                 color={focused ? theme.colors.gray[1] : theme.colors.gray[600]}
                 name="payment"
+              />
+            );
+          },
+        }}
+      />
+
+      <Tab.Screen
+        name="calendar"
+        component={MyCalendar}
+        initialParams={{setTabBarVisible}}
+        options={{
+          tabBarIcon: ({focused}) => {
+            return (
+              <Icon
+                focused={focused}
+                size={32}
+                color={focused ? theme.colors.gray[1] : theme.colors.gray[600]}
+                name="event"
               />
             );
           },

@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, {useState} from 'react';
 import {
   StyledSpinner,
@@ -33,7 +32,7 @@ const Login = () => {
     }
 
     if (
-      fields.user_name === 'kabelsus@gmail.com' ||
+      fields.user_name === 'kabelsus@gmail.coms' ||
       fields.user_name === 'abel.aghorighor@suftnet.com'
     ) {
       navigator.navigate('keypad', {
@@ -68,8 +67,8 @@ const Login = () => {
           justifyContent="center"
           alignItems="center">
           <StyledImage
-          borderWidth={0}
-          source={require('../../../assets/img/icons8-login-100-2.png')}></StyledImage>
+            borderWidth={0}
+            source={require('../../../assets/img/icons8-login-100-2.png')}></StyledImage>
           <StyledText
             paddingVertical={16}
             paddingHorizontal={16}
@@ -78,7 +77,8 @@ const Login = () => {
             color={theme.colors.gray[400]}
             textAlign="center"
             fontSize={theme.fontSize.normal}>
-           Enter your registered email address to receive a One-Time Password (OTP)
+            Enter your registered email address to receive a One-Time Password
+            (OTP)
           </StyledText>
         </YStack>
 

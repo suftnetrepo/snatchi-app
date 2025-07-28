@@ -140,7 +140,7 @@ const Invoices = () => {
                   <Icon
                     name="share"
                     size={25}
-                    color={theme.colors.red[300]}
+                    color={theme.colors.red[400]}
                     onPress={() => shareInvoice(invoice)}
                   />
                 </StyledCycle>
@@ -160,7 +160,7 @@ const Invoices = () => {
                   <StyledMIcon
                     size={16}
                     name={'create'}
-                    color={theme.colors.gray[600]}
+                    color={theme.colors.orange[600]}
                     onPress={() =>
                       navigator.navigate('new-invoice', {
                         invoice: invoice,
