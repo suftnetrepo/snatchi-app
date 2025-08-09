@@ -13,6 +13,8 @@ import {
   StyledBadge,
   StyledSpinner,
   StyledOkDialog,
+  StyledButton,
+  StyledDialog,
 } from 'fluent-styles';
 import {FlatList, Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -22,6 +24,8 @@ import {CalendarList, DateData} from 'react-native-calendars';
 
 const MyCalender = () => {
   const navigator = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [selected, setSelected] = useState(initialDate);
 
   const RANGE = 24;
@@ -56,16 +60,7 @@ const MyCalender = () => {
   ];
 
   const specialDates = [
-    '2025-06-01',
-    '2025-06-06',
-    '2025-06-10',
-    '2025-06-19',
-    '2025-06-28',
-    '2025-07-01',
-    '2025-07-06',
-    '2025-07-13',
-    '2025-07-20',
-    '2025-07-27',
+    
   ];
 
   const marked = useMemo(() => {
@@ -161,6 +156,61 @@ const MyCalender = () => {
     }
   };
 
+  const RenderModal = () => {
+    return (
+      <YStack
+        backgroundColor={theme.colors.transparent}
+        flex={1}
+        justifyContent="center"
+        alignItems="center">
+        <YStack
+          width={'90%'}
+          backgroundColor={theme.colors.gray[500]}
+          borderRadius={8}
+          paddingHorizontal={8}
+          paddingVertical={8}>
+          <StyledButton
+            borderRadius={8}
+            borderWidth={2}
+            backgroundColor={theme.colors.gray[1]}
+            borderColor={theme.colors.gray[400]}
+            onPress={() => setModalVisible(false)}>
+            <StyledText
+              flex={1}
+              fontFamily={fontStyles.OpenSansRegular}
+              color={theme.colors.gray[800]}
+              fontWeight={theme.fontWeight.normal}
+              paddingVertical={16}
+              paddingHorizontal={16}
+              textAlign="left"
+              fontSize={theme.fontSize.normal}>
+              Available
+            </StyledText>
+          </StyledButton>
+          <StyledSpacer marginVertical={4} />
+          <StyledButton
+            borderRadius={8}
+            borderWidth={2}
+            backgroundColor={theme.colors.gray[1]}
+            borderColor={theme.colors.gray[400]}
+            onPress={() => setModalVisible(false)}>
+            <StyledText
+              flex={1}
+              fontFamily={fontStyles.OpenSansRegular}
+              color={theme.colors.gray[800]}
+              fontWeight={theme.fontWeight.normal}
+              paddingVertical={16}
+              paddingHorizontal={16}
+              textAlign="left"
+              fontSize={theme.fontSize.normal}>
+              Not Available
+            </StyledText>
+          </StyledButton>
+        </YStack>
+      </YStack>
+    );
+  };
+
   const RenderHeader = () => (
     <XStack
       paddingHorizontal={16}
@@ -196,7 +246,9 @@ const MyCalender = () => {
           name="add"
           size={25}
           color={theme.colors.gray[1]}
-          onPress={() => {}}
+          onPress={() => {
+            setModalVisible(true);
+          }}
         />
       </StyledCycle>
       <StyledSpacer marginHorizontal={8} />
@@ -254,6 +306,11 @@ const MyCalender = () => {
           staticHeader={false}
         />
       </YStack>
+      {modalVisible && (
+        <StyledDialog visible>
+          <RenderModal />
+        </StyledDialog>
+      )}
     </StyledSafeAreaView>
   );
 };

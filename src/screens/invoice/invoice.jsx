@@ -185,10 +185,7 @@ const Invoice = () => {
       </StyledText>
       <StyledSpacer flex={1} />
       <StyledSpacer marginHorizontal={2} />
-      {params?.invoice &&
-        params?.invoice?.status !== 'Paid' &&
-        params?.invoice?.status !== 'Cancelled' && (
-          <StyledCycle
+      <StyledCycle
             height={48}
             width={48}
             borderColor={theme.colors.cyan[500]}
@@ -200,7 +197,6 @@ const Invoice = () => {
               onPress={() => onSubmit()}
             />
           </StyledCycle>
-        )}
     </XStack>
   );
 
