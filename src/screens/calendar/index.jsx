@@ -1,318 +1,174 @@
-import React, {useState, useMemo, useCallback} from 'react';
-import {useNavigation} from '@react-navigation/native';
-import {
-  YStack,
-  XStack,
-  StyledHeader,
-  StyledSafeAreaView,
-  StyledText,
-  StyledCycle,
-  StyledSpacer,
-  StyledCard,
-  StyledSeparator,
-  StyledBadge,
-  StyledSpinner,
-  StyledOkDialog,
-  StyledButton,
-  StyledDialog,
-} from 'fluent-styles';
-import {FlatList, Pressable} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import {fontStyles, theme} from '../../utils/theme';
-import {StyledMIcon} from '../../components/icon';
-import {CalendarList, DateData} from 'react-native-calendars';
+import React, { useMemo, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { CalendarList } from 'react-native-calendars';
+import moment from 'moment';
 
-const MyCalender = () => {
-  const navigator = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [isDialogVisible, setIsDialogVisible] = useState(false);
-  const [selected, setSelected] = useState(initialDate);
+const eventsData = [
+  {
+    title: 'Holiday',
+    startDate: '2025-09-06T17:00:00.000Z',
+    endDate: '2025-09-07T23:00:00.000Z',
+    status: 'Rejected',
+  },
+  {
+    title: 'Renovating Job in Shell',
+    startDate: '2025-08-31T22:00:00.000Z',
+    endDate: '2025-09-05T22:00:00.000Z',
+    status: 'Accepted',
+  },
+  {
+    title: 'New Plumbing Jobs',
+    startDate: '2025-08-30T23:00:00.000Z',
+    endDate: '2025-09-15T23:00:00.000Z',
+    status: 'Pending',
+  },
+  {
+    title: 'Work on Building',
+    startDate: '2025-08-19T23:00:00.000Z',
+    endDate: '2025-08-29T23:00:00.000Z',
+    status: 'Pending',
+  }
+];
 
-  const RANGE = 24;
-  const initialDate = '2025-07-15'; // Updated to 2025
+const statusColorMap = {
+  Accepted: '#4ECDC4',
+  Pending: '#F4A261',
+  Rejected: '#E76F51',
+};
 
-  const availableDates = [
-    // June 2025 available dates
-    '2025-06-03',
-    '2025-06-05',
-    '2025-06-07',
-    '2025-06-09',
-    '2025-06-12',
-    '2025-06-14',
-    '2025-06-16',
-    '2025-06-18',
-    '2025-06-21',
-    '2025-06-23',
-    '2025-06-25',
-    '2025-06-27',
-    '2025-06-30',
-    // July 2025 available dates
-    '2025-07-02',
-    '2025-07-04',
-    '2025-07-08',
-    '2025-07-11',
-    '2025-07-15',
-    '2025-07-18',
-    '2025-07-22',
-    '2025-07-25',
-    '2025-07-28',
-    '2025-07-31',
-  ];
+const getMarkedDatesFromEvents = (events) => {
+  const marked = {};
 
-  const specialDates = [
-    
-  ];
+  events.forEach(event => {
+    const color = statusColorMap[event.status] || '#BDBDBD';
+    const start = moment(event.startDate).format('YYYY-MM-DD');
+    const end = moment(event.endDate).format('YYYY-MM-DD');
 
-  const marked = useMemo(() => {
-    const markedDates = {};
+    let current = moment(start);
+    const endMoment = moment(end);
 
-    // Mark available dates with yellow/orange background
-    availableDates.forEach(date => {
-      markedDates[date] = {
-        selected: selected === date,
-        selectedColor: selected === date ? '#5E60CE' : '#F5C842', // Purple if selected, yellow if available
-        selectedTextColor: selected === date ? 'white' : '#333',
-        marked: false,
-        customStyles: {
-          container: {
-            backgroundColor: selected === date ? '#5E60CE' : '#F5C842',
-            borderRadius: 15,
-          },
-          text: {
-            color: selected === date ? 'white' : '#333',
-            fontWeight: selected === date ? 'bold' : '600',
-          },
-        },
+    while (current.isSameOrBefore(endMoment)) {
+      const dateStr = current.format('YYYY-MM-DD');
+      const isStart = current.isSame(start, 'day');
+      const isEnd = current.isSame(end, 'day');
+
+      marked[dateStr] = {
+        ...(marked[dateStr] || {}),
+        ...(isStart ? { startingDay: true } : {}),
+        ...(isEnd ? { endingDay: true } : {}),
+        color: marked[dateStr]?.color || color,
+        textColor: 'white'
       };
-    });
 
-    // Mark special dates with green background
-    specialDates.forEach(date => {
-      markedDates[date] = {
-        selected: selected === date,
-        selectedColor: selected === date ? '#5E60CE' : '#7ED321', // Purple if selected, green if special
-        selectedTextColor: selected === date ? 'white' : '#333',
-        marked: false,
-        customStyles: {
-          container: {
-            backgroundColor: selected === date ? '#5E60CE' : '#7ED321',
-            borderRadius: 15,
-          },
-          text: {
-            color: selected === date ? 'white' : '#333',
-            fontWeight: selected === date ? 'bold' : '600',
-          },
-        },
-      };
-    });
-
-    // Ensure selected date is properly marked
-    if (selected && markedDates[selected]) {
-      markedDates[selected] = {
-        ...markedDates[selected],
-        selected: true,
-        selectedColor: '#5E60CE',
-        selectedTextColor: 'white',
-        customStyles: {
-          container: {
-            backgroundColor: '#5E60CE',
-            borderRadius: 15,
-          },
-          text: {
-            color: 'white',
-            fontWeight: 'bold',
-          },
-        },
-      };
+      current.add(1, 'day');
     }
+  });
 
-    return markedDates;
-  }, [selected, availableDates, specialDates]);
+  return marked;
+};
 
-  const onDayPress = useCallback(
-    day => {
-      // Only allow selection of available dates or special dates
-      if (
-        availableDates.includes(day.dateString) ||
-        specialDates.includes(day.dateString)
-      ) {
-        setSelected(day.dateString);
-      }
-    },
-    [availableDates, specialDates],
-  );
+// 🔵 Custom user-selected range marker
+const getUserSelectedRange = (start, end, color = '#3B82F6') => {
+  const marked = {};
+  if (!start) return marked;
 
-  // Function to add new available dates
-  const addAvailableDate = dateString => {
-    if (!availableDates.includes(dateString)) {
-      availableDates.push(dateString);
+  const startMoment = moment(start);
+  const endMoment = end ? moment(end) : startMoment;
+
+  let current = startMoment.clone();
+  while (current.isSameOrBefore(endMoment)) {
+    const dateStr = current.format('YYYY-MM-DD');
+    marked[dateStr] = {
+      ...(marked[dateStr] || {}),
+      startingDay: current.isSame(startMoment, 'day'),
+      endingDay: current.isSame(endMoment, 'day'),
+      color,
+      textColor: 'white'
+    };
+    current.add(1, 'day');
+  }
+  return marked;
+};
+
+const CalendarListScreen = () => {
+  const eventMarks = useMemo(() => getMarkedDatesFromEvents(eventsData), []);
+
+  const [range, setRange] = useState({ start: null, end: null });
+
+const onDayPress = (day) => {
+  const selected = moment(day.dateString);
+  const { start, end } = range;
+
+  const selectedStr = selected.format('YYYY-MM-DD');
+
+  // 🟡 Case 1: Nothing selected yet
+  if (!start) {
+    setRange({ start: selectedStr, end: null });
+    return;
+  }
+
+  // 🟡 Case 2: Only start selected
+  if (start && !end) {
+    if (selectedStr === start) {
+      // 🔄 Unselect if tapped again
+      setRange({ start: null, end: null });
+    } else {
+      // Set end
+      const isBefore = selected.isBefore(moment(start));
+      setRange({
+        start: isBefore ? selectedStr : start,
+        end: isBefore ? start : selectedStr,
+      });
     }
-  };
+    return;
+  }
 
-  // Function to add new special dates
-  const addSpecialDate = dateString => {
-    if (!specialDates.includes(dateString)) {
-      specialDates.push(dateString);
-    }
-  };
+  // 🟡 Case 3: Range already selected (start and end)
+  const startMoment = moment(start);
+  const endMoment = moment(end);
 
-  const RenderModal = () => {
-    return (
-      <YStack
-        backgroundColor={theme.colors.transparent}
-        flex={1}
-        justifyContent="center"
-        alignItems="center">
-        <YStack
-          width={'90%'}
-          backgroundColor={theme.colors.gray[500]}
-          borderRadius={8}
-          paddingHorizontal={8}
-          paddingVertical={8}>
-          <StyledButton
-            borderRadius={8}
-            borderWidth={2}
-            backgroundColor={theme.colors.gray[1]}
-            borderColor={theme.colors.gray[400]}
-            onPress={() => setModalVisible(false)}>
-            <StyledText
-              flex={1}
-              fontFamily={fontStyles.OpenSansRegular}
-              color={theme.colors.gray[800]}
-              fontWeight={theme.fontWeight.normal}
-              paddingVertical={16}
-              paddingHorizontal={16}
-              textAlign="left"
-              fontSize={theme.fontSize.normal}>
-              Available
-            </StyledText>
-          </StyledButton>
-          <StyledSpacer marginVertical={4} />
-          <StyledButton
-            borderRadius={8}
-            borderWidth={2}
-            backgroundColor={theme.colors.gray[1]}
-            borderColor={theme.colors.gray[400]}
-            onPress={() => setModalVisible(false)}>
-            <StyledText
-              flex={1}
-              fontFamily={fontStyles.OpenSansRegular}
-              color={theme.colors.gray[800]}
-              fontWeight={theme.fontWeight.normal}
-              paddingVertical={16}
-              paddingHorizontal={16}
-              textAlign="left"
-              fontSize={theme.fontSize.normal}>
-              Not Available
-            </StyledText>
-          </StyledButton>
-        </YStack>
-      </YStack>
-    );
-  };
-
-  const RenderHeader = () => (
-    <XStack
-      paddingHorizontal={16}
-      paddingVertical={8}
-      justifyContent="flex-start"
-      alignItems="center"
-      backgroundColor={theme.colors.gray[50]}>
-      <StyledCycle
-        pressable
-        pressableProps={{
-          onPress: () => navigator.goBack(),
-        }}
-        height={48}
-        width={48}
-        borderColor={theme.colors.gray[200]}>
-        <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
-      </StyledCycle>
-      <StyledSpacer marginHorizontal={2} />
-      <StyledText
-        fontFamily={fontStyles.Roboto_Regular}
-        fontWeight={theme.fontWeight.normal}
-        color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
-        My Calendar
-      </StyledText>
-      <StyledSpacer flex={1} />
-      <StyledCycle
-        height={48}
-        width={48}
-        borderColor={theme.colors.cyan[500]}
-        backgroundColor={theme.colors.cyan[500]}>
-        <Icon
-          name="add"
-          size={25}
-          color={theme.colors.gray[1]}
-          onPress={() => {
-            setModalVisible(true);
-          }}
-        />
-      </StyledCycle>
-      <StyledSpacer marginHorizontal={8} />
-    </XStack>
-  );
+  if (selected.isBefore(startMoment)) {
+    setRange({ start: selectedStr, end });
+  } else if (selected.isAfter(endMoment)) {
+    setRange({ start, end: selectedStr });
+  } else if (selectedStr === start) {
+    // Collapse back to start only
+    setRange({ start, end: null });
+  } else {
+    // Shrink end
+    setRange({ start, end: selectedStr });
+  }
+};
+  const mergedMarkedDates = useMemo(() => {
+    const userRange = getUserSelectedRange(range.start, range.end);
+    return { ...eventMarks, ...userRange };
+  }, [eventMarks, range]);
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader
-        skipAndroid={true}
-        marginHorizontal={8}
-        statusProps={{translucent: true}}>
-        <StyledHeader.Full>
-          <RenderHeader />
-        </StyledHeader.Full>
-      </StyledHeader>
-      <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
-        <CalendarList
-          testID={'calendar-list'}
-          current={initialDate}
-          pastScrollRange={RANGE}
-          futureScrollRange={RANGE}
-          onDayPress={onDayPress}
-          markedDates={marked}
-          markingType={'custom'}
-          renderHeader={undefined}
-          calendarHeight={undefined}
-          theme={{
-            backgroundColor: '#ffffff',
-            calendarBackground: '#ffffff',
-            textSectionTitleColor: '#b6c1cd',
-            selectedDayBackgroundColor: '#5E60CE',
-            selectedDayTextColor: '#ffffff',
-            todayTextColor: '#5E60CE',
-            dayTextColor: '#2d4150',
-            textDisabledColor: '#d9e1e8',
-            dotColor: '#5E60CE',
-            selectedDotColor: '#ffffff',
-            arrowColor: '#5E60CE',
-            disabledArrowColor: '#d9e1e8',
-            monthTextColor: '#2d4150',
-            indicatorColor: '#5E60CE',
-            textDayFontFamily: 'System',
-            textMonthFontFamily: 'System',
-            textDayHeaderFontFamily: 'System',
-            textDayFontWeight: '400',
-            textMonthFontWeight: '600',
-            textDayHeaderFontWeight: '400',
-            textDayFontSize: 16,
-            textMonthFontSize: 18,
-            textDayHeaderFontSize: 13,
-          }}
-          horizontal={false}
-          pagingEnabled={false}
-          staticHeader={false}
-        />
-      </YStack>
-      {modalVisible && (
-        <StyledDialog visible>
-          <RenderModal />
-        </StyledDialog>
-      )}
-    </StyledSafeAreaView>
+    <View style={styles.container}>
+      <CalendarList
+        markingType="period"
+        markedDates={mergedMarkedDates}
+        pastScrollRange={6}
+        futureScrollRange={6}
+        scrollEnabled
+        showScrollIndicator
+        onDayPress={onDayPress}
+        theme={{
+          textDayFontSize: 14,
+          textMonthFontSize: 16,
+          textDayHeaderFontSize: 13,
+        }}
+      />
+    </View>
   );
 };
 
-export default MyCalender;
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 40,
+    flex: 1,
+  },
+});
+
+export default CalendarListScreen;
