@@ -21,6 +21,14 @@ export const INVOICE = {
   fetchMyInvoices: `${HOST_API_ADDRESS}invoice?action=myInvoices`,
 };
 
+export const SCHEDULER = {
+  createOne: `${HOST_API_ADDRESS}scheduler`,
+  updateOne: `${HOST_API_ADDRESS}scheduler`,
+  updatestatus: `${HOST_API_ADDRESS}scheduler`,
+  removeOne: `${HOST_API_ADDRESS}scheduler/`,
+  getByUser: `${HOST_API_ADDRESS}scheduler`,
+};
+
 export const TASK_COMMENTS = {
   addOne: `${HOST_API_ADDRESS}task_comment`,
   fetch: `${HOST_API_ADDRESS}task_comment/`,

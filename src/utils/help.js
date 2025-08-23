@@ -381,6 +381,11 @@ const taskStatusArray = [
   {label: 'Canceled', value: 'Canceled'},
 ];
 
+const calendarStatusArray = [
+  {label: 'Blocked', value: 'Blocked'},
+  {label: 'Declined', value: 'Declined'},
+];
+
 const personalDocumentsArray = [
   {label: 'NI Number / Social Security', value: 'NINumber'},
   {label: 'Passport', value: 'Passport'},
@@ -611,4 +616,5 @@ export {
   formatReadableDate,
   convertTimestampToDate,
   personalDocumentsArray,
+  calendarStatusArray
 };
