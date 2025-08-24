@@ -38,7 +38,7 @@ const useScheduler = (flag = true) => {
 
   const handleReset = useCallback(() => {
     setState(pre => {
-      return {...pre, success: false, loading: false, error: null};
+      return {...pre, fields:schedulerValidator.reset(), success: false, loading: false, error: null};
     });
   }, []);
 

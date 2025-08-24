@@ -23,7 +23,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {fontStyles, theme} from '../../utils/theme';
 import {StyledMIcon} from '../../components/icon';
-import {CalendarList, DateData} from 'react-native-calendars';
+import {CalendarList} from 'react-native-calendars';
 import moment from 'moment';
 import {useScheduler} from '../../hooks/useScheduler';
 import {StyledDropdown} from '../../components/dropdown';
@@ -53,7 +53,7 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 };
 
 const CalendarListScreen = () => {
-  const {data, handleChange, fields, rules, error, loading} = useScheduler();
+  const {data, handleChange,handleReset, fields, rules, error, loading} = useScheduler();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [range, setRange] = useState({start: null, end: null});
@@ -208,7 +208,7 @@ const CalendarListScreen = () => {
           ref={bottomSheetRef}
           index={1}
           snapPoints={snapPoints}
-          enablePanDownToClose={false} // Prevent accidental unmounting
+          enablePanDownToClose={false} 
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore"
           onChange={() => {}}>
@@ -251,6 +251,8 @@ const CalendarListScreen = () => {
                 color={theme.colors.gray[600]}
                 onPress={() => {
                   bottomSheetRef.current?.close();
+                  handleReset()
+                  range && setRange({start: null, end: null   })
                 }}
               />
             </XStack>
@@ -278,7 +280,7 @@ const CalendarListScreen = () => {
               <StyledInput
                 flex={1}
                 keyboardType="default"
-                placeholder="Enter short description about invoice"
+                placeholder="Selected start date"
                 returnKeyType="next"
                 maxLength={100}
                 fontSize={theme.fontSize.small}
@@ -294,7 +296,7 @@ const CalendarListScreen = () => {
               <StyledInput
                 flex={1}
                 keyboardType="default"
-                placeholder="Enter short description about invoice"
+                placeholder="Selected end date"
                 returnKeyType="next"
                 maxLength={100}
                 fontSize={theme.fontSize.small}
@@ -312,7 +314,7 @@ const CalendarListScreen = () => {
             <StyledMultiInput
               height={100}
               keyboardType="default"
-              placeholder="Enter short description about invoice"
+              placeholder="Enter additional details (optional)"
               returnKeyType="next"
               maxLength={100}
               fontSize={theme.fontSize.small}

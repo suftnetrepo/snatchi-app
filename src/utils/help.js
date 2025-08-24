@@ -382,6 +382,7 @@ const taskStatusArray = [
 ];
 
 const calendarStatusArray = [
+    {label: 'Select...', value: ''},
   {label: 'Blocked', value: 'Blocked'},
   {label: 'Declined', value: 'Declined'},
 ];
