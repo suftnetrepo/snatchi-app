@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useRef, useCallback} from 'react';
+import React, {useState, useMemo, useRef, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
   YStack,
@@ -28,70 +28,7 @@ import moment from 'moment';
 import {useScheduler} from '../../hooks/useScheduler';
 import {StyledDropdown} from '../../components/dropdown';
 import {calendarStatusArray} from '../../utils/help';
-
-const eventsData = [
-  {
-    title: 'Holiday',
-    startDate: '2025-09-06T17:00:00.000Z',
-    endDate: '2025-09-07T23:00:00.000Z',
-    status: 'Rejected',
-  },
-  {
-    title: 'Renovating Job in Shell',
-    startDate: '2025-08-31T22:00:00.000Z',
-    endDate: '2025-09-05T22:00:00.000Z',
-    status: 'Accepted',
-  },
-  {
-    title: 'New Plumbing Jobs',
-    startDate: '2025-08-30T23:00:00.000Z',
-    endDate: '2025-09-15T23:00:00.000Z',
-    status: 'Pending',
-  },
-  {
-    title: 'Work on Building',
-    startDate: '2025-08-19T23:00:00.000Z',
-    endDate: '2025-08-29T23:00:00.000Z',
-    status: 'Pending',
-  },
-];
-
-const statusColorMap = {
-  Accepted: '#4ECDC4',
-  Pending: '#F4A261',
-  Rejected: '#E76F51',
-};
-
-const getMarkedDatesFromEvents = events => {
-  const marked = {};
-
-  events.forEach(event => {
-    const color = statusColorMap[event.status] || '#BDBDBD';
-    const start = moment(event.startDate).format('YYYY-MM-DD');
-    const end = moment(event.endDate).format('YYYY-MM-DD');
-
-    let current = moment(start);
-    const endMoment = moment(end);
-
-    while (current.isSameOrBefore(endMoment)) {
-      const dateStr = current.format('YYYY-MM-DD');
-      const isStart = current.isSame(start, 'day');
-      const isEnd = current.isSame(end, 'day');
-
-      marked[dateStr] = {
-        ...(marked[dateStr] || {}),
-        ...(isStart ? {startingDay: true} : {}),
-        ...(isEnd ? {endingDay: true} : {}),
-        color: marked[dateStr]?.color || color,
-        textColor: 'white',
-      };
-
-      current.add(1, 'day');
-    }
-  });
-
-  return marked;
-};
+import {validate} from '../../validator/index';
 
 const getUserSelectedRange = (start, end, color = '#3B82F6') => {
   const marked = {};
@@ -116,13 +53,19 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 };
 
 const CalendarListScreen = () => {
-  const {data, error, loading} = useScheduler();
+  const {data, handleChange, fields, rules, error, loading} = useScheduler();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [range, setRange] = useState({start: null, end: null});
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [value, setValue] = useState(null);
-  // console.log('Data from useScheduler:', data);
+  const [errorMessages, setErrorMessages] = useState({});
+  const [value, setValue] = useState(fields.status);
+
+  useEffect(() => {
+    console.log('Component re-rendered, fields:', fields);
+  }, [fields]);
+
+  console.log('Data from fields:', fields);
 
   const onDayPress = day => {
     const selected = moment(day.dateString);
@@ -221,6 +164,16 @@ const CalendarListScreen = () => {
     </XStack>
   );
 
+  const handleSubmit = async () => {
+    console.log('Submitting with fields:', fields);
+    setErrorMessages({});
+    const validationResult = validate(fields, rules);
+
+    if (validationResult.hasError) {
+      setErrorMessages(validationResult.errors);
+      return;
+    }
+  };
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
@@ -255,6 +208,9 @@ const CalendarListScreen = () => {
           ref={bottomSheetRef}
           index={1}
           snapPoints={snapPoints}
+          enablePanDownToClose={false} // Prevent accidental unmounting
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore"
           onChange={() => {}}>
           <YStack
             flex={1}
@@ -273,19 +229,20 @@ const CalendarListScreen = () => {
               borderColor={theme.colors.gray[1]}
               backgroundColor={theme.colors.gray[1]}>
               <YStack
-              flex={1}
+                flex={1}
                 justifyContent="flex-start"
                 alignItems="flex-start"
                 borderColor={theme.colors.gray[1]}
                 backgroundColor={theme.colors.gray[1]}>
-                
                 <StyledText
                   fontFamily={fontStyles.Roboto_Regular}
                   fontWeight={theme.fontWeight.normal}
                   color={theme.colors.gray[600]}
                   paddingVertical={4}
+                  paddingHorizontal={4}
                   fontSize={theme.fontSize.micro}>
-                  Please fill up  the form below to Declined a schedule or Blocked days in your calendar that you are not available.
+                  Please fill out the form below to decline a scheduled task or
+                  to block out the days you're unavailable on your calendar.
                 </StyledText>
               </YStack>
               <Icon
@@ -299,8 +256,10 @@ const CalendarListScreen = () => {
             </XStack>
             <StyledSpacer marginVertical={8} />
             <StyledInput
+              name="title"
+              key="title"
               keyboardType="default"
-              placeholder="Enter short description about invoice"
+              placeholder="Enter a reason for blocking your availability"
               returnKeyType="next"
               maxLength={100}
               fontSize={theme.fontSize.small}
@@ -310,6 +269,10 @@ const CalendarListScreen = () => {
               paddingHorizontal={16}
               placeholderTextColor={theme.colors.gray[400]}
               height={40}
+              value={fields.title}
+              onChangeText={text => handleChange('title', text)}
+              error={!!errorMessages?.title}
+              errorMessage={errorMessages?.title?.message}
             />
             <XStack gap={8} marginTop={8} justifyContent="space-between">
               <StyledInput
@@ -326,6 +289,7 @@ const CalendarListScreen = () => {
                 placeholderTextColor={theme.colors.gray[400]}
                 height={40}
                 value={range.start}
+                readOnly
               />
               <StyledInput
                 flex={1}
@@ -341,6 +305,7 @@ const CalendarListScreen = () => {
                 placeholderTextColor={theme.colors.gray[400]}
                 height={40}
                 value={range.end}
+                readOnly
               />
             </XStack>
             <StyledSpacer marginTop={8} />
@@ -356,11 +321,13 @@ const CalendarListScreen = () => {
               borderRadius={8}
               paddingHorizontal={16}
               placeholderTextColor={theme.colors.gray[400]}
+              onChangeText={text => handleChange('description', text)}
+              value={fields.description}
             />
-            <XStack
+            <YStack
               marginTop={8}
               justifyContent="flex-start"
-              alignItems="center">
+              alignItems="flex-start">
               <StyledDropdown
                 borderRadius={8}
                 borderColor={theme.colors.gray[400]}
@@ -368,22 +335,23 @@ const CalendarListScreen = () => {
                 items={calendarStatusArray}
                 value={value}
                 setValue={setValue}
-                onChangeValue={value => setValue(value)}
+                onChangeText={value => setValue(value)}
+                error={!!errorMessages?.status}
+                errorMessage={errorMessages?.status?.message}
                 placeholder={'Select...'}
                 listMode="SCROLLVIEW"></StyledDropdown>
-            </XStack>
+            </YStack>
             <XStack
               marginTop={16}
-                gap={8}
+              gap={8}
               justifyContent="flex-start"
               alignItems="center">
               <StyledButton
                 flex={1}
                 borderRadius={8}
-              
                 backgroundColor={theme.colors.cyan[500]}
                 borderColor={theme.colors.cyan[500]}
-                onPress={() => {}}>
+                onPress={() => handleSubmit()}>
                 <StyledText
                   fontFamily={fontStyles.Roboto_Regular}
                   color={theme.colors.gray[1]}
@@ -395,7 +363,6 @@ const CalendarListScreen = () => {
                   SaveChanges
                 </StyledText>
               </StyledButton>
-        
               <StyledButton
                 flex={1}
                 borderRadius={8}
@@ -420,7 +387,7 @@ const CalendarListScreen = () => {
                 borderWidth={1}
                 backgroundColor={theme.colors.gray[200]}
                 borderColor={theme.colors.gray[200]}
-                onPress={() => {}}>
+                onPress={() => bottomSheetRef.current?.close()}>
                 <StyledText
                   fontFamily={fontStyles.Roboto_Regular}
                   color={theme.colors.gray[800]}

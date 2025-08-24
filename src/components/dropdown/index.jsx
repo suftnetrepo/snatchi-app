@@ -83,6 +83,7 @@ const StyledDropdown = ({
         setOpen={setOpen}
         items={items}
         {...rest}
+        error={error}
       />
       {error && errorMessage && (
         <>

@@ -1,65 +1,76 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {SCHEDULER, VERBS} from '../../config';
 import {zat} from '../utils/zap';
-import {useUtil} from '../store';
 import moment from 'moment';
+import {schedulerValidator} from '../validator/schedulerValidator';
+
+const statusColorMap = {
+  Accepted: '#4ECDC4',
+  Pending: '#F4A261',
+  Rejected: '#E76F51',
+};
 
 const useScheduler = (flag = true) => {
-  const {set} = useUtil();
   const [state, setState] = useState({
     data: [],
+    fields: schedulerValidator.fields,
+    rules: schedulerValidator.rules,
     loading: false,
     error: null,
     success: false,
   });
 
-  const handleError = error => {
+  const handleChange = useCallback((name, value) => {
+    setState(prevState => ({
+      ...prevState,
+      fields: {
+        ...prevState.fields,
+        [name]: value,
+      },
+    }));
+  }, []);
+
+  const handleError = useCallback(error => {
     setState(pre => {
       return {...pre, error: error, loading: false};
     });
-  };
+  }, []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setState(pre => {
       return {...pre, success: false, loading: false, error: null};
     });
-  };
+  }, []);
 
-  const statusColorMap = {
-    Accepted: '#4ECDC4',
-    Pending: '#F4A261',
-    Rejected: '#E76F51',
-  };
-  
   const getMarkedDatesFromEvents = events => {
     const marked = {};
-  
+
     events.forEach(event => {
       const color = statusColorMap[event.status] || '#BDBDBD';
       const start = moment(event.startDate).format('YYYY-MM-DD');
       const end = moment(event.endDate).format('YYYY-MM-DD');
-  
+
       let current = moment(start);
       const endMoment = moment(end);
-  
+
       while (current.isSameOrBefore(endMoment)) {
         const dateStr = current.format('YYYY-MM-DD');
         const isStart = current.isSame(start, 'day');
         const isEnd = current.isSame(end, 'day');
-  
+
         marked[dateStr] = {
           ...(marked[dateStr] || {}),
           ...(isStart ? {startingDay: true} : {}),
           ...(isEnd ? {endingDay: true} : {}),
           color: marked[dateStr]?.color || color,
           textColor: 'white',
-          id: event.id, // Store event ID for reference
+          id: event.id,
         };
-  
+
         current.add(1, 'day');
       }
     });
-  
+
     return marked;
   };
   async function handleMySchedules() {
@@ -69,10 +80,9 @@ const useScheduler = (flag = true) => {
       null,
       VERBS.GET,
       {
-        action: 'getByUser'
+        action: 'getByUser',
       },
     );
-    // console.log('Scheduler data:', data);
 
     if (success) {
       setState(prevState => ({
@@ -112,6 +122,7 @@ const useScheduler = (flag = true) => {
     handleReset,
     handleEdit,
     handleMySchedules,
+    handleChange,
   };
 };
 
