@@ -383,7 +383,7 @@ const taskStatusArray = [
 
 const calendarStatusArray = [
     {label: 'Select...', value: ''},
-  {label: 'Blocked', value: 'Blocked'},
+  {label: 'Lock', value: 'Lock'},
   {label: 'Declined', value: 'Declined'},
 ];
 

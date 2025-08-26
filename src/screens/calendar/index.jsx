@@ -29,6 +29,7 @@ import {useScheduler} from '../../hooks/useScheduler';
 import {StyledDropdown} from '../../components/dropdown';
 import {calendarStatusArray} from '../../utils/help';
 import {validate} from '../../validator/index';
+import {useAppContext} from '../../hooks/appContext';
 
 const getUserSelectedRange = (start, end, color = '#3B82F6') => {
   const marked = {};
@@ -53,7 +54,18 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 };
 
 const CalendarListScreen = () => {
-  const {data, handleChange,handleReset, fields, rules, error, loading} = useScheduler();
+  const {
+    data,
+    handleChange,
+    handleReset,
+    handleSave,
+    fields,
+    rules,
+    success,
+    error,
+    loading,
+  } = useScheduler();
+  const {user} = useAppContext();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [range, setRange] = useState({start: null, end: null});
@@ -61,11 +73,15 @@ const CalendarListScreen = () => {
   const [errorMessages, setErrorMessages] = useState({});
   const [value, setValue] = useState(fields.status);
 
-  useEffect(() => {
-    console.log('Component re-rendered, fields:', fields);
-  }, [fields]);
+  console.log('Data length..........:', Object.entries(data)?.length);
+   console.log('Data ..........:', data);
 
-  console.log('Data from fields:', fields);
+  useEffect(() => {
+    bottomSheetRef.current?.close();
+    handleReset();
+    setRange({start: null, end: null});
+    setValue('');
+  }, [success]);
 
   const onDayPress = day => {
     const selected = moment(day.dateString);
@@ -75,7 +91,7 @@ const CalendarListScreen = () => {
 
     // 🟡 Case 1: Nothing selected yet
     if (!start) {
-      setRange({start: selectedStr, end: null});
+      setRange({start: selectedStr, end: selectedStr});
       return;
     }
 
@@ -111,10 +127,11 @@ const CalendarListScreen = () => {
       setRange({start, end: selectedStr});
     }
   };
+
   const mergedMarkedDates = useMemo(() => {
     const userRange = getUserSelectedRange(range.start, range.end);
     return {...data, ...userRange};
-  }, [data, range]);
+  }, [data, range.start, range.end]);
 
   const RenderHeader = () => (
     <XStack
@@ -165,15 +182,35 @@ const CalendarListScreen = () => {
   );
 
   const handleSubmit = async () => {
-    console.log('Submitting with fields:', fields);
     setErrorMessages({});
     const validationResult = validate(fields, rules);
 
     if (validationResult.hasError) {
-      setErrorMessages(validationResult.errors);
+      const formattedErrors = {
+        ...validationResult.errors,
+      };
+      if (!value) {
+        formattedErrors.status = {message: 'Status is required.'};
+      }
+
+      console.log('Validation errors:', formattedErrors);
+      setErrorMessages(formattedErrors);
       return;
     }
+
+    const body = {
+      title: fields.title,
+      status: value,
+      startDate: range.start,
+      endDate: range.end || range.start,
+      description: fields.description,
+      user: user?.user_id,
+    };
+
+    await handleSave(body);
+    console.log('Submitting with body:', body);
   };
+
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
@@ -185,30 +222,30 @@ const CalendarListScreen = () => {
         </StyledHeader.Full>
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
-        {mergedMarkedDates && Object.keys(mergedMarkedDates).length > 0 && (
-          <CalendarList
-            markingType="period"
-            markedDates={mergedMarkedDates}
-            pastScrollRange={6}
-            futureScrollRange={6}
-            scrollEnabled
-            showScrollIndicator
-            onDayPress={onDayPress}
-            onPress={e => {
-              console.log('Day pressed', e);
-            }}
-            theme={{
-              textDayFontSize: 14,
-              textMonthFontSize: 16,
-              textDayHeaderFontSize: 13,
-            }}
-          />
-        )}
+        <CalendarList
+          keyExtractor={item => item.startDate}
+          markingType="period"
+          markedDates={mergedMarkedDates}
+          pastScrollRange={6}
+          futureScrollRange={6}
+          scrollEnabled
+          showScrollIndicator
+          onDayPress={onDayPress}
+          showsVerticalScrollIndicator={false}
+          onPress={e => {
+            console.log('Day pressed', e);
+          }}
+          theme={{
+            textDayFontSize: 14,
+            textMonthFontSize: 16,
+            textDayHeaderFontSize: 13,
+          }}
+        />
         <BottomSheet
           ref={bottomSheetRef}
           index={1}
           snapPoints={snapPoints}
-          enablePanDownToClose={false} 
+          enablePanDownToClose={false}
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore"
           onChange={() => {}}>
@@ -251,8 +288,8 @@ const CalendarListScreen = () => {
                 color={theme.colors.gray[600]}
                 onPress={() => {
                   bottomSheetRef.current?.close();
-                  handleReset()
-                  range && setRange({start: null, end: null   })
+                  handleReset();
+                  range && setRange({start: null, end: null});
                 }}
               />
             </XStack>
@@ -337,7 +374,7 @@ const CalendarListScreen = () => {
                 items={calendarStatusArray}
                 value={value}
                 setValue={setValue}
-                onChangeText={value => setValue(value)}
+                onChangeText={text => handleChange('status', text)}
                 error={!!errorMessages?.status}
                 errorMessage={errorMessages?.status?.message}
                 placeholder={'Select...'}

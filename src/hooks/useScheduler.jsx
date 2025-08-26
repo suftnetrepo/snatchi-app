@@ -38,14 +38,25 @@ const useScheduler = (flag = true) => {
 
   const handleReset = useCallback(() => {
     setState(pre => {
-      return {...pre, fields:schedulerValidator.reset(), success: false, loading: false, error: null};
+      return {
+        ...pre,
+        fields: schedulerValidator.reset(),
+        success: false,
+        loading: false,
+        error: null,
+      };
     });
   }, []);
 
-  const getMarkedDatesFromEvents = events => {
+  const getMarkedDatesFromEvents = eventOrArray => {
     const marked = {};
+    if (!eventOrArray) return marked;
+
+    const events = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
 
     events.forEach(event => {
+      if (!event || !event.startDate || !event.endDate || !event.status) return;
+
       const color = statusColorMap[event.status] || '#BDBDBD';
       const start = moment(event.startDate).format('YYYY-MM-DD');
       const end = moment(event.endDate).format('YYYY-MM-DD');
@@ -64,7 +75,7 @@ const useScheduler = (flag = true) => {
           ...(isEnd ? {endingDay: true} : {}),
           color: marked[dateStr]?.color || color,
           textColor: 'white',
-          id: event.id,
+          id: event._id,
         };
 
         current.add(1, 'day');
@@ -73,6 +84,7 @@ const useScheduler = (flag = true) => {
 
     return marked;
   };
+
   async function handleMySchedules() {
     setState(prev => ({...prev, loading: true}));
     const {success, data, errorMessage} = await zat(
@@ -113,6 +125,34 @@ const useScheduler = (flag = true) => {
     }
   }
 
+  async function handleSave(body) {
+    setState(prev => ({...prev, loading: true, error: null, success: false}));
+    const {success, data, errorMessage} = await zat(
+      SCHEDULER.createOne,
+      body,
+      VERBS.POST,
+    );
+
+    console.log('Response from handleSave:', data);
+    console.log('Response from handleSave:', getMarkedDatesFromEvents(data));
+
+    if (success) {
+      setState(prev => ({
+        ...prev,
+        data: {
+          ...prev.data,
+          ...getMarkedDatesFromEvents(data),
+        },
+        success: true,
+        loading: false,
+      }));
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the task.');
+      return false;
+    }
+  }
+
   useEffect(() => {
     flag && handleMySchedules().then(() => {});
   }, [flag]);
@@ -123,6 +163,7 @@ const useScheduler = (flag = true) => {
     handleEdit,
     handleMySchedules,
     handleChange,
+    handleSave,
   };
 };
 
