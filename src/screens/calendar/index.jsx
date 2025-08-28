@@ -64,6 +64,8 @@ const CalendarListScreen = () => {
     success,
     error,
     loading,
+    rawData,
+    handleDayChange,
   } = useScheduler();
   const {user} = useAppContext();
   const bottomSheetRef = useRef(null);
@@ -73,8 +75,8 @@ const CalendarListScreen = () => {
   const [errorMessages, setErrorMessages] = useState({});
   const [value, setValue] = useState(fields.status);
 
-  console.log('Data length..........:', Object.entries(data)?.length);
-   console.log('Data ..........:', data);
+  console.log('rawData..........:', rawData);
+  console.log('Data ..........:', data);
 
   useEffect(() => {
     bottomSheetRef.current?.close();
@@ -84,6 +86,15 @@ const CalendarListScreen = () => {
   }, [success]);
 
   const onDayPress = day => {
+    console.log('Day pressed:', day);
+    handleDayChange(day?.dateString).then(result => {
+      if (result) {
+        bottomSheetRef.current?.snapToIndex(1);
+        return;
+      }
+      console.log('Day press handled:', result);
+    });
+
     const selected = moment(day.dateString);
     const {start, end} = range;
 
@@ -133,6 +144,36 @@ const CalendarListScreen = () => {
     return {...data, ...userRange};
   }, [data, range.start, range.end]);
 
+  const handleSubmit = async () => {
+    setErrorMessages({});
+    const validationResult = validate(fields, rules);
+
+    if (validationResult.hasError) {
+      const formattedErrors = {
+        ...validationResult.errors,
+      };
+      if (!value) {
+        formattedErrors.status = {message: 'Status is required.'};
+      }
+
+      console.log('Validation errors:', formattedErrors);
+      setErrorMessages(formattedErrors);
+      return;
+    }
+
+    const body = {
+      title: fields.title,
+      status: value,
+      startDate: range.start,
+      endDate: range.end || range.start,
+      description: fields.description,
+      user: user?.user_id,
+    };
+
+    await handleSave(body);
+    console.log('Submitting with body:', body);
+  };
+
   const RenderHeader = () => (
     <XStack
       paddingHorizontal={16}
@@ -181,36 +222,6 @@ const CalendarListScreen = () => {
     </XStack>
   );
 
-  const handleSubmit = async () => {
-    setErrorMessages({});
-    const validationResult = validate(fields, rules);
-
-    if (validationResult.hasError) {
-      const formattedErrors = {
-        ...validationResult.errors,
-      };
-      if (!value) {
-        formattedErrors.status = {message: 'Status is required.'};
-      }
-
-      console.log('Validation errors:', formattedErrors);
-      setErrorMessages(formattedErrors);
-      return;
-    }
-
-    const body = {
-      title: fields.title,
-      status: value,
-      startDate: range.start,
-      endDate: range.end || range.start,
-      description: fields.description,
-      user: user?.user_id,
-    };
-
-    await handleSave(body);
-    console.log('Submitting with body:', body);
-  };
-
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
@@ -232,9 +243,6 @@ const CalendarListScreen = () => {
           showScrollIndicator
           onDayPress={onDayPress}
           showsVerticalScrollIndicator={false}
-          onPress={e => {
-            console.log('Day pressed', e);
-          }}
           theme={{
             textDayFontSize: 14,
             textMonthFontSize: 16,
@@ -327,7 +335,7 @@ const CalendarListScreen = () => {
                 paddingHorizontal={16}
                 placeholderTextColor={theme.colors.gray[400]}
                 height={40}
-                value={range.start}
+                value={fields.startDate}
                 readOnly
               />
               <StyledInput
@@ -343,7 +351,7 @@ const CalendarListScreen = () => {
                 paddingHorizontal={16}
                 placeholderTextColor={theme.colors.gray[400]}
                 height={40}
-                value={range.end}
+                value={fields.endDate}
                 readOnly
               />
             </XStack>

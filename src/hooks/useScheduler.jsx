@@ -13,12 +13,36 @@ const statusColorMap = {
 const useScheduler = (flag = true) => {
   const [state, setState] = useState({
     data: [],
+    rawData: [],
     fields: schedulerValidator.fields,
     rules: schedulerValidator.rules,
     loading: false,
     error: null,
     success: false,
   });
+
+  const toDateOnly = (isoString) => isoString.split("T")[0];
+  
+  const handleDayChange = useCallback(async day => {
+    console.log('Selected day:', day);
+    const result = state.data[day];
+    const schedule = state.rawData.find(j => j._id === result?.id);
+    console.log('Events on selected day:', result);
+    console.log('Schedule on selected day:', schedule);
+
+    if (result) {
+      setState(prevState => ({
+        ...prevState,
+        fields: {
+          ...prevState.fields,
+          ...schedule,
+          startDate : ymd(schedule.startDate),
+          endDate : ymd(schedule.endDate)
+        },
+      }));
+      return result
+    }
+  }, []);
 
   const handleChange = useCallback((name, value) => {
     setState(prevState => ({
@@ -48,39 +72,41 @@ const useScheduler = (flag = true) => {
     });
   }, []);
 
+  const ymd = iso => iso.slice(0, 10); // 'YYYY-MM-DD'
+
   const getMarkedDatesFromEvents = eventOrArray => {
-    const marked = {};
-    if (!eventOrArray) return marked;
+   const marked = {};
+  if (!eventOrArray) return marked;
+  const events = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
 
-    const events = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
+  events.forEach((event) => {
+    if (!event?.startDate || !event?.endDate || !event?.status) return;
+    const color = statusColorMap[event.status] || '#BDBDBD';
 
-    events.forEach(event => {
-      if (!event || !event.startDate || !event.endDate || !event.status) return;
+    const start = ymd(event.startDate);
+    const end = ymd(event.endDate);
 
-      const color = statusColorMap[event.status] || '#BDBDBD';
-      const start = moment(event.startDate).format('YYYY-MM-DD');
-      const end = moment(event.endDate).format('YYYY-MM-DD');
+    // iterate from start..end using plain dates
+    let cur = start;
+    while (cur <= end) {
+      const isStart = cur === start;
+      const isEnd = cur === end;
 
-      let current = moment(start);
-      const endMoment = moment(end);
+      marked[cur] = {
+        ...(marked[cur] || {}),
+        ...(isStart ? { startingDay: true } : {}),
+        ...(isEnd ? { endingDay: true } : {}),
+        color: marked[cur]?.color || color,
+        textColor: 'white',
+        id: event._id,
+      };
 
-      while (current.isSameOrBefore(endMoment)) {
-        const dateStr = current.format('YYYY-MM-DD');
-        const isStart = current.isSame(start, 'day');
-        const isEnd = current.isSame(end, 'day');
-
-        marked[dateStr] = {
-          ...(marked[dateStr] || {}),
-          ...(isStart ? {startingDay: true} : {}),
-          ...(isEnd ? {endingDay: true} : {}),
-          color: marked[dateStr]?.color || color,
-          textColor: 'white',
-          id: event._id,
-        };
-
-        current.add(1, 'day');
-      }
-    });
+      // increment cur (YYYY-MM-DD) by 1 day
+      const d = new Date(cur);
+      d.setDate(d.getDate() + 1);
+      cur = d.toISOString().slice(0, 10);
+    }
+  });
 
     return marked;
   };
@@ -100,6 +126,8 @@ const useScheduler = (flag = true) => {
       setState(prevState => ({
         ...prevState,
         data: getMarkedDatesFromEvents(data.data),
+        rawData: data.data,
+        success: true,
         loading: false,
       }));
     } else {
@@ -133,9 +161,6 @@ const useScheduler = (flag = true) => {
       VERBS.POST,
     );
 
-    console.log('Response from handleSave:', data);
-    console.log('Response from handleSave:', getMarkedDatesFromEvents(data));
-
     if (success) {
       setState(prev => ({
         ...prev,
@@ -143,6 +168,7 @@ const useScheduler = (flag = true) => {
           ...prev.data,
           ...getMarkedDatesFromEvents(data),
         },
+        rawData: [...prev.rawData, data],
         success: true,
         loading: false,
       }));
@@ -164,6 +190,7 @@ const useScheduler = (flag = true) => {
     handleMySchedules,
     handleChange,
     handleSave,
+    handleDayChange
   };
 };
 
