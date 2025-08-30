@@ -467,7 +467,7 @@ const CalendarListScreen = () => {
         <StyledSpacer marginBottom={56} />
       </YStack>
       {loading && <StyledSpinner />}
-      {!error && (
+      {error && (
         <StyledOkDialog
           title={"Something went wrong"}
           description="Please try again later"
