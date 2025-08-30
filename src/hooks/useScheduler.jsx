@@ -70,11 +70,14 @@ const useScheduler = () => {
     }));
   };
 
-  const handleDayChange =  day => {
+  const handleDayChange = day => {
     const result = state.data[day];
     const schedule = state.rawData.find(j => j._id === result?.id);
 
     if (schedule) {
+      const showSheet =
+        schedule.status === 'Accepted' || schedule.status === 'Declined';
+
       setState(prevState => ({
         ...prevState,
         fields: {
@@ -84,7 +87,7 @@ const useScheduler = () => {
           endDate: ymd(schedule.endDate),
         },
       }));
-      return true;
+      return {...schedule, showSheet};
     }
   };
 
@@ -143,17 +146,28 @@ const useScheduler = () => {
   async function handleEdit(body, id) {
     setState(prev => ({...prev, loading: true, error: null, success: false}));
     const {success, errorMessage} = await zat(
-      MYTASK_HOST_ADDRESS.updateOne,
+      SCHEDULER.updateOne,
       body,
       VERBS.PUT,
-      {id: id, action: 'single'},
+      {id: id, action: 'update'},
     );
 
     if (success) {
-      setState(prev => ({...prev, success: true, loading: false}));
+      setState(prev => {
+        const newRawData = prev.rawData.map(item =>
+          item._id === id ? {...item, ...body} : item,
+        );
+        return {
+          ...prev,
+          rawData: newRawData,
+          data: getMarkedDatesFromEvents(newRawData),
+          success: true,
+          loading: false,
+        };
+      });
       return true;
     } else {
-      handleError(errorMessage || 'Failed to update the task.');
+      handleError(errorMessage || 'Failed to update the schedule.');
       return false;
     }
   }
@@ -184,6 +198,31 @@ const useScheduler = () => {
     }
   }
 
+  async function handleDelete(id) {
+    setState(prev => ({...prev, loading: true, error: null, success: false}));
+    const {success, errorMessage} = await zat(
+      SCHEDULER.removeOne,
+      null,
+      VERBS.DELETE,
+      {id: id},
+    );
+
+    if (success) {
+      const newRawData = state.rawData.filter(j => j._id !== id);
+      setState(prev => ({
+        ...prev,
+        rawData: newRawData,
+        data: getMarkedDatesFromEvents(newRawData),
+        success: true,
+        loading: false,
+      }));
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the task.');
+      return false;
+    }
+  }
+
   useEffect(() => {
     handleMySchedules().then(() => {});
   }, []);
@@ -197,6 +236,7 @@ const useScheduler = () => {
     handleSave,
     handleDayChange,
     handleDateRange,
+    handleDelete,
   };
 };
 

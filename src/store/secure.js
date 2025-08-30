@@ -16,7 +16,7 @@ const getJWT = async () => {
     const credentials = await Keychain.getGenericPassword();
     if (credentials) {
       let token = credentials.password;
-
+      console.log('Token removed............................', token);
       return token; // Return the JWT token as a string
     }
   } catch (error) {

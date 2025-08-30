@@ -64,11 +64,6 @@ const StyledSelect = ({
   ...rest
 }) => {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(item);
-
-  useEffect(() => {
-    setValue(item);
-  }, [item]);
 
   return (
     <>
@@ -87,9 +82,9 @@ const StyledSelect = ({
       )}
       <Dropdown
         open={open}
-        value={value}
+        value={item}
         onChangeValue={onChangeValue}
-        setValue={setValue}
+        setValue={onChangeValue}
         setOpen={setOpen}
         items={data}
         {...rest}

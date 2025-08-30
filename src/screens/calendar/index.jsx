@@ -1,5 +1,4 @@
 import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {useNavigation} from '@react-navigation/native';
 import {
   YStack,
   XStack,
@@ -18,11 +17,10 @@ import {
   StyledInput,
   StyledMultiInput,
 } from 'fluent-styles';
-import {FlatList, Pressable} from 'react-native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {fontStyles, theme} from '../../utils/theme';
-import {StyledMIcon} from '../../components/icon';
 import {CalendarList} from 'react-native-calendars';
 import moment from 'moment';
 import {useScheduler} from '../../hooks/useScheduler';
@@ -59,34 +57,29 @@ const CalendarListScreen = () => {
     handleChange,
     handleReset,
     handleSave,
+    handleEdit,
     fields,
     rules,
-    success,
     error,
     loading,
-    rawData,
     handleDayChange,
     handleDateRange,
+    handleDelete,
   } = useScheduler();
   const {user} = useAppContext();
+  const navigator = useNavigation();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [errorMessages, setErrorMessages] = useState({});
-  
-
-  console.log('rawData..........:', rawData);
-  console.log('Data ..........:', data);
-  console.log('fields ..........:', fields);
-
-  useEffect(() => {
-    bottomSheetRef.current?.close();
-    handleReset();
-  }, [success]);
+  const [status, setStatus] = useState('');
 
   const onDayPress = day => {
-    console.log('Day pressed:', day);
+    const result = handleDayChange(day?.dateString?.trim());
 
-    const result = handleDayChange(day?.dateString.trim());
+    if (result?.showSheet === true) {
+      handleReset();
+      return;
+    }
 
     if (result) {
       bottomSheetRef.current?.snapToIndex(1);
@@ -150,22 +143,46 @@ const CalendarListScreen = () => {
         ...validationResult.errors,
       };
 
-      console.log('Validation errors:', formattedErrors);
       setErrorMessages(formattedErrors);
       return;
     }
 
     const body = {
       title: fields.title,
-      status: fields.status,
+      status: status,
       startDate: fields.startDate,
       endDate: fields.endDate || fields.startDate,
       description: fields.description,
       user: user?.user_id,
     };
 
-    await handleSave(body);
-    console.log('Submitting with body:', body);
+    if (fields._id) {
+      handleEdit(body, fields._id).then(result => {
+        if (result) {
+          reset();
+        }
+      });
+    } else {
+      handleSave(body).then(result => {
+        if (result) {
+          reset();
+        }
+      });
+    }
+  };
+
+  const reset = () => {
+    bottomSheetRef.current?.close();
+    handleReset();
+    setStatus(null);
+  };
+
+  const onDelete = async () => {
+    await handleDelete(fields._id).then(result => {
+      if (result) {
+        reset();
+      }
+    });
   };
 
   const RenderHeader = () => (
@@ -249,8 +266,7 @@ const CalendarListScreen = () => {
           snapPoints={snapPoints}
           enablePanDownToClose={false}
           keyboardBehavior="interactive"
-          keyboardBlurBehavior="restore"
-          onChange={() => {}}>
+          keyboardBlurBehavior="restore">
           <YStack
             flex={1}
             paddingHorizontal={16}
@@ -368,7 +384,7 @@ const CalendarListScreen = () => {
               marginTop={8}
               justifyContent="flex-start"
               alignItems="flex-start">
-              {/* <StyledSelect
+              <StyledSelect
                 borderRadius={8}
                 borderColor={theme.colors.gray[400]}
                 height={30}
@@ -377,12 +393,12 @@ const CalendarListScreen = () => {
                     ? statusOptions.pending
                     : statusOptions.empty
                 }
-                item={fields.status}
-                onChangeValue={text => handleChange('status', text)}
+                item={status}
+                onChangeValue={setStatus}
                 error={!!errorMessages?.status}
                 errorMessage={errorMessages?.status?.message}
                 placeholder={'Select...'}
-                listMode="SCROLLVIEW"></StyledSelect> */}
+                listMode="SCROLLVIEW"></StyledSelect>
             </YStack>
             <XStack
               marginTop={16}
@@ -406,31 +422,34 @@ const CalendarListScreen = () => {
                   SaveChanges
                 </StyledText>
               </StyledButton>
-              <StyledButton
-                flex={1}
-                borderRadius={8}
-                borderWidth={1}
-                backgroundColor={theme.colors.red[400]}
-                borderColor={theme.colors.red[200]}
-                onPress={() => {}}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  color={theme.colors.gray[1]}
-                  fontWeight={theme.fontWeight.normal}
-                  paddingVertical={8}
-                  paddingHorizontal={8}
-                  textAlign="center"
-                  fontSize={theme.fontSize.small}>
-                  Delete
-                </StyledText>
-              </StyledButton>
+              {fields.status === 'Lock' && (
+                <StyledButton
+                  flex={1}
+                  borderRadius={8}
+                  borderWidth={1}
+                  backgroundColor={theme.colors.red[400]}
+                  borderColor={theme.colors.red[200]}
+                  onPress={() => onDelete()}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    color={theme.colors.gray[1]}
+                    fontWeight={theme.fontWeight.normal}
+                    paddingVertical={8}
+                    paddingHorizontal={8}
+                    textAlign="center"
+                    fontSize={theme.fontSize.small}>
+                    Delete
+                  </StyledText>
+                </StyledButton>
+              )}
+
               <StyledButton
                 flex={1}
                 borderRadius={8}
                 borderWidth={1}
                 backgroundColor={theme.colors.gray[200]}
                 borderColor={theme.colors.gray[200]}
-                onPress={() => bottomSheetRef.current?.close()}>
+                onPress={() => reset()}>
                 <StyledText
                   fontFamily={fontStyles.Roboto_Regular}
                   color={theme.colors.gray[800]}
@@ -447,6 +466,17 @@ const CalendarListScreen = () => {
         </BottomSheet>
         <StyledSpacer marginBottom={56} />
       </YStack>
+      {loading && <StyledSpinner />}
+      {!error && (
+        <StyledOkDialog
+          title={"Something went wrong"}
+          description="Please try again later"
+          visible={true}
+          onOk={() => {
+            handleReset();
+          }}
+        />
+      )}
     </StyledSafeAreaView>
   );
 };
