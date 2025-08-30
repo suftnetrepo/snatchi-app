@@ -381,11 +381,17 @@ const taskStatusArray = [
   {label: 'Canceled', value: 'Canceled'},
 ];
 
-const calendarStatusArray = [
+const statusOptions = {
+  empty: [
     {label: 'Select...', value: ''},
-  {label: 'Lock', value: 'Lock'},
-  {label: 'Declined', value: 'Declined'},
-];
+    {label: 'Lock', value: 'Lock'},
+  ],
+  pending: [
+    {label: 'Select...', value: ''},
+    {label: 'Declined', value: 'Declined'},
+    {label: 'Accepted', value: 'Accepted'},
+  ],
+};
 
 const personalDocumentsArray = [
   {label: 'NI Number / Social Security', value: 'NINumber'},
@@ -617,5 +623,5 @@ export {
   formatReadableDate,
   convertTimestampToDate,
   personalDocumentsArray,
-  calendarStatusArray
+  statusOptions,
 };

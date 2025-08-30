@@ -26,8 +26,8 @@ import {StyledMIcon} from '../../components/icon';
 import {CalendarList} from 'react-native-calendars';
 import moment from 'moment';
 import {useScheduler} from '../../hooks/useScheduler';
-import {StyledDropdown} from '../../components/dropdown';
-import {calendarStatusArray} from '../../utils/help';
+import {StyledSelect} from '../../components/dropdown';
+import {statusOptions} from '../../utils/help';
 import {validate} from '../../validator/index';
 import {useAppContext} from '../../hooks/appContext';
 
@@ -66,83 +66,80 @@ const CalendarListScreen = () => {
     loading,
     rawData,
     handleDayChange,
+    handleDateRange,
   } = useScheduler();
   const {user} = useAppContext();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
-  const [range, setRange] = useState({start: null, end: null});
-  const [selectedStatus, setSelectedStatus] = useState(null);
   const [errorMessages, setErrorMessages] = useState({});
-  const [value, setValue] = useState(fields.status);
+  
 
   console.log('rawData..........:', rawData);
   console.log('Data ..........:', data);
+  console.log('fields ..........:', fields);
 
   useEffect(() => {
     bottomSheetRef.current?.close();
     handleReset();
-    setRange({start: null, end: null});
-    setValue('');
   }, [success]);
 
   const onDayPress = day => {
     console.log('Day pressed:', day);
-    handleDayChange(day?.dateString).then(result => {
-      if (result) {
-        bottomSheetRef.current?.snapToIndex(1);
-        return;
-      }
-      console.log('Day press handled:', result);
-    });
+
+    const result = handleDayChange(day?.dateString.trim());
+
+    if (result) {
+      bottomSheetRef.current?.snapToIndex(1);
+      return;
+    }
 
     const selected = moment(day.dateString);
-    const {start, end} = range;
+    const {startDate, endDate} = fields;
 
     const selectedStr = selected.format('YYYY-MM-DD');
 
     // 🟡 Case 1: Nothing selected yet
-    if (!start) {
-      setRange({start: selectedStr, end: selectedStr});
+    if (!startDate) {
+      handleDateRange(selectedStr, selectedStr);
       return;
     }
 
     // 🟡 Case 2: Only start selected
-    if (start && !end) {
-      if (selectedStr === start) {
+    if (startDate && !endDate) {
+      if (selectedStr === startDate) {
         // 🔄 Unselect if tapped again
-        setRange({start: null, end: null});
+        handleDateRange(null, null);
       } else {
         // Set end
-        const isBefore = selected.isBefore(moment(start));
-        setRange({
-          start: isBefore ? selectedStr : start,
-          end: isBefore ? start : selectedStr,
-        });
+        const isBefore = selected.isBefore(moment(startDate));
+        handleDateRange(
+          isBefore ? selectedStr : startDate,
+          isBefore ? startDate : selectedStr,
+        );
       }
       return;
     }
 
     // 🟡 Case 3: Range already selected (start and end)
-    const startMoment = moment(start);
-    const endMoment = moment(end);
+    const startMoment = moment(startDate);
+    const endMoment = moment(endDate);
 
     if (selected.isBefore(startMoment)) {
-      setRange({start: selectedStr, end});
+      handleDateRange(selectedStr, endDate);
     } else if (selected.isAfter(endMoment)) {
-      setRange({start, end: selectedStr});
-    } else if (selectedStr === start) {
+      handleDateRange(startDate, selectedStr);
+    } else if (selectedStr === startDate) {
       // Collapse back to start only
-      setRange({start, end: null});
+      handleDateRange(startDate, null);
     } else {
-      // Shrink end
-      setRange({start, end: selectedStr});
+      handleDateRange(startDate, selectedStr);
     }
   };
 
   const mergedMarkedDates = useMemo(() => {
-    const userRange = getUserSelectedRange(range.start, range.end);
-    return {...data, ...userRange};
-  }, [data, range.start, range.end]);
+    const dateRange = getUserSelectedRange(fields.startDate, fields.endDate);
+    return {...data, ...dateRange};
+  }, [data, fields.startDate, fields.endDate]);
 
   const handleSubmit = async () => {
     setErrorMessages({});
@@ -152,9 +149,6 @@ const CalendarListScreen = () => {
       const formattedErrors = {
         ...validationResult.errors,
       };
-      if (!value) {
-        formattedErrors.status = {message: 'Status is required.'};
-      }
 
       console.log('Validation errors:', formattedErrors);
       setErrorMessages(formattedErrors);
@@ -163,9 +157,9 @@ const CalendarListScreen = () => {
 
     const body = {
       title: fields.title,
-      status: value,
-      startDate: range.start,
-      endDate: range.end || range.start,
+      status: fields.status,
+      startDate: fields.startDate,
+      endDate: fields.endDate || fields.startDate,
       description: fields.description,
       user: user?.user_id,
     };
@@ -200,7 +194,7 @@ const CalendarListScreen = () => {
         My Calendar
       </StyledText>
       <StyledSpacer flex={1} />
-      {range && range.start && (
+      {fields.startDate && fields.title === '' && (
         <StyledCycle
           height={48}
           width={48}
@@ -241,7 +235,7 @@ const CalendarListScreen = () => {
           futureScrollRange={6}
           scrollEnabled
           showScrollIndicator
-          onDayPress={onDayPress}
+          onDayPress={e => onDayPress(e)}
           showsVerticalScrollIndicator={false}
           theme={{
             textDayFontSize: 14,
@@ -297,7 +291,6 @@ const CalendarListScreen = () => {
                 onPress={() => {
                   bottomSheetRef.current?.close();
                   handleReset();
-                  range && setRange({start: null, end: null});
                 }}
               />
             </XStack>
@@ -375,18 +368,21 @@ const CalendarListScreen = () => {
               marginTop={8}
               justifyContent="flex-start"
               alignItems="flex-start">
-              <StyledDropdown
+              {/* <StyledSelect
                 borderRadius={8}
                 borderColor={theme.colors.gray[400]}
                 height={30}
-                items={calendarStatusArray}
-                value={value}
-                setValue={setValue}
-                onChangeText={text => handleChange('status', text)}
+                data={
+                  fields.status === 'Pending'
+                    ? statusOptions.pending
+                    : statusOptions.empty
+                }
+                item={fields.status}
+                onChangeValue={text => handleChange('status', text)}
                 error={!!errorMessages?.status}
                 errorMessage={errorMessages?.status?.message}
                 placeholder={'Select...'}
-                listMode="SCROLLVIEW"></StyledDropdown>
+                listMode="SCROLLVIEW"></StyledSelect> */}
             </YStack>
             <XStack
               marginTop={16}

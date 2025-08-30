@@ -1,5 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import {YStack, StyledSpacer, StyledText, isValidNumber, isValidColor} from 'fluent-styles';
+import {
+  YStack,
+  StyledSpacer,
+  StyledText,
+  isValidNumber,
+  isValidColor,
+} from 'fluent-styles';
 import DropDownPicker from 'react-native-dropdown-picker';
 import {styled} from '../../utils/styled';
 import {theme} from '../../utils/theme';
@@ -46,6 +52,64 @@ const Dropdown = styled(DropDownPicker, {
     },
   },
 });
+
+const StyledSelect = ({
+  data,
+  item,
+  label,
+  onChangeValue,
+  errorMessage,
+  error,
+  labelStyles,
+  ...rest
+}) => {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(item);
+
+  useEffect(() => {
+    setValue(item);
+  }, [item]);
+
+  return (
+    <>
+      {label && (
+        <>
+          <StyledText
+            paddingHorizontal={8}
+            color={theme.colors.gray[600]}
+            fontSize={theme.fontSize.normal}
+            fontWeight={theme.fontWeight.normal}
+            {...labelStyles}>
+            {label}
+          </StyledText>
+          <StyledSpacer marginVertical={4} />
+        </>
+      )}
+      <Dropdown
+        open={open}
+        value={value}
+        onChangeValue={onChangeValue}
+        setValue={setValue}
+        setOpen={setOpen}
+        items={data}
+        {...rest}
+        error={error}
+      />
+      {error && errorMessage && (
+        <>
+          <StyledSpacer marginVertical={1} />
+          <StyledText
+            marginHorizontal={8}
+            fontWeight={theme.fontWeight.bold}
+            fontSize={theme.fontSize.small}
+            color={theme.colors.pink[500]}>
+            {errorMessage}
+          </StyledText>
+        </>
+      )}
+    </>
+  );
+};
 
 const StyledDropdown = ({
   items,
@@ -157,4 +221,4 @@ const StyledMultiDropdown = ({
   );
 };
 
-export {StyledDropdown, StyledMultiDropdown};
+export {StyledDropdown, StyledMultiDropdown, StyledSelect};

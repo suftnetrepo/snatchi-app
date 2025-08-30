@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {SCHEDULER, VERBS} from '../../config';
 import {zat} from '../utils/zap';
-import moment from 'moment';
 import {schedulerValidator} from '../validator/schedulerValidator';
 
 const statusColorMap = {
@@ -10,7 +9,46 @@ const statusColorMap = {
   Rejected: '#E76F51',
 };
 
-const useScheduler = (flag = true) => {
+const ymd = iso => iso?.slice(0, 10);
+
+const getMarkedDatesFromEvents = eventOrArray => {
+  const marked = {};
+  if (!eventOrArray) return marked;
+  const events = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
+
+  events.forEach(event => {
+    if (!event?.startDate || !event?.endDate || !event?.status) return;
+    const color = statusColorMap[event.status] || '#BDBDBD';
+
+    const start = ymd(event.startDate);
+    const end = ymd(event.endDate);
+
+    // iterate from start..end using plain dates
+    let cur = start;
+    while (cur <= end) {
+      const isStart = cur === start;
+      const isEnd = cur === end;
+
+      marked[cur] = {
+        ...(marked[cur] || {}),
+        ...(isStart ? {startingDay: true} : {}),
+        ...(isEnd ? {endingDay: true} : {}),
+        color: marked[cur]?.color || color,
+        textColor: 'white',
+        id: event._id,
+      };
+
+      // increment cur (YYYY-MM-DD) by 1 day
+      const d = new Date(cur);
+      d.setDate(d.getDate() + 1);
+      cur = d.toISOString().slice(0, 10);
+    }
+  });
+
+  return marked;
+};
+
+const useScheduler = () => {
   const [state, setState] = useState({
     data: [],
     rawData: [],
@@ -21,28 +59,34 @@ const useScheduler = (flag = true) => {
     success: false,
   });
 
-  const toDateOnly = (isoString) => isoString.split("T")[0];
-  
-  const handleDayChange = useCallback(async day => {
-    console.log('Selected day:', day);
+  const handleDateRange = (startDate, endDate) => {
+    setState(prevState => ({
+      ...prevState,
+      fields: {
+        ...prevState.fields,
+        startDate: ymd(startDate),
+        endDate: ymd(endDate),
+      },
+    }));
+  };
+
+  const handleDayChange =  day => {
     const result = state.data[day];
     const schedule = state.rawData.find(j => j._id === result?.id);
-    console.log('Events on selected day:', result);
-    console.log('Schedule on selected day:', schedule);
 
-    if (result) {
+    if (schedule) {
       setState(prevState => ({
         ...prevState,
         fields: {
           ...prevState.fields,
           ...schedule,
-          startDate : ymd(schedule.startDate),
-          endDate : ymd(schedule.endDate)
+          startDate: ymd(schedule.startDate),
+          endDate: ymd(schedule.endDate),
         },
       }));
-      return result
+      return true;
     }
-  }, []);
+  };
 
   const handleChange = useCallback((name, value) => {
     setState(prevState => ({
@@ -71,45 +115,6 @@ const useScheduler = (flag = true) => {
       };
     });
   }, []);
-
-  const ymd = iso => iso.slice(0, 10); // 'YYYY-MM-DD'
-
-  const getMarkedDatesFromEvents = eventOrArray => {
-   const marked = {};
-  if (!eventOrArray) return marked;
-  const events = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
-
-  events.forEach((event) => {
-    if (!event?.startDate || !event?.endDate || !event?.status) return;
-    const color = statusColorMap[event.status] || '#BDBDBD';
-
-    const start = ymd(event.startDate);
-    const end = ymd(event.endDate);
-
-    // iterate from start..end using plain dates
-    let cur = start;
-    while (cur <= end) {
-      const isStart = cur === start;
-      const isEnd = cur === end;
-
-      marked[cur] = {
-        ...(marked[cur] || {}),
-        ...(isStart ? { startingDay: true } : {}),
-        ...(isEnd ? { endingDay: true } : {}),
-        color: marked[cur]?.color || color,
-        textColor: 'white',
-        id: event._id,
-      };
-
-      // increment cur (YYYY-MM-DD) by 1 day
-      const d = new Date(cur);
-      d.setDate(d.getDate() + 1);
-      cur = d.toISOString().slice(0, 10);
-    }
-  });
-
-    return marked;
-  };
 
   async function handleMySchedules() {
     setState(prev => ({...prev, loading: true}));
@@ -180,8 +185,8 @@ const useScheduler = (flag = true) => {
   }
 
   useEffect(() => {
-    flag && handleMySchedules().then(() => {});
-  }, [flag]);
+    handleMySchedules().then(() => {});
+  }, []);
 
   return {
     ...state,
@@ -190,7 +195,8 @@ const useScheduler = (flag = true) => {
     handleMySchedules,
     handleChange,
     handleSave,
-    handleDayChange
+    handleDayChange,
+    handleDateRange,
   };
 };
 
