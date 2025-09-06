@@ -28,6 +28,8 @@ import {StyledSelect} from '../../components/dropdown';
 import {statusOptions} from '../../utils/help';
 import {validate} from '../../validator/index';
 import {useAppContext} from '../../hooks/appContext';
+import { useFocus } from '../../hooks/useFocus';
+
 
 const getUserSelectedRange = (start, end, color = '#3B82F6') => {
   const marked = {};
@@ -52,6 +54,7 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 };
 
 const CalendarListScreen = () => {
+  const {key} = useFocus()
   const {
     data,
     handleChange,
@@ -65,7 +68,7 @@ const CalendarListScreen = () => {
     handleDayChange,
     handleDateRange,
     handleDelete,
-  } = useScheduler();
+  } = useScheduler(key);
   const {user} = useAppContext();
   const navigator = useNavigation();
   const bottomSheetRef = useRef(null);
@@ -262,7 +265,7 @@ const CalendarListScreen = () => {
         />
         <BottomSheet
           ref={bottomSheetRef}
-          index={1}
+          index={-1}
           snapPoints={snapPoints}
           enablePanDownToClose={false}
           keyboardBehavior="interactive"

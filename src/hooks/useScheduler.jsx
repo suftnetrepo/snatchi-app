@@ -2,11 +2,13 @@ import React, {useState, useEffect, useCallback} from 'react';
 import {SCHEDULER, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {schedulerValidator} from '../validator/schedulerValidator';
+import { theme } from '../utils/theme';
 
 const statusColorMap = {
-  Accepted: '#4ECDC4',
-  Pending: '#F4A261',
-  Rejected: '#E76F51',
+  Accepted: theme.colors.green[500],
+  Pending: theme.colors.amber[600],
+  Declined: theme.colors.red[400],
+  Lock :theme.colors.gray[400]
 };
 
 const ymd = iso => iso?.slice(0, 10);
@@ -18,7 +20,7 @@ const getMarkedDatesFromEvents = eventOrArray => {
 
   events.forEach(event => {
     if (!event?.startDate || !event?.endDate || !event?.status) return;
-    const color = statusColorMap[event.status] || '#BDBDBD';
+    const color = statusColorMap[event.status] || theme.colors.gray[400];
 
     const start = ymd(event.startDate);
     const end = ymd(event.endDate);
@@ -48,7 +50,7 @@ const getMarkedDatesFromEvents = eventOrArray => {
   return marked;
 };
 
-const useScheduler = () => {
+const useScheduler = (key) => {
   const [state, setState] = useState({
     data: [],
     rawData: [],
@@ -223,9 +225,11 @@ const useScheduler = () => {
     }
   }
 
+  console.log("...............", key)
+
   useEffect(() => {
     handleMySchedules().then(() => {});
-  }, []);
+  }, [key]);
 
   return {
     ...state,
