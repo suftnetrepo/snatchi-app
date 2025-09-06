@@ -248,7 +248,7 @@ const CalendarListScreen = () => {
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
         <CalendarList
-          keyExtractor={item => item.startDate}
+     
           markingType="period"
           markedDates={mergedMarkedDates}
           pastScrollRange={6}
