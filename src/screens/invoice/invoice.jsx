@@ -63,8 +63,6 @@ const Invoice = () => {
   const { get } = useUtil();
   const params = route.params;
 
-  console.log('.....................', fields);
-
   useEffect(() => {
     params?.invoice && handleEditItem(params?.invoice);
   }, [params?.invoice]);
