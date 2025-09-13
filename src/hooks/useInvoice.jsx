@@ -56,7 +56,7 @@ const useInvoice = (flag = false) => {
             return {
               ...item,
               [field]:
-                field === 'rate' || field === 'hour'
+                field === 'rate' || field === 'duration'
                   ? parseFloat(value) || 0
                   : value,
             };

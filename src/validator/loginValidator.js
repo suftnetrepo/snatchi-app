@@ -129,7 +129,8 @@ const loginValidator = {
       first_name: '',
       last_name: '',
       email: '',
-      mobile: ''
+      mobile: '',
+      fcm: ''
     }
   };
   

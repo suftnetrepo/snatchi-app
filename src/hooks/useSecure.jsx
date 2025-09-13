@@ -80,6 +80,7 @@ const useSecure = () => {
 
     if (success) {
       await storeJWT(data?.token);
+      
       return data?.user;
     } else {
       handleError(errorMessage);

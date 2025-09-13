@@ -22,7 +22,7 @@ const invoiceValidator = {
     discount: 0,
     totalAmount: 0,
     notes: '',
-    invoice_type: false,
+    invoice_type: '',
   },
 };
 
@@ -48,10 +48,10 @@ const itemValidator = {
         message: 'date must not be more than 50 characters',
       },
     ],
-    hour: [
+    duration: [
       {
         pattern: /^\d+$/,
-        message: 'hour is required',
+        message: 'duration is required',
       },
     ],
     rate: [
@@ -64,15 +64,17 @@ const itemValidator = {
   reset: () => {
     return {
       _id: '',
+      unit: '',
       description: '',
-      hour: '',
+      duration: '',
       rate: '',
     };
   },
   fields: {
     _id: '',
     description: '',
-    hour: '',
+    unit: '',
+    duration: '',
     rate: '',
     date: '',
   },

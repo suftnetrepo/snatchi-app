@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -13,19 +13,21 @@ import {
   StyledCycle,
   FlexStyledBackgroundImage,
 } from 'fluent-styles';
-import {theme} from '../../utils/theme';
-import {fontStyles} from '../../utils/fontStyles';
-import {useUser} from '../../hooks/useUser';
-import {useNavigation} from '@react-navigation/native';
+import { theme } from '../../utils/theme';
+import { fontStyles } from '../../utils/fontStyles';
+import { useUser } from '../../hooks/useUser';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useAppContext} from '../../hooks/appContext';
-import {validate} from '../../validator';
-import {ImagePickerModal} from '../../components/imagePickerModal';
-import {Pressable} from 'react-native';
+import { useAppContext } from '../../hooks/appContext';
+import { validate } from '../../validator';
+import { ImagePickerModal } from '../../components/imagePickerModal';
+import { Pressable } from 'react-native';
+import { getStore } from '../../utils/asyncStorage';
+
 
 const Profile = () => {
   const navigator = useNavigation();
-  const {user, updateCurrentUser} = useAppContext();
+  const { user, updateCurrentUser } = useAppContext();
   const [errorMessages, setErrorMessages] = useState({});
   const [file, setFile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -43,6 +45,13 @@ const Profile = () => {
   } = useUser();
 
   useEffect(() => {
+    async function fetchFcm() {
+      const fcm = await getStore('fcm');
+      handleChange('fcm', fcm);
+      // You can use the fcm token as needed
+      if (__DEV__) console.log('Stored FCM Token:', fcm);
+    }
+    fetchFcm();
     user && handleEdit(user);
   }, [user]);
 
@@ -59,7 +68,7 @@ const Profile = () => {
 
   const onSubmit = async () => {
     setErrorMessages({});
-    const {hasError, errors} = validate(fields, rules);
+    const { hasError, errors } = validate(fields, rules);
     if (hasError) {
       setErrorMessages(errors);
       return false;
@@ -77,6 +86,10 @@ const Profile = () => {
     formData.append('last_name', fields.last_name);
     formData.append('email', fields.email);
     formData.append('mobile', fields.mobile);
+
+    if (fields.fcm) {
+      formData.append('fcm', fields.fcm);
+    }
 
     handleSave(formData, user.user_id).then(async result => {
       if (result) {
@@ -131,7 +144,7 @@ const Profile = () => {
       <StyledHeader
         skipAndroid={true}
         marginHorizontal={8}
-        statusProps={{translucent: true}}>
+        statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   YStack,
   XStack,
@@ -12,20 +12,20 @@ import {
   StyledButton,
   StyledMultiInput,
 } from 'fluent-styles';
-import {StyledDropdown} from '../../../components/dropdown';
+import { StyledDropdown } from '../../../components/dropdown';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {Pressable} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {useUserDocuments} from '../../../hooks/useUserDocuments';
-import {ImagePickerModal} from '../../../components/imagePickerModal';
-import {fontStyles, theme} from '../../../utils/theme';
-import {validate} from '../../../validator';
-import {personalDocumentsArray} from '../../../utils/help';
-import {useAppContext} from '../../../hooks/appContext';
+import { Pressable, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useUserDocuments } from '../../../hooks/useUserDocuments';
+import { ImagePickerModal } from '../../../components/imagePickerModal';
+import { fontStyles, theme } from '../../../utils/theme';
+import { validate } from '../../../validator';
+import { personalDocumentsArray } from '../../../utils/help';
+import { useAppContext } from '../../../hooks/appContext';
 
 const UploadUserDocument = () => {
   const navigation = useNavigation();
-  const {user} = useAppContext();
+  const { user } = useAppContext();
   const [imageUrl, setImageUrl] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState();
@@ -56,13 +56,12 @@ const UploadUserDocument = () => {
   const handleSubmit = async () => {
 
     setErrorMessages({});
-    // const validationResult = validate(fields, rules);
-    // console.log("...................................2", validationResult.errors)
-
-    // if (validationResult.hasError) {
-    //   setErrorMessages(validationResult.errors);
-    //   return;
-    // }
+    const validationResult = validate(fields, rules);
+   
+    if (validationResult.hasError) {
+      setErrorMessages(validationResult.errors);
+      return;
+    }
 
     const formData = new FormData();
 
@@ -116,109 +115,117 @@ const UploadUserDocument = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader
-        skipAndroid={true}
-        marginHorizontal={8}
-        statusProps={{translucent: true}}>
-        <StyledHeader.Full>
-          <RenderHeader />
-        </StyledHeader.Full>
-      </StyledHeader>
-      <YStack
-        flex={1}
-        paddingVertical={8}
-        paddingHorizontal={8}
-        justifyContent="flex-start"
-        alignItems="center"
-        backgroundColor={theme.colors.gray[100]}>
-        <StyledSpacer marginVertical={8} />
-        <StyledDropdown
-          borderRadius={8}
-          borderColor={theme.colors.gray[400]}
-          items={personalDocumentsArray}
-          value={value}
-          setValue={setValue}
-          selectedValue={value}
-          onChangeValue={value => setValue(value)}
-          placeholder={'Select document type ...'}
-          listMode="SCROLLVIEW"></StyledDropdown>
-        <StyledSpacer marginVertical={4} />
-        <StyledMultiInput
-          label={'Description'}
-          labelProps ={{
-            fontSize:theme.fontSize.small
-          }}
-          keyboardType="default"
-          placeholder="Enter short description"
-          returnKeyType="next"
-          maxLength={200}
-          fontSize={theme.fontSize.small}
-          borderColor={theme.colors.gray[400]}
-          backgroundColor={theme.colors.gray[1]}
-          borderRadius={8}
-          height={80}
-          textAlignVertical='center'
-          paddingHorizontal={16}
-          value={fields.description}
-          placeholderTextColor={theme.colors.gray[300]}
-          onChangeText={text => handleChange('description', text)}
-          error={!!errorMessages?.description}
-          errorMessage={errorMessages?.description?.message}
-        />
-        <StyledSpacer marginVertical={8} />
-        <XStack justifyContent="center" alignItems="center" gap={4}>
-          <StyledButton
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <StyledHeader
+          skipAndroid={true}
+          marginHorizontal={8}
+          statusProps={{ translucent: true }}>
+          <StyledHeader.Full>
+            <RenderHeader />
+          </StyledHeader.Full>
+        </StyledHeader>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <YStack
             flex={1}
-            backgroundColor={theme.colors.orange[300]}
-            borderColor = {theme.colors.orange[300]}
-            onPress={() => pickImage()}>
-            <StyledText
-              paddingHorizontal={20}
-              paddingVertical={10}
-              color={theme.colors.gray[1]}>
-              Choose
-            </StyledText>
-          </StyledButton>
-          <StyledButton
-            flex={2}
-            backgroundColor={file ? theme.colors.cyan[500] : theme.colors.gray[300]}
-            borderColor = {file ? theme.colors.cyan[500] : theme.colors.gray[300] }
-            onPress={() => handleSubmit()}>
-            <StyledText
-              paddingHorizontal={20}
-              paddingVertical={10}
-              color={file ? theme.colors.gray[1] :theme.colors.gray[400] }>
-              Upload
-            </StyledText>
-          </StyledButton>
-        </XStack>
-      </YStack>
-      {error && (
-        <StyledOkDialog
-          title={error?.message}
-          description="please try again"
-          visible={true}
-          onOk={() => {
-            
-          }}
+            paddingVertical={8}
+            paddingHorizontal={8}
+            justifyContent="flex-start"
+            alignItems="center"
+            backgroundColor={theme.colors.gray[100]}>
+            <StyledSpacer marginVertical={8} />
+            <StyledDropdown
+              borderRadius={8}
+              borderColor={theme.colors.gray[400]}
+              items={personalDocumentsArray}
+              value={value}
+              setValue={setValue}
+              selectedValue={value}
+              onChangeValue={value => setValue(value)}
+              placeholder={'Select document type ...'}
+              listMode="SCROLLVIEW"></StyledDropdown>
+            <StyledSpacer marginVertical={4} />
+            <StyledMultiInput
+              label={'Description'}
+              labelProps={{
+                fontSize: theme.fontSize.small
+              }}
+              keyboardType="default"
+              placeholder="Enter short description"
+              returnKeyType="next"
+              maxLength={200}
+              fontSize={theme.fontSize.small}
+              borderColor={theme.colors.gray[400]}
+              backgroundColor={theme.colors.gray[1]}
+              borderRadius={8}
+              height={80}
+              textAlignVertical='center'
+              paddingHorizontal={16}
+              value={fields.description}
+              placeholderTextColor={theme.colors.gray[300]}
+              onChangeText={text => handleChange('description', text)}
+              error={!!errorMessages?.description}
+              errorMessage={errorMessages?.description?.message}
+            />
+            <StyledSpacer marginVertical={8} />
+            <XStack justifyContent="center" alignItems="center" gap={4}>
+              <StyledButton
+                flex={1}
+                backgroundColor={theme.colors.orange[300]}
+                borderColor={theme.colors.orange[300]}
+                onPress={() => pickImage()}>
+                <StyledText
+                  paddingHorizontal={20}
+                  paddingVertical={10}
+                  color={theme.colors.gray[1]}>
+                  Choose
+                </StyledText>
+              </StyledButton>
+              <StyledButton
+                flex={2}
+                backgroundColor={file ? theme.colors.cyan[500] : theme.colors.gray[300]}
+                borderColor={file ? theme.colors.cyan[500] : theme.colors.gray[300]}
+                onPress={() => handleSubmit()}>
+                <StyledText
+                  paddingHorizontal={20}
+                  paddingVertical={10}
+                  color={file ? theme.colors.gray[1] : theme.colors.gray[400]}>
+                  Upload
+                </StyledText>
+              </StyledButton>
+            </XStack>
+          </YStack>
+        </ScrollView>
+
+        {error && (
+          <StyledOkDialog
+            title={error?.message}
+            description="please try again"
+            visible={true}
+            onOk={() => {
+
+            }}
+          />
+        )}
+        {success && (
+          <StyledOkDialog
+            title="Confirmation"
+            description="Document uploaded successfully"
+            visible={true}
+            onOk={() => {
+              handleReset();
+            }}
+          />
+        )}
+        {loading && <StyledSpinner />}
+        <ImagePickerModal
+          onHandleImageSelect={onHandleImageSelect}
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
         />
-      )}
-      {success && (
-        <StyledOkDialog
-          title="Confirmation"
-          description="Document uploaded successfully"
-          visible={true}
-          onOk={() => {
-            handleReset();
-          }}
-        />
-      )}
-      {loading && <StyledSpinner />}
-      <ImagePickerModal
-        onHandleImageSelect={onHandleImageSelect}
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-      />
+      </KeyboardAvoidingView>
     </StyledSafeAreaView>
   );
 };

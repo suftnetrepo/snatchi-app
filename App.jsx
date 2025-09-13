@@ -1,5 +1,5 @@
 
-import React, {useEffect} from 'react';
+import React, {useEffect, createRef} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {Navigator} from './src/navigation/AppNavigation';
 import AppProvider from './src/hooks/appContext';
@@ -7,6 +7,7 @@ import {getFcmToken} from './src/utils/pushNotification';
 import useLocation from './src/hooks/useLocation';
 import {GluestackUIProvider} from '@gluestack-ui/themed';
 import {glueStackConfigUi} from './gluestack-ui.config';
+import { navigationRef } from './src/navigation/NavigationRef';
 
 function App() {
   useLocation();
@@ -25,7 +26,7 @@ function App() {
   return (
     <AppProvider>
       <GluestackUIProvider config={glueStackConfigUi}>
-        <NavigationContainer>
+         <NavigationContainer ref={navigationRef}>
           <Navigator />
         </NavigationContainer>
       </GluestackUIProvider>

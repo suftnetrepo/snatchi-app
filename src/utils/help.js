@@ -391,6 +391,12 @@ const statusOptions = {
     {label: 'Declined', value: 'Declined'},
     {label: 'Accepted', value: 'Accepted'},
   ],
+  invoice: [
+    {label: 'Select...', value: ''},
+    {label: 'Draft', value: 'Draft'},
+    {label: 'Save', value: 'Save'},
+    {label: 'Quote', value: 'Quote'},
+  ],
 };
 
 const personalDocumentsArray = [
@@ -407,6 +413,19 @@ const personalDocumentsArray = [
   {label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate'},
   {label: 'Insurance Certificate', value: 'InsuranceCertificate'},
   {label: 'Vaccination Record', value: 'VaccinationRecord'},
+];
+
+const jobPhotoCategories = [
+  { label: 'Completed Installation', value: 'CompletedInstallation' },
+  { label: 'Before Work Started', value: 'BeforeWork' },
+  { label: 'Work in Progress', value: 'WorkInProgress' },
+  { label: 'After Work Finished', value: 'AfterWork' },
+  { label: 'Equipment Setup', value: 'EquipmentSetup' },
+  { label: 'Cabling / Wiring', value: 'CablingWiring' },
+  { label: 'Rack / Control Room', value: 'RackRoom' },
+  { label: 'Room Overview', value: 'RoomOverview' },
+  { label: 'Defect / Issue Found', value: 'DefectIssue' },
+  { label: 'Other (General Photo)', value: 'Other' },
 ];
 
 const timeAgo = date => {
@@ -624,4 +643,5 @@ export {
   convertTimestampToDate,
   personalDocumentsArray,
   statusOptions,
+  jobPhotoCategories,
 };

@@ -1,6 +1,7 @@
 import messaging from '@react-native-firebase/messaging';
-import {Platform, PermissionsAndroid} from 'react-native';
-import {PERMISSIONS, request} from 'react-native-permissions';
+import { Platform, PermissionsAndroid } from 'react-native';
+import { PERMISSIONS, request } from 'react-native-permissions';
+import { navigationRef } from '../navigation/NavigationRef';
 import {
   collection,
   query,
@@ -11,13 +12,13 @@ import {
   doc,
   limit
 } from 'firebase/firestore';
-import {getStore, store} from './asyncStorage';
-import {db} from '../../firebase';
+import { getStore, store } from './asyncStorage';
+import { db } from '../../firebase';
 
 export const getFcmToken = async () => {
   await checkApplicationNotificationPermission();
   await registerAppWithFCM();
-  registerListenerWithFCM();
+  setupNotificationNavigation(navigationRef);
   try {
     const token = await messaging().getToken();
     await store('fcm', token);
@@ -27,6 +28,29 @@ export const getFcmToken = async () => {
   }
   return true;
 };
+
+export function setupNotificationNavigation(navigationRef) {
+  messaging().onNotificationOpenedApp(remoteMessage => {
+    if (remoteMessage?.data?.screen) {
+      const params = remoteMessage.data.screenParams
+        ? JSON.parse(remoteMessage.data.screenParams)
+        : {};
+      navigationRef.current?.navigate(remoteMessage.data.screen, params);
+    }
+  });
+
+  // For when the app is opened from a quit state
+  messaging()
+    .getInitialNotification()
+    .then(remoteMessage => {
+      if (remoteMessage?.data?.screen) {
+        const params = remoteMessage.data.screenParams
+          ? JSON.parse(remoteMessage.data.screenParams)
+          : {};
+        navigationRef.current?.navigate(remoteMessage.data.screen, params);
+      }
+    });
+}
 
 export async function registerAppWithFCM() {
   if (__DEV__)
@@ -82,34 +106,34 @@ export const checkApplicationNotificationPermission = async () => {
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (enabled) {
-      if (__DEV__)
-        console.log('FCM Notification Permission Granted:', authStatus);
-      await messaging().registerDeviceForRemoteMessages();
-    } else {
+    if (!enabled) {
       if (__DEV__) console.log('FCM Notification Permission Denied');
+      return false;
     }
 
     if (Platform.OS === 'android') {
-    
-      const notificationResult = await request(
-        PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
-      );
-      if (notificationResult === PermissionsAndroid.RESULTS.GRANTED) {
-        if (__DEV__)
-          console.log('Android POST_NOTIFICATIONS permission granted.');
-      } else {
-        if (__DEV__)
-          console.log(
-            'Android POST_NOTIFICATIONS permission denied:',
-            notificationResult,
-          );
+      // Add API level check for Android 13+ (API 33+)
+      if (Platform.Version >= 33) {
+        const notificationResult = await request(
+          PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
+        );
+        if (notificationResult !== PermissionsAndroid.RESULTS.GRANTED) {
+          if (__DEV__)
+            console.log(
+              'Android POST_NOTIFICATIONS permission denied:',
+              notificationResult,
+            );
+          return false;
+        }
       }
     }
-    return true; 
+
+    await messaging().registerDeviceForRemoteMessages();
+    return true;
   } catch (error) {
     if (__DEV__)
       console.error('Error checking notification permissions:', error);
+    return false;
   }
 };
 
@@ -118,7 +142,7 @@ export function registerListenerWithFCM() {
     if (__DEV__)
       console.log('onMessage Received : ', JSON.stringify(remoteMessage));
     if (remoteMessage) {
-     await saveLocation(remoteMessage);
+      //await saveLocation(remoteMessage);
     }
   });
 
@@ -129,6 +153,8 @@ export function registerListenerWithFCM() {
         'onNotificationOpenedApp Received',
         JSON.stringify(remoteMessage),
       );
+
+   
   });
 
   messaging()
@@ -148,14 +174,14 @@ export function registerListenerWithFCM() {
 
 const saveLocation = async remoteMessage => {
   try {
-    const {projectId, userId, first_name,last_name, role} = remoteMessage.data;
+    const { projectId, userId, first_name, last_name, role } = remoteMessage.data;
     if (!projectId || !userId) {
       return;
     }
 
     const location = await getStore("location");
 
-    if(!location) return 
+    if (!location) return
 
     const locationData = {
       projectId,

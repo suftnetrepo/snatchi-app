@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useRef, useEffect} from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -17,17 +17,17 @@ import {
   StyledInput,
   StyledMultiInput,
 } from 'fluent-styles';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
-import {fontStyles, theme} from '../../utils/theme';
-import {CalendarList} from 'react-native-calendars';
+import { fontStyles, theme } from '../../utils/theme';
+import { CalendarList } from 'react-native-calendars';
 import moment from 'moment';
-import {useScheduler} from '../../hooks/useScheduler';
-import {StyledSelect} from '../../components/dropdown';
-import {statusOptions} from '../../utils/help';
-import {validate} from '../../validator/index';
-import {useAppContext} from '../../hooks/appContext';
+import { useScheduler } from '../../hooks/useScheduler';
+import { StyledSelect } from '../../components/dropdown';
+import { statusOptions } from '../../utils/help';
+import { validate } from '../../validator/index';
+import { useAppContext } from '../../hooks/appContext';
 import { useFocus } from '../../hooks/useFocus';
 
 
@@ -54,7 +54,7 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 };
 
 const CalendarListScreen = () => {
-  const {key} = useFocus()
+  const { key } = useFocus()
   const {
     data,
     handleChange,
@@ -69,7 +69,7 @@ const CalendarListScreen = () => {
     handleDateRange,
     handleDelete,
   } = useScheduler(key);
-  const {user} = useAppContext();
+  const { user } = useAppContext();
   const navigator = useNavigation();
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
@@ -90,7 +90,7 @@ const CalendarListScreen = () => {
     }
 
     const selected = moment(day.dateString);
-    const {startDate, endDate} = fields;
+    const { startDate, endDate } = fields;
 
     const selectedStr = selected.format('YYYY-MM-DD');
 
@@ -134,7 +134,7 @@ const CalendarListScreen = () => {
 
   const mergedMarkedDates = useMemo(() => {
     const dateRange = getUserSelectedRange(fields.startDate, fields.endDate);
-    return {...data, ...dateRange};
+    return { ...data, ...dateRange };
   }, [data, fields.startDate, fields.endDate]);
 
   const handleSubmit = async () => {
@@ -241,14 +241,14 @@ const CalendarListScreen = () => {
       <StyledHeader
         skipAndroid={true}
         marginHorizontal={8}
-        statusProps={{translucent: true}}>
+        statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
         <CalendarList
-     
+
           markingType="period"
           markedDates={mergedMarkedDates}
           pastScrollRange={6}

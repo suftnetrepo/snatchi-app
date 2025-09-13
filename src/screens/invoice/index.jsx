@@ -28,11 +28,13 @@ import {
 import {useInvoice} from '../../hooks/useInvoice';
 import {Swipeable} from 'react-native-gesture-handler';
 import useInvoicePDF from '../../hooks/useInvoicePDF';
+import {useFocus} from '../../hooks/useFocus';
 
 const Invoices = () => {
+  const {key} = useFocus();
   const {shareInvoice} = useInvoicePDF();
   const navigator = useNavigation();
-  const {data, loading, error, handleDelete} = useInvoice(true);
+  const {data, loading, error, handleDelete} = useInvoice(key);
 
   const RenderHeader = () => (
     <XStack
@@ -172,7 +174,7 @@ const Invoices = () => {
               <StyledCycle
                 height={48}
                 width={48}
-                  backgroundColor={theme.colors.gray[200]}
+                backgroundColor={theme.colors.gray[200]}
                 borderColor={theme.colors.gray[200]}>
                 <StyledMIcon
                   size={32}
@@ -249,7 +251,7 @@ const Invoices = () => {
                     fontSize={theme.fontSize.small}
                     textAlign="center"
                     color={theme.colors.gray[800]}>
-                    Hour
+                    Time
                   </StyledText>
                   <StyledText
                     flex={2}
@@ -294,7 +296,7 @@ const Invoices = () => {
                           fontSize={theme.fontSize.small}
                           textAlign="center"
                           color={theme.colors.gray[800]}>
-                          {invoice.hour}
+                          {invoice.duration}
                         </StyledText>
                         <StyledText
                           flex={2}
