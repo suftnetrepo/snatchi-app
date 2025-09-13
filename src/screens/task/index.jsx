@@ -224,7 +224,7 @@ const Task = () => {
         backgroundColor={theme.colors.cyan[500]}>
         <Icon
           name="file-upload"
-          size={25}
+          size={16}
           color={theme.colors.gray[1]}
           onPress={() =>
             navigator.navigate('task-document', {

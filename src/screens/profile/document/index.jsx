@@ -21,11 +21,14 @@ import {fontStyles, theme} from '../../../utils/theme';
 import {StyledMIcon} from '../../../components/icon';
 import {useUserDocuments} from '../../../hooks/useUserDocuments';
 import { useAppContext } from '../../../hooks/appContext';
+import { useFocus } from '../../../hooks/useFocus';
+
 
 const UserDocuments = () => {
+  const {key} = useFocus();
   const navigator = useNavigation();
   const { user} = useAppContext()
-  const {data, loading, error, handleDelete} = useUserDocuments(user?.user_id);
+  const {data, loading, error, handleDelete} = useUserDocuments(key, user?.user_id);
 
   const handleDeepLink = async url => {
     try {

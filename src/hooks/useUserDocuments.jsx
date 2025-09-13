@@ -3,7 +3,7 @@ import {USER_DOCUMENTS, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {fileValidator} from '../validator/fileValidator';
 
-const useUserDocuments = (userId) => {
+const useUserDocuments = (key, userId) => {
   const [state, setState] = useState({
     loading: false,
     fields: fileValidator.fields,
@@ -107,8 +107,8 @@ const useUserDocuments = (userId) => {
   };
 
   useEffect(()=> {
-    userId && handleFetch(userId)
-  },[userId])
+   key && userId && handleFetch(userId)
+  },[userId, key])
 
   return {
     ...state,

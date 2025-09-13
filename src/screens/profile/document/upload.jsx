@@ -55,14 +55,6 @@ const UploadUserDocument = () => {
 
   const handleSubmit = async () => {
 
-    setErrorMessages({});
-    const validationResult = validate(fields, rules);
-   
-    if (validationResult.hasError) {
-      setErrorMessages(validationResult.errors);
-      return;
-    }
-
     const formData = new FormData();
 
     formData.append('file', {
@@ -75,16 +67,18 @@ const UploadUserDocument = () => {
     formData.append('name', value);
     formData.append('userId', user.user_id);
 
-    const reset = () => {
-      handleReset();
-      setFile(null);
-    };
-
     handleUpload(formData).then(result => {
-      result && reset();
+    
     });
   };
 
+  const clearState = () => {
+    setFile(null);
+    setImageUrl(null);
+    setValue(null);
+    setErrorMessages({});
+    handleReset();
+  }
   const RenderHeader = () => (
     <XStack
       paddingHorizontal={16}
@@ -173,8 +167,8 @@ const UploadUserDocument = () => {
             <XStack justifyContent="center" alignItems="center" gap={4}>
               <StyledButton
                 flex={1}
-                backgroundColor={theme.colors.orange[300]}
-                borderColor={theme.colors.orange[300]}
+                backgroundColor={theme.colors.orange[500]}
+                borderColor={theme.colors.orange[500]}
                 onPress={() => pickImage()}>
                 <StyledText
                   paddingHorizontal={20}
@@ -205,7 +199,7 @@ const UploadUserDocument = () => {
             description="please try again"
             visible={true}
             onOk={() => {
-
+              clearState();
             }}
           />
         )}
@@ -215,7 +209,7 @@ const UploadUserDocument = () => {
             description="Document uploaded successfully"
             visible={true}
             onOk={() => {
-              handleReset();
+              clearState();
             }}
           />
         )}
