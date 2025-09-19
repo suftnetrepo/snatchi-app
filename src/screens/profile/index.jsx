@@ -24,7 +24,6 @@ import { ImagePickerModal } from '../../components/imagePickerModal';
 import { Pressable } from 'react-native';
 import { getStore } from '../../utils/asyncStorage';
 
-
 const Profile = () => {
   const navigator = useNavigation();
   const { user, updateCurrentUser } = useAppContext();
@@ -122,7 +121,20 @@ const Profile = () => {
         My Profile
       </StyledText>
       <StyledSpacer flex={1} />
-      <Pressable onPress={() => { navigator.navigate('user-documents'); }}>
+      <Pressable onPress={testPermissions}>
+        <StyledCycle
+          height={48}
+          width={48}
+          borderColor={theme.colors.cyan[500]}
+          backgroundColor={theme.colors.cyan[500]}>
+          <Icon
+            name="file-upload"
+            size={16}
+            color={theme.colors.gray[1]}
+          />
+        </StyledCycle>
+      </Pressable>
+      <Pressable onPress={testInitialize}>
         <StyledCycle
           height={48}
           width={48}

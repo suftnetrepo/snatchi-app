@@ -54,12 +54,14 @@
 	<string>This app requires access to your calendar to schedule and remind you of important Tasks.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires camera access to allow users to scan QR codes and upload profile pictures.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We use your location to verify if you are on-site during working hours. The site manager checks this information to ensure attendance and job tracking in real time.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We need your location to confirm your presence at the work site throughout your shift. This helps site managers monitor attendance and ensure compliance with work schedules.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to track when you arrive and leave the work site. This ensures accurate timekeeping and helps site managers oversee job assignments.</string>
+	<string>App needs location access for geofences.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>App needs Always location access to monitor geofences in background.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>App needs Always location access to monitor geofences in background.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>This app uses motion detection to improve location accuracy.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to your photo library to upload Task photos.</string>
 	<key>UIAppFonts</key>
@@ -94,8 +96,15 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
+	<string>location</string>
+    <string>background-fetch</string>  <!-- Changed from "fetch" -->
+    <string>background-processing</string>  <!-- Changed from "processing" -->
+    <string>audio</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.transistorsoft.fetch</string>
+		<string>com.transistorsoft.customtask</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

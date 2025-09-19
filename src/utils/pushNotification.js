@@ -2,23 +2,14 @@ import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { PERMISSIONS, request } from 'react-native-permissions';
 import { navigationRef } from '../navigation/NavigationRef';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  addDoc,
-  doc,
-  limit
-} from 'firebase/firestore';
-import { getStore, store } from './asyncStorage';
-import { db } from '../../firebase';
+import { store } from './asyncStorage';
+import {geofencingSingleton} from '../types/geofencing/';  
 
 export const getFcmToken = async () => {
   await checkApplicationNotificationPermission();
   await registerAppWithFCM();
   setupNotificationNavigation(navigationRef);
+
   try {
     const token = await messaging().getToken();
     await store('fcm', token);
@@ -39,7 +30,6 @@ export function setupNotificationNavigation(navigationRef) {
     }
   });
 
-  // For when the app is opened from a quit state
   messaging()
     .getInitialNotification()
     .then(remoteMessage => {
@@ -58,6 +48,7 @@ export async function registerAppWithFCM() {
       'registerAppWithFCM status',
       messaging().isDeviceRegisteredForRemoteMessages,
     );
+
   if (!messaging().isDeviceRegisteredForRemoteMessages) {
     await messaging()
       .registerDeviceForRemoteMessages()
@@ -112,7 +103,6 @@ export const checkApplicationNotificationPermission = async () => {
     }
 
     if (Platform.OS === 'android') {
-      // Add API level check for Android 13+ (API 33+)
       if (Platform.Version >= 33) {
         const notificationResult = await request(
           PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
@@ -139,93 +129,71 @@ export const checkApplicationNotificationPermission = async () => {
 
 export function registerListenerWithFCM() {
   const unsubscribe = messaging().onMessage(async remoteMessage => {
-    if (__DEV__)
+    if (__DEV__) {
       console.log('onMessage Received : ', JSON.stringify(remoteMessage));
-    if (remoteMessage) {
-      //await saveLocation(remoteMessage);
+    }
+
+    if (remoteMessage?.data) {
+      try {
+        // 🔹 Handle ADD_GEOFENCES
+        if (remoteMessage.data.addGeofences) {
+          const geofences = JSON.parse(remoteMessage.data.addGeofences);
+          for (const region of geofences) {
+            await geofencingSingleton.addGeofence({
+              id: region.id,
+              latitude: Number(region.latitude),
+              longitude: Number(region.longitude),
+              radius: Number(region.radius),
+              title: region.title,
+              message: region.message,
+            }, true);
+          }
+        
+          if (__DEV__) console.log('✅ Geofences added from push');
+        }
+
+        // 🔹 Handle REMOVE_GEOFENCES
+        if (remoteMessage.data.removeGeofences) {
+          const ids = JSON.parse(remoteMessage.data.removeGeofences);
+          for (const id of ids) {
+            await GeofencingModule.removeGeofence(id);
+          }
+          if (__DEV__) console.log('🗑️ Geofences removed from push');
+        }
+
+        // 🔹 Handle CLEAR_ALL_GEOFENCES
+        if (remoteMessage.data.clearAllGeofences === "true") {
+          await GeofencingModule.removeAllGeofences();
+          if (__DEV__) console.log('🧹 All geofences cleared from push');
+        }
+
+      } catch (err) {
+        console.error('❌ Failed to handle geofence push:', err);
+      }
     }
   });
 
-
   messaging().onNotificationOpenedApp(async remoteMessage => {
-    if (__DEV__)
+    if (__DEV__) {
       console.log(
         'onNotificationOpenedApp Received',
         JSON.stringify(remoteMessage),
       );
-
-   
+    }
   });
 
   messaging()
     .getInitialNotification()
     .then(remoteMessage => {
       if (remoteMessage) {
-        if (__DEV__)
+        if (__DEV__) {
           console.log(
             'Notification caused app to open from quit state:',
             remoteMessage.notification,
           );
+        }
       }
     });
 
   return unsubscribe;
 }
-
-const saveLocation = async remoteMessage => {
-  try {
-    const { projectId, userId, first_name, last_name, role } = remoteMessage.data;
-    if (!projectId || !userId) {
-      return;
-    }
-
-    const location = await getStore("location");
-
-    if (!location) return
-
-    const locationData = {
-      projectId,
-      userId,
-      first_name,
-      last_name,
-      role,
-      latitude: location?.latitude,
-      longitude: location?.longitude,
-      timestamp: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const locationRef = collection(db, 'notification_locations');
-    const q = query(
-      locationRef,
-      where('userId', '==', userId),
-      where('projectId', '==', projectId),
-      limit(1)
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      const docRef = doc(
-        db,
-        'notification_locations',
-        querySnapshot.docs[0].id,
-      );
-      await updateDoc(docRef, {
-        ...locationData,
-        updatedAt: new Date().toISOString(),
-      });
-
-      if (__DEV__) console.log('Location updated successfully');
-    } else {
-      await addDoc(collection(db, 'notification_locations'), {
-        ...locationData,
-        createdAt: new Date().toISOString(),
-      });
-
-      if (__DEV__) console.log('New location created successfully');
-    }
-  } catch (error) {
-    if (__DEV__) console.error('Error saving location:', error);
-  }
-};

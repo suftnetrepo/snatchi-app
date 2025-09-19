@@ -9479,6 +9479,18 @@ react-is@^17.0.1:
   resolved "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
+react-native-background-fetch@^4.2.7, react-native-background-fetch@~4.2.6:
+  version "4.2.8"
+  resolved "https://registry.yarnpkg.com/react-native-background-fetch/-/react-native-background-fetch-4.2.8.tgz#b0ff9fafe30349035179ae08d7426778d3eabf01"
+  integrity sha512-vKPumvhBuxr3oI1L7cNunYIsKV8jD4Xz2A9JT/FW5yvn7GAAct184FAZ9dFef75auBxixinaCjRBlip53xGWmQ==
+
+react-native-background-geolocation@^4.19.0:
+  version "4.19.0"
+  resolved "https://registry.yarnpkg.com/react-native-background-geolocation/-/react-native-background-geolocation-4.19.0.tgz#eda463843ea56eb98c33eb5a5a69973b8a0e6a36"
+  integrity sha512-XGWIWryI9O3N+j/egX4ZVCXs81ES67MfQWQ3BvdSBN21EJpTK8Kui82TQLkAbjmiN5vmmSmKD791i59sJFxUig==
+  dependencies:
+    react-native-background-fetch "~4.2.6"
+
 react-native-calendar-strip@^2.2.6:
   version "2.2.6"
   resolved "https://registry.npmjs.org/react-native-calendar-strip/-/react-native-calendar-strip-2.2.6.tgz"
