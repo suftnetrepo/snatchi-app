@@ -11,14 +11,54 @@ import Invoice from '../screens/invoice/invoice';
 import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
 import Chat from '../screens/messaging/chat';
+import GeofencingD from '../screens/geofence/GeofencingD';
+import GeofencingC from '../screens/geofence/GeofencingC';
+import GeofencingL from '../screens/geofence/GeofencingL';
+import GeofencingApp from '../screens/geofence/GeofencingApp';
+import GeofenceTest from '../screens/geofence';
 
 const Stack = createStackNavigator();
 function Navigator() {
   return (
-    <Stack.Navigator initialRouteName="login">
+    <Stack.Navigator initialRouteName="GeofenceTest">
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="GeofencingD"
+        component={GeofencingD}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="GeofencingC"
+        component={GeofencingC}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="GeofencingL"
+        component={GeofencingL}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="GeofencingApp"
+        component={GeofencingApp}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="GeofenceTest"
+        component={GeofenceTest}
         options={{
           headerShown: false,
         }}

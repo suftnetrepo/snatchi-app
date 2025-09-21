@@ -1,9 +1,9 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform, PermissionsAndroid } from 'react-native';
-import { PERMISSIONS, request } from 'react-native-permissions';
-import { navigationRef } from '../navigation/NavigationRef';
-import { store } from './asyncStorage';
-import {geofencingSingleton} from '../types/geofencing/';  
+import {Platform, PermissionsAndroid} from 'react-native';
+import {PERMISSIONS, request} from 'react-native-permissions';
+import {navigationRef} from '../navigation/NavigationRef';
+import {store} from './asyncStorage';
+import {geofencingSingleton} from '../types/geofencing/';
 
 export const getFcmToken = async () => {
   await checkApplicationNotificationPermission();
@@ -130,70 +130,54 @@ export const checkApplicationNotificationPermission = async () => {
 export function registerListenerWithFCM() {
   const unsubscribe = messaging().onMessage(async remoteMessage => {
     if (__DEV__) {
-      console.log('onMessage Received : ', JSON.stringify(remoteMessage));
+      console.log('📩 onMessage Received:', JSON.stringify(remoteMessage));
     }
 
     if (remoteMessage?.data) {
       try {
-        // 🔹 Handle ADD_GEOFENCES
-        if (remoteMessage.data.addGeofences) {
-          const geofences = JSON.parse(remoteMessage.data.addGeofences);
-          for (const region of geofences) {
-            await geofencingSingleton.addGeofence({
-              id: region.id,
-              latitude: Number(region.latitude),
-              longitude: Number(region.longitude),
-              radius: Number(region.radius),
-              title: region.title,
-              message: region.message,
-            }, true);
-          }
-        
-          if (__DEV__) console.log('✅ Geofences added from push');
+        // 🔹 ADD_PROJECTS
+        if (remoteMessage.data.addProjects) {
+          const projects = JSON.parse(remoteMessage.data.addProjects);
+          await geofencingSingleton.addProjects(projects);
+          if (__DEV__) console.log('✅ Projects added from push');
         }
 
-        // 🔹 Handle REMOVE_GEOFENCES
-        if (remoteMessage.data.removeGeofences) {
-          const ids = JSON.parse(remoteMessage.data.removeGeofences);
-          for (const id of ids) {
-            await GeofencingModule.removeGeofence(id);
-          }
-          if (__DEV__) console.log('🗑️ Geofences removed from push');
+        // 🔹 REMOVE_PROJECTS
+        if (remoteMessage.data.removeProjects) {
+          const ids = JSON.parse(remoteMessage.data.removeProjects); // Removed TypeScript annotation
+          await geofencingSingleton.removeProjects(ids);
+          if (__DEV__) console.log('🗑️ Projects removed from push');
         }
 
-        // 🔹 Handle CLEAR_ALL_GEOFENCES
-        if (remoteMessage.data.clearAllGeofences === "true") {
-          await GeofencingModule.removeAllGeofences();
-          if (__DEV__) console.log('🧹 All geofences cleared from push');
+        // 🔹 CLEAR_ALL_PROJECTS
+        if (remoteMessage.data.clearAllProjects === 'true') {
+          await geofencingSingleton.clearAllProjects();
+          if (__DEV__) console.log('🧹 All projects cleared from push');
         }
-
       } catch (err) {
         console.error('❌ Failed to handle geofence push:', err);
       }
     }
   });
 
-  messaging().onNotificationOpenedApp(async remoteMessage => {
+  // When app is opened from background notification
+  messaging().onNotificationOpenedApp(remoteMessage => {
     if (__DEV__) {
-      console.log(
-        'onNotificationOpenedApp Received',
-        JSON.stringify(remoteMessage),
-      );
+      console.log('📩 onNotificationOpenedApp:', JSON.stringify(remoteMessage));
     }
   });
 
+  // When app is opened from quit state
   messaging()
     .getInitialNotification()
     .then(remoteMessage => {
-      if (remoteMessage) {
-        if (__DEV__) {
-          console.log(
-            'Notification caused app to open from quit state:',
-            remoteMessage.notification,
-          );
-        }
+      if (remoteMessage && __DEV__) {
+        console.log(
+          '📩 App opened from quit state:',
+          remoteMessage.notification,
+        );
       }
     });
 
-  return unsubscribe;
-}
+  return unsubscribe; // Added missing return statement
+} // Added missing closing brace

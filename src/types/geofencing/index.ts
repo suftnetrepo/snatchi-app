@@ -1,40 +1,34 @@
-// src/GeofencingSingleton.ts
 import BackgroundGeolocation, {
   Geofence as RNBGGeofence,
   GeofenceEvent as RNBGGeofenceEvent,
-  Subscription
+  Subscription,
 } from 'react-native-background-geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { GeofenceRegion, GeofenceEvent, GeofenceTransition } from './types';
+import type {
+  GeofenceEvent,
+  GeofenceTransition,
+  ProjectGeofence,
+  GeofencingState,
+} from './types';
 
-const STORAGE_KEY = 'persisted_geofences';
-
-export interface GeofencingState {
-  isInitialized: boolean;
-  isLoading: boolean;
-  error: string | null;
-  geofences: GeofenceRegion[];
-}
-
-type StateListener = (state: GeofencingState) => void;
-type GeofenceEventListener = (event: GeofenceEvent) => void;
+const STORAGE_KEY = 'persisted_projects';
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
-  private subscriptions: Subscription[] = [];
-  private stateListeners: Set<StateListener> = new Set();
-  private eventListeners: Set<GeofenceEventListener> = new Set();
   private geofenceSubscription: Subscription | null = null;
 
   private state: GeofencingState = {
     isInitialized: false,
     isLoading: false,
     error: null,
-    geofences: []
+    geofences: [],
   };
 
+  private eventListeners = new Set<(event: GeofenceEvent) => void>();
+  private stateListeners = new Set<(state: GeofencingState) => void>();
+
   private constructor() {
-    console.log('🚀 GeofencingSingleton created using RNBG');
+    console.log('🚀 GeofencingSingleton created');
     this.setupGeofenceListener();
   }
 
@@ -45,114 +39,89 @@ class GeofencingSingleton {
     return GeofencingSingleton.instance;
   }
 
-  // State management
-  private updateState(updates: Partial<GeofencingState>) {
-    this.state = { ...this.state, ...updates };
-    this.notifyStateListeners();
+  async requestPermissions(): Promise<boolean> {
+    try {
+      const status = await BackgroundGeolocation.requestPermission();
+      console.log('📍 Permission status:', status);
+
+      return (
+        status === BackgroundGeolocation.AUTHORIZATION_STATUS_ALWAYS ||
+        status === BackgroundGeolocation.AUTHORIZATION_STATUS_WHEN_IN_USE
+      );
+    } catch (error) {
+      console.error('❌ RequestPermissions failed:', error);
+      return false;
+    }
   }
 
-  private notifyStateListeners() {
-    this.stateListeners.forEach(listener => listener(this.state));
+
+  // ───────────────────────────────
+  // 🔹 State helpers
+  // ───────────────────────────────
+  private updateState(partial: Partial<GeofencingState>) {
+    this.state = { ...this.state, ...partial };
+    this.stateListeners.forEach((listener) => listener(this.state));
   }
 
   getState(): GeofencingState {
     return { ...this.state };
   }
 
-  // Listener management
-  addStateListener(listener: StateListener): () => void {
+  addStateListener(listener: (state: GeofencingState) => void): () => void {
     this.stateListeners.add(listener);
-    // Immediately call with current state
-    listener(this.state);
-    
+    listener(this.state); // immediately notify
     return () => {
-      this.stateListeners.delete(listener);
+      this.stateListeners.delete(listener); // ✅ ignore boolean return
     };
   }
 
-  addEventListener(listener: GeofenceEventListener): () => void {
-    this.eventListeners.add(listener);
-    
-    return () => {
-      this.eventListeners.delete(listener);
-    };
+  // ───────────────────────────────
+  // 🔹 Storage helpers
+  // ───────────────────────────────
+  private async loadProjects(): Promise<ProjectGeofence[]> {
+    const stored = await AsyncStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
   }
 
-  private setupGeofenceListener() {
-    if (this.geofenceSubscription) {
-      return; // Already set up
+  private async saveProjects(projects: ProjectGeofence[]) {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }
+
+  // ───────────────────────────────
+  // 🔹 Validation
+  // ───────────────────────────────
+  private isWithinProjectWindow(project: ProjectGeofence): boolean {
+    const now = new Date();
+
+    const start = new Date(project.startDate);
+    const end = new Date(project.endDate);
+    if (now < start || now > end) return false;
+
+    // daily time window
+    const [sh, sm] = project.startTime.split(':').map(Number);
+    const [eh, em] = project.endTime.split(':').map(Number);
+    const startMinutes = sh * 60 + sm;
+    const endMinutes = eh * 60 + em;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    if (nowMinutes < startMinutes || nowMinutes > endMinutes) return false;
+
+    // active days (1=Sun ... 7=Sat)
+    if (project.activeDays && project.activeDays.length > 0) {
+      const today = now.getDay() === 0 ? 1 : now.getDay() + 1;
+      if (!project.activeDays.includes(today)) return false;
     }
 
-    this.geofenceSubscription = BackgroundGeolocation.onGeofence((geofence: RNBGGeofenceEvent) => {
-      let transition: GeofenceTransition;
-      
-      switch (geofence.action) {
-        case 'ENTER':
-          transition = 'ENTER';
-          break;
-        case 'EXIT':
-          transition = 'EXIT';
-          break;
-        case 'DWELL':
-          transition = 'DWELL';
-          break;
-        default:
-          console.warn('Unknown geofence action:', geofence.action);
-          transition = 'ENTER';
-      }
-
-      const event: GeofenceEvent = {
-        id: geofence.identifier,
-        transition: transition,
-        latitude: geofence.location.coords.latitude,
-        longitude: geofence.location.coords.longitude,
-        timestamp: geofence.location.timestamp || Date.now().toLocaleString()
-      };
-      
-      // Notify all event listeners
-      this.eventListeners.forEach(listener => listener(event));
-    });
+    return true;
   }
 
-  // Storage operations
-  private async saveGeofencesToStorage(regions: GeofenceRegion[]): Promise<void> {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(regions));
-    } catch (error) {
-      console.error('❌ Failed to save geofences to storage:', error);
-      throw error;
-    }
-  }
-
-  private async loadGeofencesFromStorage(): Promise<GeofenceRegion[]> {
-    try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('❌ Failed to load geofences from storage:', error);
-      return [];
-    }
-  }
-
-  // Core functionality
-  async initialize(): Promise<boolean> {
+  // ───────────────────────────────
+  // 🔹 Lifecycle
+  // ───────────────────────────────
+  async initialize(): Promise<void> {
+    if (this.state.isInitialized) return;
     this.updateState({ isLoading: true, error: null });
-    
-    try {
-      console.log('🔄 Initializing GeofencingSingleton...');
-      
-      // Check provider state
-      const providerState = await BackgroundGeolocation.getProviderState();
-      const locationServicesEnabled = providerState.gps || providerState.network;
-      
-      if (!locationServicesEnabled) {
-        const errorMsg = 'Location services are disabled';
-        console.warn('⚠️', errorMsg);
-        this.updateState({ isLoading: false, error: errorMsg });
-        return false;
-      }
 
-      // Configure and initialize the background geolocation service
+    try {
       const bgState = await BackgroundGeolocation.ready({
         desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
         distanceFilter: 50,
@@ -160,230 +129,118 @@ class GeofencingSingleton {
         startOnBoot: true,
         geofenceProximityRadius: 1000,
         geofenceInitialTriggerEntry: true,
-        authorization: {
-          strategy: 'JWT',
-          accessToken: 'your-jwt-access-token-here',
-        },
         debug: false,
         logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
       });
-      
-      console.log('✅ RNBG ready:', {
-        enabled: bgState.enabled,
-        locationServicesEnabled,
-        status: bgState.enabled ? 'Enabled' : 'Disabled'
-      });
 
-      // Load persisted geofences
-      const persistedGeofences = await this.loadGeofencesFromStorage();
+      this.updateState({ isInitialized: true, isLoading: false });
+      console.log('✅ RNBG ready', bgState);
 
-      this.updateState({ 
-        isInitialized: true, 
-        isLoading: false, 
-        error: null,
-        geofences: persistedGeofences
-      });
-      
-      return bgState.enabled;
-    } catch (error) {
-      const errorMsg = `Initialize failed: ${error}`;
-      console.error('❌', errorMsg);
-      this.updateState({ 
-        isInitialized: false, 
-        isLoading: false, 
-        error: errorMsg 
-      });
-      return false;
+      await this.restoreProjects();
+    } catch (err) {
+      this.updateState({ isInitialized: false, isLoading: false, error: String(err) });
+      console.error('❌ RNBG init failed', err);
     }
   }
 
-  async requestPermissions(): Promise<boolean> {
-    try {
-      const status = await BackgroundGeolocation.requestPermission();
-      console.log('📍 Permission status:', status);
-      
-      return status === BackgroundGeolocation.AUTHORIZATION_STATUS_ALWAYS || 
-             status === BackgroundGeolocation.AUTHORIZATION_STATUS_WHEN_IN_USE;
-    } catch (error) {
-      console.error('❌ RequestPermissions failed:', error);
-      return false;
-    }
-  }
+  private setupGeofenceListener() {
+    if (this.geofenceSubscription) return;
+    this.geofenceSubscription = BackgroundGeolocation.onGeofence(
+      (geofence: RNBGGeofenceEvent) => {
+        let transition: GeofenceTransition = 'ENTER';
+        if (geofence.action === 'EXIT') transition = 'EXIT';
+        if (geofence.action === 'DWELL') transition = 'DWELL';
 
-  async restorePersistedGeofences(): Promise<void> {
-    if (!this.state.isInitialized) {
-      console.warn('⚠️ Cannot restore geofences: module not initialized');
-      return;
-    }
+        const event: GeofenceEvent = {
+          id: geofence.identifier,
+          transition,
+          latitude: geofence.location.coords.latitude,
+          longitude: geofence.location.coords.longitude,
+          timestamp: new Date().toISOString(),
+        };
 
-    console.log('🔄 Restoring persisted geofences...');
-    try {
-      const regions = await this.loadGeofencesFromStorage();
-      console.log(`📍 Found ${regions.length} persisted geofences`);
-
-      for (const region of regions) {
-        try {
-          console.log('🔄 Restoring geofence:', region.id);
-          await this.addGeofence(region, false); // Don't update storage again
-        } catch (e) {
-          console.warn('⚠️ Failed to restore geofence:', region.id, e);
-        }
+        this.eventListeners.forEach((fn) => fn(event));
       }
-      
-      this.updateState({ geofences: regions });
-    } catch (error) {
-      console.error('❌ Failed to restore persisted geofences:', error);
-    }
+    );
   }
 
-  async addGeofence(region: GeofenceRegion, updateStorage = true): Promise<boolean> {
-    if (!this.state.isInitialized) {
-      console.error('❌ GeofencingSingleton not initialized');
-      return false;
-    }
-
-    console.log('🔄 Adding geofence:', region);
-    try {
-      const fence: RNBGGeofence = {
-        identifier: region.id,
-        radius: region.radius,
-        latitude: region.latitude,
-        longitude: region.longitude,
-        notifyOnEntry: true,
-        notifyOnExit: true,
-        notifyOnDwell: true,
-        loiteringDelay: 30000
-      };
-      
-      await BackgroundGeolocation.addGeofence(fence);
-
-      if (updateStorage) {
-        const current = await this.loadGeofencesFromStorage();
-        const updated = current.filter(r => r.id !== region.id);
-        updated.push(region);
-        await this.saveGeofencesToStorage(updated);
-        this.updateState({ geofences: updated });
-      }
-      
-      console.log('✅ Geofence added');
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to add geofence:', error);
-      return false;
-    }
+  addEventListener(listener: (event: GeofenceEvent) => void): () => void {
+    this.eventListeners.add(listener);
+    return () => {
+      this.eventListeners.delete(listener); // ✅ ignore boolean return
+    };
   }
 
-  async removeGeofence(id: string): Promise<boolean> {
-    if (!this.state.isInitialized) {
-      console.error('❌ GeofencingSingleton not initialized');
-      return false;
-    }
-
-    try {
-      await BackgroundGeolocation.removeGeofence(id);
-      const current = await this.loadGeofencesFromStorage();
-      const updated = current.filter(r => r.id !== id);
-      await this.saveGeofencesToStorage(updated);
-      
-      this.updateState({ geofences: updated });
-      console.log('✅ Geofence removed');
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to remove geofence:', error);
-      return false;
-    }
+  // ───────────────────────────────
+  // 🔹 Project management
+  // ───────────────────────────────
+  async addProjects(projects: ProjectGeofence[]) {
+    const existing = await this.loadProjects();
+    const updated = [
+      ...existing.filter((p) => !projects.some((np) => np.projectId === p.projectId)),
+      ...projects,
+    ];
+    await this.saveProjects(updated);
+    await this.restoreProjects();
   }
 
-  async removeAllGeofences(): Promise<boolean> {
-    if (!this.state.isInitialized) {
-      console.error('❌ GeofencingSingleton not initialized');
-      return false;
-    }
+  async removeProjects(ids: string[]) {
+    const existing = await this.loadProjects();
+    const updated = existing.filter((p) => !ids.includes(p.projectId));
+    await this.saveProjects(updated);
+    await this.restoreProjects();
+  }
 
+  async clearAllProjects() {
+    await this.saveProjects([]);
+    await BackgroundGeolocation.removeGeofences();
+    await BackgroundGeolocation.stopSchedule();
+    this.updateState({ geofences: [] });
+  }
+
+  async restoreProjects() {
     try {
+      const projects = await this.loadProjects();
+      const valid = projects.filter((p) => this.isWithinProjectWindow(p));
+
       await BackgroundGeolocation.removeGeofences();
-      await this.saveGeofencesToStorage([]);
-      
-      this.updateState({ geofences: [] });
-      console.log('✅ All geofences removed');
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to remove all geofences:', error);
-      return false;
-    }
-  }
 
-  async getPersistedGeofences(): Promise<GeofenceRegion[]> {
-    return this.loadGeofencesFromStorage();
-  }
+      for (const project of valid) {
+        const fence: RNBGGeofence = {
+          identifier: project.id,
+          latitude: project.latitude,
+          longitude: project.longitude,
+          radius: project.radius,
+          notifyOnEntry: true,
+          notifyOnExit: true,
+        };
+        await BackgroundGeolocation.addGeofence(fence);
+      }
 
-  async getActiveGeofences(): Promise<GeofenceRegion[]> {
-    if (!this.state.isInitialized) {
-      console.error('❌ GeofencingSingleton not initialized');
-      return [];
-    }
+      if (valid.length > 0) {
+        const schedule: string[] = valid.map((project) => {
+          const days =
+            project.activeDays && project.activeDays.length > 0
+              ? project.activeDays.join(',')
+              : '1-7';
+          return `${days} ${project.startTime}-${project.endTime}`;
+        });
 
-    try {
-      const fences = await BackgroundGeolocation.getGeofences();
-      return fences.map(f => ({
-        id: f.identifier,
-        latitude: f.latitude,
-        longitude: f.longitude,
-        radius: f.radius
-      }));
-    } catch (error) {
-      console.error('❌ Failed to get geofences:', error);
-      return [];
-    }
-  }
+        await BackgroundGeolocation.setConfig({ schedule });
+        await BackgroundGeolocation.startSchedule();
 
-  async startMonitoring(): Promise<boolean> {
-    if (!this.state.isInitialized) {
-      console.error('❌ GeofencingSingleton not initialized');
-      return false;
+        this.updateState({ geofences: valid });
+        console.log(`✅ ${valid.length} active projects restored`, schedule);
+      } else {
+        await BackgroundGeolocation.stopSchedule();
+        this.updateState({ geofences: [] });
+        console.log('⏸️ No active projects — schedule stopped');
+      }
+    } catch (err) {
+      this.updateState({ error: String(err) });
+      console.error('❌ Failed to restore projects:', err);
     }
-
-    try {
-      await BackgroundGeolocation.start();
-      console.log('✅ Geofence monitoring started');
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to start monitoring:', error);
-      return false;
-    }
-  }
-
-  async stopMonitoring(): Promise<boolean> {
-    if (!this.state.isInitialized) {
-      console.error('❌ GeofencingSingleton not initialized');
-      return false;
-    }
-
-    try {
-      await BackgroundGeolocation.stop();
-      console.log('✅ Geofence monitoring stopped');
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to stop monitoring:', error);
-      return false;
-    }
-  }
-
-  // Cleanup
-  destroy(): void {
-    this.subscriptions.forEach(s => s.remove());
-    this.subscriptions = [];
-    
-    if (this.geofenceSubscription) {
-      this.geofenceSubscription.remove();
-      this.geofenceSubscription = null;
-    }
-    
-    this.stateListeners.clear();
-    this.eventListeners.clear();
   }
 }
 
-// Export singleton instance
 export const geofencingSingleton = GeofencingSingleton.getInstance();
-

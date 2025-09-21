@@ -1,0 +1,28 @@
+{
+  "data": {
+    "addProjects": "[{
+      \"projectId\": \"p123\",
+      \"id\": \"siteA\",
+      \"siteName\": \"Warehouse A\",
+      \"latitude\": 52.54135,
+      \"longitude\": -0.29997,
+      \"radius\": 150,
+      \"startDate\": \"2025-09-21\",
+      \"endDate\": \"2025-09-25\",
+      \"startTime\": \"08:00\",
+      \"endTime\": \"17:00\",
+      \"activeDays\": [1,2,3,4,5]
+    }]"
+  }
+}
+{
+  "data": {
+    "removeProjects": "[\"p123\",\"p456\"]"
+  }
+}
+{
+  "data": {
+    "clearAllProjects": "true"
+  }
+}
+
