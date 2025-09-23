@@ -57,9 +57,9 @@ const GeofenceTest = () => {
           width="100%"
           borderColor={theme.colors.cyan[500]}
           backgroundColor={theme.colors.cyan[500]}
-          onPress={() => navigation.navigate("GeofencingC")}>
+          onPress={() => navigation.navigate("GeofenceDashboard")}>
           <StyledText paddingHorizontal={20} paddingVertical={10} color={theme.colors.gray[1]}>
-            GeofencingC
+            GeofenceDashboard
           </StyledText>
         </StyledButton>
 

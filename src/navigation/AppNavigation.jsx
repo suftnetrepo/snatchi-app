@@ -12,7 +12,7 @@ import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
 import Chat from '../screens/messaging/chat';
 import GeofencingD from '../screens/geofence/GeofencingD';
-import GeofencingC from '../screens/geofence/GeofencingC';
+import GeofenceDashboard from '../screens/geofence/GeofenceDashboard';
 import GeofencingL from '../screens/geofence/GeofencingL';
 import GeofencingApp from '../screens/geofence/GeofencingApp';
 import GeofenceTest from '../screens/geofence';
@@ -36,8 +36,8 @@ function Navigator() {
         }}
       />
       <Stack.Screen
-        name="GeofencingC"
-        component={GeofencingC}
+        name="GeofenceDashboard"
+        component={GeofenceDashboard}
         options={{
           headerShown: false,
         }}

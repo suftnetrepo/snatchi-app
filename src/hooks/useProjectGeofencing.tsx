@@ -42,6 +42,10 @@ export function useProjectGeofencing() {
     };
 
     setup();
+
+    return () => {
+      BackgroundFetch.stop();
+    };
   }, []);
 }
 

@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundGeolocation, {
   GeofenceEvent as RNBGGeofenceEvent,
-  State,
   Geofence as RNGeofence,
 } from 'react-native-background-geolocation';
 import { GeofenceEvent, GeofenceRegion, GeofenceTransition, GeofencingState } from '../types/geofencing/types';

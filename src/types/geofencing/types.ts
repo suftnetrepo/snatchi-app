@@ -20,7 +20,7 @@ export interface ProjectGeofence {
   endDate: string;        // ISO date, e.g. "2025-09-25"
   startTime: string;      // "HH:mm"
   endTime: string;        // "HH:mm"
-  activeDays?: number[];  // 1=Sun ... 7=Sat
+  activeDays?: number[];  // 1=Sun ... 6=Sat
 }
 
 // 🔹 State will track project geofences

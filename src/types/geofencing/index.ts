@@ -80,7 +80,13 @@ class GeofencingSingleton {
   // ───────────────────────────────
   private async loadProjects(): Promise<ProjectGeofence[]> {
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.warn('⚠️ Failed to parse stored projects', e);
+      return [];
+    }
   }
 
   private async saveProjects(projects: ProjectGeofence[]) {
@@ -105,9 +111,8 @@ class GeofencingSingleton {
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     if (nowMinutes < startMinutes || nowMinutes > endMinutes) return false;
 
-    // active days (1=Sun ... 7=Sat)
     if (project.activeDays && project.activeDays.length > 0) {
-      const today = now.getDay() === 0 ? 1 : now.getDay() + 1;
+      const today = now.getDay(); // 0 = Sunday, 6 = Saturday
       if (!project.activeDays.includes(today)) return false;
     }
 
@@ -203,18 +208,31 @@ class GeofencingSingleton {
       const projects = await this.loadProjects();
       const valid = projects.filter((p) => this.isWithinProjectWindow(p));
 
-      await BackgroundGeolocation.removeGeofences();
+      const currentGeofences = await BackgroundGeolocation.getGeofences();
+      const currentIds = new Set(currentGeofences.map(g => g.identifier));
+      const validIds = new Set(valid.map(p => `${p.projectId}-${p.id}`));
 
+      // Remove stale geofences
+      for (const g of currentGeofences) {
+        if (!validIds.has(g.identifier)) {
+          await BackgroundGeolocation.removeGeofence(g.identifier);
+        }
+      }
+
+      // Add missing geofences
       for (const project of valid) {
-        const fence: RNBGGeofence = {
-          identifier: project.id,
-          latitude: project.latitude,
-          longitude: project.longitude,
-          radius: project.radius,
-          notifyOnEntry: true,
-          notifyOnExit: true,
-        };
-        await BackgroundGeolocation.addGeofence(fence);
+        const identifier = `${project.projectId}-${project.id}`;
+        if (!currentIds.has(identifier)) {
+          const fence: RNBGGeofence = {
+            identifier,
+            latitude: project.latitude,
+            longitude: project.longitude,
+            radius: project.radius,
+            notifyOnEntry: true,
+            notifyOnExit: true,
+          };
+          await BackgroundGeolocation.addGeofence(fence);
+        }
       }
 
       if (valid.length > 0) {
