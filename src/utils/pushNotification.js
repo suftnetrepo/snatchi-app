@@ -7,7 +7,7 @@ import {geofencingSingleton} from '../types/geofencing/';
 
 export const getFcmToken = async () => {
   await checkApplicationNotificationPermission();
-  await registerAppWithFCM();
+  await registerListenerWithFCM();
   setupNotificationNavigation(navigationRef);
 
   try {
@@ -134,8 +134,10 @@ export function registerListenerWithFCM() {
     }
 
     if (remoteMessage?.data) {
+       
       try {
         // 🔹 ADD_PROJECTS
+   
         if (remoteMessage.data.addProjects) {
           const projects = JSON.parse(remoteMessage.data.addProjects);
           await geofencingSingleton.addProjects(projects);
@@ -144,7 +146,7 @@ export function registerListenerWithFCM() {
 
         // 🔹 REMOVE_PROJECTS
         if (remoteMessage.data.removeProjects) {
-          const ids = JSON.parse(remoteMessage.data.removeProjects); // Removed TypeScript annotation
+          const ids = JSON.parse(remoteMessage.data.removeProjects); 
           await geofencingSingleton.removeProjects(ids);
           if (__DEV__) console.log('🗑️ Projects removed from push');
         }

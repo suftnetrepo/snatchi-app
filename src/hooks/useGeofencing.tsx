@@ -1,182 +1,153 @@
-// hooks/useGeofencing.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import BackgroundGeolocation, {
-  GeofenceEvent as RNBGGeofenceEvent,
-  Geofence as RNGeofence,
-} from 'react-native-background-geolocation';
-import { GeofenceEvent, GeofenceRegion, GeofenceTransition, GeofencingState } from '../types/geofencing/types';
+import { useState, useEffect } from 'react';
+import { geofencingSingleton } from '../types/geofencing';
+import type { GeofenceEvent, ProjectGeofence, GeofencingState } from '../types/geofencing/types';
 
-const STORAGE_KEY = 'persisted_geofences';
-
-//
-// Main hook to manage geofencing state
-//
-export const useGeofencing = () => {
-  const [state, setState] = useState<GeofencingState>({
+export const useProjectGeofencing = ({
+  enableBackgroundSync = true,
+  backgroundFetchInterval = 15,
+  autoRetry = true,
+} = {}) => {
+  const [state, setState] = useState({
     isInitialized: false,
-    isLoading: false,
-    error: null,
-      geofences: [],   // ✅ add default
+    isInitializing: false,
+    error: null as string | null,
   });
 
-  // initialize BackgroundGeolocation
-const initialize = useCallback(async () => {
-  try {
-    setState((s) => ({ ...s, isLoading: true }));
-    await BackgroundGeolocation.ready({
-      desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-      distanceFilter: 10,
-      stopTimeout: 1,
-      debug: true,
-      logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-      enableHeadless: true,
-      geofenceProximityRadius: 1000,
-      geofenceInitialTriggerEntry: true,
-    });
-    setState({
-      isInitialized: true,
-      isLoading: false,
-      error: null,
-      geofences: [],   // ✅ keep geofences
-    });
-    return true;
-  } catch (error: any) {
-    console.error('[Geofencing] init error:', error);
-    setState({
-      isInitialized: false,
-      isLoading: false,
-      error: error.message,
-      geofences: [],   // ✅ required
-    });
-    return false;
-  }
-}, []);
+  const initialize = async () => {
+    try {
+      setState(prev => ({ ...prev, isInitializing: true, error: null }));
+      await geofencingSingleton.initialize(true);
+      setState(prev => ({ ...prev, isInitialized: true, isInitializing: false }));
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Failed to initialize',
+        isInitializing: false 
+      }));
+    }
+  };
 
-  const requestPermissions = useCallback(async () => {
-    return BackgroundGeolocation.requestPermission();
-  }, []);
-
-  const addGeofence = useCallback(async (region: GeofenceRegion) => {
-    const gf: RNGeofence = {
-      identifier: region.id,
-      latitude: region.latitude,
-      longitude: region.longitude,
-      radius: region.radius,
-      notifyOnEntry: true,
-      notifyOnExit: true,
-      notifyOnDwell: false,
-      loiteringDelay: 30000,
-    };
-    await BackgroundGeolocation.addGeofence(gf);
-  }, []);
-
-  const removeGeofence = useCallback(async (id: string) => {
-    await BackgroundGeolocation.removeGeofence(id);
-  }, []);
-
-  const removeAllGeofences = useCallback(async () => {
-    await BackgroundGeolocation.removeGeofences();
-  }, []);
-
-  const startMonitoring = useCallback(async () => {
-    await BackgroundGeolocation.start();
-  }, []);
-
-  const stopMonitoring = useCallback(async () => {
-    await BackgroundGeolocation.stop();
+  useEffect(() => {
+    initialize();
   }, []);
 
   return {
     ...state,
-    initialize,
-    requestPermissions,
-    addGeofence,
-    removeGeofence,
-    removeAllGeofences,
-    startMonitoring,
-    stopMonitoring,
+    retry: initialize,
   };
 };
 
-//
-// Subscribe to geofence ENTER/EXIT/DWELL events
-//
-export const useGeofenceEvents = (callback: (event: GeofenceEvent) => void) => {
-  const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+export const useGeofenceEvents = (
+  onEnter?: (event: GeofenceEvent) => void,
+  onExit?: (event: GeofenceEvent) => void,
+  onDwell?: (event: GeofenceEvent) => void,
+) => {
+  const [eventStats, setEventStats] = useState({
+    totalEvents: 0,
+    enterEvents: 0,
+    exitEvents: 0,
+    dwellEvents: 0,
+    eventsToday: 0,
+    lastEvent: null as GeofenceEvent | null,
+  });
 
   useEffect(() => {
-    const subscription = BackgroundGeolocation.onGeofence((geofence: RNBGGeofenceEvent) => {
-      let transition: GeofenceTransition = 'ENTER';
-      switch (geofence.action) {
-        case 'ENTER': transition = 'ENTER'; break;
-        case 'EXIT': transition = 'EXIT'; break;
-        case 'DWELL': transition = 'DWELL'; break;
+    const unsubscribe = geofencingSingleton.addEventListener((event: GeofenceEvent) => {
+      setEventStats(prev => {
+        const isToday = new Date(event.timestamp).toDateString() === new Date().toDateString();
+        return {
+          totalEvents: prev.totalEvents + 1,
+          enterEvents: event.transition === 'ENTER' ? prev.enterEvents + 1 : prev.enterEvents,
+          exitEvents: event.transition === 'EXIT' ? prev.exitEvents + 1 : prev.exitEvents,
+          dwellEvents: event.transition === 'DWELL' ? prev.dwellEvents + 1 : prev.dwellEvents,
+          eventsToday: isToday ? prev.eventsToday + 1 : prev.eventsToday,
+          lastEvent: event,
+        };
+      });
+
+      switch (event.transition) {
+        case 'ENTER':
+          onEnter?.(event);
+          break;
+        case 'EXIT':
+          onExit?.(event);
+          break;
+        case 'DWELL':
+          onDwell?.(event);
+          break;
       }
-
-      const event: GeofenceEvent = {
-        id: geofence.identifier,
-        transition,
-        latitude: geofence.location.coords.latitude,
-        longitude: geofence.location.coords.longitude,
-        timestamp: new Date().toISOString(),
-      };
-
-      callbackRef.current(event);
     });
 
-    return () => subscription.remove();
-  }, []);
+    return () => unsubscribe();
+  }, [onEnter, onExit, onDwell]);
+
+  return { eventStats };
 };
 
-//
-// Manage persisted regions (AsyncStorage)
-//
-export const useGeofenceRegions = () => {
-  const [regions, setRegions] = useState<GeofenceRegion[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const loadRegions = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      const parsed = stored ? JSON.parse(stored) : [];
-      setRegions(parsed);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const saveRegions = useCallback(async (newRegions: GeofenceRegion[]) => {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newRegions));
-    setRegions(newRegions);
-  }, []);
-
-  const addRegion = useCallback(async (region: GeofenceRegion) => {
-    const updated = [...regions.filter((r) => r.id !== region.id), region];
-    await saveRegions(updated);
-  }, [regions, saveRegions]);
-
-  const removeRegion = useCallback(async (id: string) => {
-    const updated = regions.filter((r) => r.id !== id);
-    await saveRegions(updated);
-  }, [regions, saveRegions]);
-
-  const clearRegions = useCallback(async () => {
-    await saveRegions([]);
-  }, [saveRegions]);
+export const useProjectState = () => {
+  const [state, setState] = useState<GeofencingState>({
+    isInitialized: false,
+    isLoading: false,
+    error: null,
+    geofences: [],
+  });
+  const [currentGeofences, setCurrentGeofences] = useState<string[]>([]);
+  const [debugInfo, setDebugInfo] = useState({
+    stateChangeCount: 0,
+  });
 
   useEffect(() => {
-    loadRegions();
-  }, [loadRegions]);
+    const unsubscribe = geofencingSingleton.addStateListener((newState: GeofencingState) => {
+      setState(newState);
+      setCurrentGeofences(geofencingSingleton.getCurrentGeofenceStates());
+      setDebugInfo(prev => ({
+        ...prev,
+        stateChangeCount: prev.stateChangeCount + 1,
+      }));
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return {
-    regions,
-    isLoading,
-    addRegion,
-    removeRegion,
-    clearRegions,
-    reload: loadRegions,
+    ...state,
+    currentGeofences,
+    debugInfo,
+  };
+};
+
+export const useGeofenceManagement = () => {
+  const [state, setState] = useState({
+    isLoading: false,
+    error: null as string | null,
+  });
+
+  const handleOperation = async (operation: () => Promise<void>) => {
+    setState({ isLoading: true, error: null });
+    try {
+      await operation();
+    } catch (error) {
+      setState({ 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Operation failed' 
+      });
+      throw error;
+    }
+    setState({ isLoading: false, error: null });
+  };
+
+  return {
+    addProjects: (projects: ProjectGeofence[]) => 
+      handleOperation(() => geofencingSingleton.addProjects(projects)),
+    removeProjects: (projectIds: string[]) => 
+      handleOperation(() => geofencingSingleton.removeProjects(projectIds)),
+    clearAllProjects: () => 
+      handleOperation(() => geofencingSingleton.clearAllProjects()),
+    forceGeofenceCheck: () => 
+      handleOperation(() => geofencingSingleton.forceGeofenceCheck()),
+    refreshGeofences: () => 
+      handleOperation(() => geofencingSingleton.triggerGeofenceRefresh()),
+    isLoading: state.isLoading,
+    error: state.error,
   };
 };
