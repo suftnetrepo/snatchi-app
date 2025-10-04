@@ -2,8 +2,8 @@
 
 // STAGING
 const HOST_ADDRESS = "https://snatchi-web.onrender.com/";
-const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
-// const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
+// const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
+ const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
 
 // END POINTS
 
@@ -61,10 +61,10 @@ export const USER_DOCUMENTS = {
   removeOne: `${HOST_API_ADDRESS}user/document`
 };
 
-export const ATTENDANCE = {
-  addOne: `${HOST_API_ADDRESS}attendance`,
-  fetch: `${HOST_API_ADDRESS}attendance`,
-  removeOne: `${HOST_API_ADDRESS}attendance/`
+export const FENCE = {
+  addOne: `${HOST_API_ADDRESS}fence`,
+  fetch: `${HOST_API_ADDRESS}fence`,
+  removeOne: `${HOST_API_ADDRESS}fence/`
 };
 
 export const USER_HOST_USER_STATUS = {

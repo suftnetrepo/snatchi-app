@@ -11,16 +11,12 @@ import Invoice from '../screens/invoice/invoice';
 import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
 import Chat from '../screens/messaging/chat';
-import GeofencingD from '../screens/geofence/GeofencingD';
-import GeofenceDashboard from '../screens/geofence/GeofenceDashboard';
-import GeofencingL from '../screens/geofence/GeofencingL';
-import GeofencingApp from '../screens/geofence/GeofencingApp';
-import GeofenceTest from '../screens/geofence';
+import GeofenceTestApp from '../screens/geofence';
 
 const Stack = createStackNavigator();
 function Navigator() {
   return (
-    <Stack.Navigator initialRouteName="GeofenceTest">
+    <Stack.Navigator initialRouteName="GeofenceTestApp">
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
@@ -29,36 +25,8 @@ function Navigator() {
         }}
       />
       <Stack.Screen
-        name="GeofencingD"
-        component={GeofencingD}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="GeofenceDashboard"
-        component={GeofenceDashboard}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="GeofencingL"
-        component={GeofencingL}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="GeofencingApp"
-        component={GeofencingApp}
-        options={{
-          headerShown: false,
-        }}
-      />
-       <Stack.Screen
-        name="GeofenceTest"
-        component={GeofenceTest}
+        name="GeofenceTestApp"
+        component={GeofenceTestApp}
         options={{
           headerShown: false,
         }}

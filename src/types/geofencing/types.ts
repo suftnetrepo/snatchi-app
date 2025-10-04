@@ -11,6 +11,7 @@ export interface GeofenceRegion {
 // 🔹 Full project-aware geofence
 export interface ProjectGeofence {
   projectId: string;
+  intergatorId: string; // id from Intergator system
   id: string;             // site id
   siteName: string;
   latitude: number;
@@ -21,6 +22,11 @@ export interface ProjectGeofence {
   startTime: string;      // "HH:mm"
   endTime: string;        // "HH:mm"
   activeDays?: number[];  // 1=Sun ... 6=Sat
+  userId: string;
+  firstName: string;
+  lastName: string;
+  completeAddress: string;
+  status: 'ENTER' | 'EXIT';
 }
 
 // 🔹 State will track project geofences
@@ -33,13 +39,13 @@ export interface GeofencingState {
 
 export type GeofenceTransition = 'ENTER' | 'EXIT' | 'DWELL';
 
-export interface GeofenceEvent {
-  id: string;
-  latitude: number;
-  longitude: number;
-  transition: GeofenceTransition;
-  timestamp: string;
-}
+// export interface GeofenceEvent {
+//   id: string;
+//   latitude: number;
+//   longitude: number;
+//   transition: GeofenceTransition;
+//   timestamp: string;
+// }
 
 export interface NotificationPayload {
   title: string;
@@ -98,3 +104,12 @@ export interface StoredLocationData {
     lastActivity: number;
   };
 }
+
+export interface GeofenceEventBase {
+  id: string;
+  latitude: number;
+  longitude: number;
+  transition: GeofenceTransition;
+  timestamp: string;
+}
+export type GeofenceEvent = GeofenceEventBase & Partial<ProjectGeofence>;

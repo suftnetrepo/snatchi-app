@@ -8,10 +8,8 @@ import {
   StyledHeader,
   StyledSpacer,
   StyledButton,
-  StyledConfirmDialog,
 } from 'fluent-styles';
 import {StyledMIcon} from '../components/icon';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {theme} from '../utils/theme';
 import {fontStyles} from '../utils/fontStyles';
 import {useNavigation, CommonActions} from '@react-navigation/native';
@@ -26,19 +24,13 @@ import CalendarCard from '../components/calender/calenderCard';
 import Dashboard from '../components/dashboard';
 import {useFocusEffect} from '@react-navigation/native';
 import {Pressable} from 'react-native';
-import {useTimeSheet} from '../hooks/useTimeSheet';
 
 const Home = ({route}) => {
-  const {initialState, handleAddTimeSheet} = useTimeSheet();
   const {setTabBarVisible} = route.params || {};
   const navigate = useNavigation();
   const {user} = useAppContext();
   const {key} = useFocus();
   const [selected, setSelected] = useState('dashboard');
-  const [showDialogue, setShowDialogue] = useState({
-    type: 'checkin',
-    status: false,
-  });
   const [date, setDate] = useState(dateConverter(new Date(), false));
   const scrollViewRef = useRef(null);
   const {data} = useTask();
@@ -83,39 +75,6 @@ const Home = ({route}) => {
           </StyledText>
         </YStack>
         <StyledSpacer flex={1} />
-        {initialState === 'checkin' && (
-          <Icon
-            size={48}
-            name="clock-time-four-outline"
-            color={theme.colors.gray[800]}
-            onPress={() =>
-              setShowDialogue(pre => {
-                return {
-                  ...pre,
-                  type: 'checkin',
-                  status: true,
-                };
-              })
-            }
-          />
-        )}
-        {initialState === 'checkout' && (
-          <Icon
-            size={48}
-            name="clock"
-            color={theme.colors.purple[600]}
-            onPress={() => {
-              setShowDialogue(pre => {
-                return {
-                  ...pre,
-                  status: true,
-                  type: 'checkout',
-                };
-              });
-            }}
-          />
-        )}
-
         <StyledSpacer marginHorizontal={4} />
         <XStack>
           <Pressable
@@ -275,40 +234,6 @@ const Home = ({route}) => {
           <Dashboard recentTasks={data} navigate={navigate} />
         )}
       </YStack>
-      {showDialogue.status && (
-        <StyledConfirmDialog
-          title={
-            showDialogue.type === 'checkin'
-              ? `Confirm Clock In`
-              : `Confirm Clock Out`
-          }
-          description={
-            showDialogue.type === 'checkin'
-              ? `You're about to clock in for today. This is a one-time action for today. Do you want to continue?`
-              : `You're about to clock out for today. This can only be done once a day. Do you want to proceed?`
-          }
-          visible={true}
-          onConfirm={async () => {
-            handleAddTimeSheet(user, showDialogue.type);
-            setShowDialogue(pre => {
-              return {
-                ...pre,
-                type: '',
-                status: false,
-              };
-            });
-          }}
-          onCancel={() => {
-            setShowDialogue(pre => {
-              return {
-                ...pre,
-                type: '',
-                status: false,
-              };
-            });
-          }}
-        />
-      )}
     </StyledSafeAreaView>
   );
 };

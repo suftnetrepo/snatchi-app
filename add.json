@@ -1,0 +1,8 @@
+{
+  "message": {
+    "token": "egK4PvM8ZE6hnmDh_yJKd8:APA91bESfcxH4fdsOP1_q-GYBZx52VTCriWOnSyCAL8-doCkx0UaOdeZSRqAREy_tjSQvIgr3qVuyaLdPL-CJfR4wAD1hY3VbS5R1-6dE87W-ULyRJm_vhE",
+    "data": {
+      "addProjects": "[{\"projectId\":\"123\",\"id\":\"site-1\",\"siteName\":\"Test Site\",\"latitude\":52.5413,\"longitude\":-0.2999,\"radius\":200,\"startDate\":\"2024-01-01\",\"endDate\":\"2025-12-31\",\"startTime\":\"00:00\",\"endTime\":\"23:59\",\"activeDays\":[1,2,3,4,5,6,7]}]"
+    }
+  }
+}

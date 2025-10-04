@@ -604,6 +604,27 @@ function capitalizeFirstLetter(str) {
 const truncate = (str, max = 100) =>
   str?.length > max ? str.slice(0, max) + '…' : str;
 
+function toModel(event) {
+  const dateObj = new Date(event.timestamp);
+  const time = dateObj.toISOString().substring(11, 16); 
+
+  return {
+    integrator: event.integrator,
+    user: event.userId,
+    project: event.projectId,
+    date: dateObj,
+    siteName: event.siteName,
+    radius: event.radius || 200,
+    first_name: event.firstName,
+    last_name: event.lastName,
+    time,
+    status: event.transition === "ENTER" ? "ENTER" : "EXIT", // map case properly
+    completeAddress: event.completeAddress,
+    latitude: String(event.latitude),
+    longitude: String(event.longitude)
+  };
+}
+
 export {
   truncate,
   capitalizeFirstLetter,
@@ -644,4 +665,5 @@ export {
   personalDocumentsArray,
   statusOptions,
   jobPhotoCategories,
+  toModel
 };

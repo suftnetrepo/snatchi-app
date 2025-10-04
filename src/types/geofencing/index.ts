@@ -12,6 +12,7 @@ import type {
   GeofenceTransition,
   ProjectGeofence,
   GeofencingState,
+  GeofenceEventBase,
 } from './types';
 
 const STORAGE_KEY = 'persisted_projects';
@@ -108,10 +109,10 @@ class GeofencingSingleton {
     const R = 6371000; // Earth's radius in meters
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
 
@@ -144,10 +145,23 @@ class GeofencingSingleton {
   // ───────────────────────────────
   // 🔹 Manual geofence checking
   // ───────────────────────────────
+  private async enrichEvent(
+    base: GeofenceEventBase
+  ): Promise<GeofenceEvent> {
+    const projects = await this.loadProjects();
+    const project = projects.find(
+      (p) => `${p.projectId}-${p.id}` === base.id
+    );
+    return {
+      ...base,
+      ...(project ?? {}),
+    };
+  }
+
   private async checkExistingGeofences(projects: ProjectGeofence[]) {
     try {
       console.log('🎯 Checking if already inside any geofences...');
-      
+
       const location = await BackgroundGeolocation.getCurrentPosition({
         samples: 1,
         persist: false,
@@ -160,7 +174,7 @@ class GeofencingSingleton {
 
       for (const project of projects) {
         const identifier = `${project.projectId}-${project.id}`;
-        
+
         // Skip if not within project window
         if (!this.isWithinProjectWindow(project)) {
           console.log(`⏰ Project ${project.siteName} not in active window`);
@@ -182,7 +196,7 @@ class GeofencingSingleton {
             this.currentlyInside.add(identifier);
 
             // Manually trigger entry event
-            const event: GeofenceEvent = {
+            const event: GeofenceEventBase = {
               id: identifier,
               transition: 'ENTER',
               latitude,
@@ -198,7 +212,7 @@ class GeofencingSingleton {
           if (this.currentlyInside.has(identifier)) {
             this.currentlyInside.delete(identifier);
 
-            const event: GeofenceEvent = {
+            const event: GeofenceEventBase = {
               id: identifier,
               transition: 'EXIT',
               latitude,
@@ -225,7 +239,7 @@ class GeofencingSingleton {
 
       for (const project of projects) {
         const identifier = `${project.projectId}-${project.id}`;
-        
+
         // Skip if not within project window
         if (!this.isWithinProjectWindow(project)) continue;
 
@@ -324,12 +338,12 @@ class GeofencingSingleton {
 
     // Geofence events
     this.geofenceSubscription = BackgroundGeolocation.onGeofence(
-      (geofence: RNBGGeofenceEvent) => {
+      async (geofence: RNBGGeofenceEvent) => {
         let transition: GeofenceTransition = 'ENTER';
         if (geofence.action === 'EXIT') transition = 'EXIT';
         if (geofence.action === 'DWELL') transition = 'DWELL';
 
-        const event: GeofenceEvent = {
+        const base: GeofenceEventBase = {
           id: geofence.identifier,
           transition,
           latitude: geofence.location.coords.latitude,
@@ -337,12 +351,10 @@ class GeofencingSingleton {
           timestamp: new Date().toISOString(),
         };
 
-        // Update our tracking state
-        if (transition === 'ENTER') {
-          this.currentlyInside.add(geofence.identifier);
-        } else if (transition === 'EXIT') {
-          this.currentlyInside.delete(geofence.identifier);
-        }
+        const event = await this.enrichEvent(base);
+
+        if (transition === 'ENTER') this.currentlyInside.add(geofence.identifier);
+        if (transition === 'EXIT') this.currentlyInside.delete(geofence.identifier);
 
         console.log('📍 Geofence event fired:', event);
         this.eventListeners.forEach((fn) => fn(event));
@@ -353,7 +365,7 @@ class GeofencingSingleton {
     this.locationSubscription = BackgroundGeolocation.onLocation(
       (location: Location) => {
         console.log('🛰️ Location update:', location.coords);
-        
+
         // Check location against geofences manually
         this.checkLocationAgainstGeofences(location);
       },
@@ -410,7 +422,7 @@ class GeofencingSingleton {
 
   async removeProjects(ids: string[]) {
     const existing = await this.loadProjects();
-    
+
     // Clean up tracking for removed projects
     for (const id of ids) {
       const project = existing.find(p => p.projectId === id);
@@ -428,7 +440,7 @@ class GeofencingSingleton {
   async clearAllProjects() {
     // Clear tracking state
     this.currentlyInside.clear();
-    
+
     await this.saveProjects([]);
     await BackgroundGeolocation.removeGeofences();
     await BackgroundGeolocation.stopSchedule();
@@ -507,7 +519,7 @@ class GeofencingSingleton {
   // ───────────────────────────────
   // 🔹 Utility methods
   // ───────────────────────────────
-  
+
   /**
    * Force a manual check of all geofences against current location
    */
@@ -531,7 +543,7 @@ class GeofencingSingleton {
   async triggerGeofenceRefresh(): Promise<void> {
     try {
       console.log('🔄 Triggering geofence refresh...');
-      
+
       // Request a fresh location with higher accuracy
       await BackgroundGeolocation.getCurrentPosition({
         samples: 3,
@@ -539,10 +551,10 @@ class GeofencingSingleton {
         desiredAccuracy: 10,
         timeout: 15000,
       });
-      
+
       // Force manual check as backup
       await this.forceGeofenceCheck();
-      
+
     } catch (error) {
       console.error('❌ Failed to trigger geofence refresh:', error);
     }

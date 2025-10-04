@@ -3,14 +3,17 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Navigator } from './src/navigation/AppNavigation';
 import AppProvider from './src/hooks/appContext';
 import { getFcmToken } from './src/utils/pushNotification';
+import { toModel } from './src/utils/help';
 import useLocation from './src/hooks/useLocation';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
-import { useProjectGeofencing, useGeofenceEvents } from './src/hooks/useProjectGeofencing';
+import { useProjectGeofencing, useGeofenceEvents } from './src/hooks/useGeofencing';
+import { useFence } from './src/hooks/useFence';
 
 function App() {
   useLocation();
+  const { handleSave } = useFence();
   const { isInitialized, isInitializing, error, retry } = useProjectGeofencing({
     enableBackgroundSync: true,
     backgroundFetchInterval: 15,
@@ -19,17 +22,20 @@ function App() {
 
   const { eventStats } = useGeofenceEvents(
     (event) => {
-      console.log('🏠 User ENTERED:', event.id);
-      // Your custom enter logic here
-      // Send API call, update state, show notification, etc.
+      console.log('🏠 User ENTERED:......', toModel(event));
+      handleSave(toModel(event)).then((res) => {
+        if (__DEV__) console.log('Geofence saved:', res);
+      }).catch((err) => {
+        if (__DEV__) console.error('Error saving geofence:', err);
+      }); 
     },
     (event) => {
-      console.log('🚪 User EXITED:', event.id);
+      console.log('🚪 User EXITED:', event);
       // Your custom exit logic here
       // Calculate time spent, log activity, etc.
     },
     (event) => {
-      console.log('⏰ User DWELLING in:', event.id);
+      console.log('⏰ User DWELLING in:', event);
       // Your dwell logic here
     },
     (event) => {
