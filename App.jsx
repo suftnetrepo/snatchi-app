@@ -30,9 +30,11 @@ function App() {
       }); 
     },
     (event) => {
-      console.log('🚪 User EXITED:', event);
-      // Your custom exit logic here
-      // Calculate time spent, log activity, etc.
+       handleSave(toModel(event)).then((res) => {
+        if (__DEV__) console.log('Geofence saved:', res);
+      }).catch((err) => {
+        if (__DEV__) console.error('Error saving geofence:', err);
+      }); 
     },
     (event) => {
       console.log('⏰ User DWELLING in:', event);

@@ -2,8 +2,8 @@
 
 // STAGING
 const HOST_ADDRESS = "https://snatchi-web.onrender.com/";
-// const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
- const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
+const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
+//  const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
 
 // END POINTS
 
