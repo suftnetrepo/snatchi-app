@@ -16,7 +16,7 @@ import GeofenceTestApp from '../screens/geofence';
 const Stack = createStackNavigator();
 function Navigator() {
   return (
-    <Stack.Navigator initialRouteName="GeofenceTestApp">
+    <Stack.Navigator initialRouteName="login">
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}

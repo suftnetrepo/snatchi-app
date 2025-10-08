@@ -116,6 +116,18 @@ const Login = () => {
           </StyledText>
         </StyledButton>
         <StyledSpacer marginVertical={4} />
+        <StyledButton
+          width="100%"
+          borderColor={theme.colors.gray[500]}
+          backgroundColor={theme.colors.gray[500]}
+          onPress={() => navigator.navigate("GeofenceTestApp")}>
+          <StyledText
+            paddingHorizontal={20}
+            paddingVertical={10}
+            color={theme.colors.gray[1]}>
+            Geofence Test
+          </StyledText>
+        </StyledButton>
       </YStack>
       {error && (
         <StyledOkDialog

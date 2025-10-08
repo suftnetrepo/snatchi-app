@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import { geofencingSingleton } from '../../types/geofencing'; // Adjust import path
 import type { GeofenceEvent, ProjectGeofence, GeofencingState } from '../../types/geofencing/types'; // Adjust import path
+import {useNavigation} from '@react-navigation/native';
 
 const GeofenceTestApp = () => {
+    const navigator = useNavigation();
   const [state, setState] = useState<GeofencingState>({
     isInitialized: false,
     isLoading: false,
@@ -296,6 +298,13 @@ useEffect(() => {
           disabled={!state.isInitialized}
         >
           <Text style={styles.buttonText}>Clear All Geofences</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.button, styles.clearButton]} 
+          onPress={()=> navigator.goBack()}
+          disabled={!state.isInitialized}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
         </TouchableOpacity>
       </View>
 

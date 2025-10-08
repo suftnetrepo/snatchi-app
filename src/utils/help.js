@@ -618,7 +618,7 @@ function toModel(event) {
     first_name: event.firstName,
     last_name: event.lastName,
     time,
-    status: event.transition === "ENTER" ? "ENTER" : "EXIT", // map case properly
+    status: event.transition === "ENTER" ? "Enter" : "Exit", // map case properly
     completeAddress: event.completeAddress,
     latitude: String(event.latitude),
     longitude: String(event.longitude)

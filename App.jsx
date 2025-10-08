@@ -63,7 +63,6 @@ function App() {
       <GluestackUIProvider config={glueStackConfigUi}>
         <NavigationContainer ref={navigationRef}>
           <Navigator />
-
         </NavigationContainer>
       </GluestackUIProvider>
     </AppProvider>
