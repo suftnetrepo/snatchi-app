@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyledSpinner,
   YStack,
@@ -11,35 +11,42 @@ import {
   StyledText,
   StyledButton,
 } from 'fluent-styles';
-import {fontStyles, theme} from '../../utils/theme';
-import {validatorRules} from './validatorRules';
-import {useSecure} from '../../hooks/useSecure';
-import {useNavigation} from '@react-navigation/native';
-import {validate} from '../../validator';
+import { fontStyles, theme } from '../../utils/theme';
+import { validatorRules } from './validatorRules';
+import { useSecure } from '../../hooks/useSecure';
+import { useNavigation } from '@react-navigation/native';
+import { validate } from '../../validator';
+import { Pressable } from 'react-native';
+import { getStore } from '../../utils/asyncStorage';
+import { STORAGE_KEY } from '../../types/geofencing';
 
 const Login = () => {
   const navigator = useNavigation();
   const [errorMessages, setErrorMessages] = useState({});
   const [fields, setFields] = useState(validatorRules.fields);
-  const {error, loading, handleLogin, handleReset} = useSecure();
+  const { error, loading, handleLogin, handleReset } = useSecure();
+
+  getStore(STORAGE_KEY).then(j => {
+    console.log('Persisted projects:', j);
+  })
 
   const onSubmit = async () => {
     setErrorMessages({});
-    const {hasError, errors} = validate(fields, validatorRules.rules);
+    const { hasError, errors } = validate(fields, validatorRules.rules);
     if (hasError) {
       setErrorMessages(errors);
       return false;
     }
 
     if (
-      fields.user_name === 'kabelsus@gmail.coms' ||
+      fields.user_name === '_kabelsus@gmail.com!' ||
       fields.user_name === 'abel.aghorighor@suftnet.com'
     ) {
       navigator.navigate('keypad', {
         email: fields.user_name,
       });
     } else {
-      handleLogin({email: fields.user_name}).then(async result => {
+      handleLogin({ email: fields.user_name }).then(async result => {
         if (result) {
           navigator.navigate('keypad', {
             email: fields.user_name,
@@ -51,7 +58,7 @@ const Login = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader marginHorizontal={8} statusProps={{translucent: true}}>
+      <StyledHeader marginHorizontal={8} statusProps={{ translucent: true }}>
         <StyledHeader.Full></StyledHeader.Full>
       </StyledHeader>
       <YStack
@@ -66,9 +73,11 @@ const Login = () => {
           marginHorizontal={16}
           justifyContent="center"
           alignItems="center">
-          <StyledImage
-            borderWidth={0}
-            source={require('../../../assets/img/icons8-login-100-2.png')}></StyledImage>
+          <Pressable onLongPress={() => navigator.navigate("GeofenceTestApp")}>
+            <StyledImage
+              borderWidth={0}
+              source={require('../../../assets/img/icons8-login-100-2.png')}></StyledImage>
+          </Pressable>
           <StyledText
             paddingVertical={16}
             paddingHorizontal={16}
@@ -97,7 +106,7 @@ const Login = () => {
           paddingHorizontal={8}
           value={fields.user_name}
           placeholderTextColor={theme.colors.gray[300]}
-          onChangeText={text => setFields({...fields, user_name: text})}
+          onChangeText={text => setFields({ ...fields, user_name: text })}
           error={!!errorMessages?.user_name}
           errorMessage={errorMessages?.user_name?.message}
         />
@@ -116,18 +125,6 @@ const Login = () => {
           </StyledText>
         </StyledButton>
         <StyledSpacer marginVertical={4} />
-        <StyledButton
-          width="100%"
-          borderColor={theme.colors.gray[500]}
-          backgroundColor={theme.colors.gray[500]}
-          onPress={() => navigator.navigate("GeofenceTestApp")}>
-          <StyledText
-            paddingHorizontal={20}
-            paddingVertical={10}
-            color={theme.colors.gray[1]}>
-            Geofence Test
-          </StyledText>
-        </StyledButton>
       </YStack>
       {error && (
         <StyledOkDialog

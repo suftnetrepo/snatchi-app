@@ -6,7 +6,6 @@ import BackgroundGeolocation, {
   ProviderChangeEvent,
   MotionChangeEvent,
 } from 'react-native-background-geolocation';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   GeofenceEvent,
   GeofenceTransition,
@@ -14,8 +13,7 @@ import type {
   GeofencingState,
   GeofenceEventBase,
 } from './types';
-
-const STORAGE_KEY = 'persisted_projects';
+import { add, clear, getStore, PROJECT_KEY } from '../../utils/asyncStorage';
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
@@ -88,7 +86,7 @@ class GeofencingSingleton {
   // 🔹 Storage helpers
   // ───────────────────────────────
   private async loadProjects(): Promise<ProjectGeofence[]> {
-    const stored = await AsyncStorage.getItem(STORAGE_KEY);
+    const stored = await getStore(PROJECT_KEY);
     if (!stored) return [];
     try {
       return JSON.parse(stored);
@@ -99,7 +97,7 @@ class GeofencingSingleton {
   }
 
   private async saveProjects(projects: ProjectGeofence[]) {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    await add(PROJECT_KEY, projects);
   }
 
   // ───────────────────────────────

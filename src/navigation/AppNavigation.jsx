@@ -12,14 +12,30 @@ import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
 import Chat from '../screens/messaging/chat';
 import GeofenceTestApp from '../screens/geofence';
+import Start from '../screens/start';
+import Notify from '../screens/notify';
 
 const Stack = createStackNavigator();
 function Navigator() {
   return (
-    <Stack.Navigator initialRouteName="login">
+    <Stack.Navigator initialRouteName="notify">
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="start"
+        component={Start}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="notify"
+        component={Notify}
         options={{
           headerShown: false,
         }}

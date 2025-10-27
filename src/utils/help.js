@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+  /* eslint-disable prettier/prettier */
 /* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable prettier/prettier */
 import {faker} from '@faker-js/faker';
@@ -577,9 +577,23 @@ function formatMessageTimestamp(timestamp) {
 }
 
 function getRelativeTimeString(timestamp) {
-  const date = new Date(
-    timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
-  );
+  let date;
+  
+  // Handle Firestore timestamp format
+  if (timestamp && typeof timestamp === 'object' && 'seconds' in timestamp) {
+    date = new Date(
+      timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+    );
+  } 
+  // Handle millisecond timestamp
+  else if (typeof timestamp === 'number') {
+    date = new Date(timestamp);
+  }
+  // Handle Date object or string
+  else {
+    date = new Date(timestamp);
+  }
+
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
 
@@ -591,8 +605,16 @@ function getRelativeTimeString(timestamp) {
   } else if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
     return `${hours}h ago`;
+  } else if (diffInSeconds < 604800) { // Less than 7 days
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days}d ago`;
   } else {
-    return formatMessageTimestamp(timestamp);
+    // Format as readable date
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    });
   }
 }
 
@@ -605,20 +627,20 @@ const truncate = (str, max = 100) =>
   str?.length > max ? str.slice(0, max) + '…' : str;
 
 function toModel(event) {
-  const dateObj = new Date(event.timestamp);
-  const time = dateObj.toISOString().substring(11, 16); 
+  const now = new Date();
+  const time = now.toISOString().substring(11, 16); 
 
   return {
     integrator: event.integrator,
     user: event.userId,
     project: event.projectId,
-    date: dateObj,
+    date: now,
     siteName: event.siteName,
     radius: event.radius || 200,
     first_name: event.firstName,
     last_name: event.lastName,
     time,
-    status: event.transition === "ENTER" ? "Enter" : "Exit", // map case properly
+    status: event.transition === "ENTER" ? "Enter" : "Exit",
     completeAddress: event.completeAddress,
     latitude: String(event.latitude),
     longitude: String(event.longitude)

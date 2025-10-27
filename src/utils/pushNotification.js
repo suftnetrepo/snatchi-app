@@ -137,7 +137,6 @@ export function registerListenerWithFCM() {
        
       try {
         // 🔹 ADD_PROJECTS
-   
         if (remoteMessage.data.addProjects) {
           const projects = JSON.parse(remoteMessage.data.addProjects);
           await geofencingSingleton.addProjects(projects);

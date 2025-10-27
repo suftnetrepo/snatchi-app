@@ -1,117 +1,75 @@
-import React, {useCallback, useEffect, useRef} from 'react';
-import {StyleSheet} from 'react-native';
-import {YStack, XStack, StyledText, StyledCycle} from 'fluent-styles';
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-  BottomSheetBackdrop,
-} from '@gorhom/bottom-sheet';
-import {theme} from '../../utils/theme';
-import {StyledMIcon} from '../../components/icon';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet } from 'react-native';
+import { Box, HStack, VStack, Text, Pressable } from '@gluestack-ui/themed';
+import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { theme } from '../../utils/theme';
 
 const BottomSheet = ({
-  children,
-  snapPoints = ['25%', '50%', '90%'],
   title = '',
-  onSetShow,
-  enableHandlePanningGesture = true,
-  enableContentPanningGesture = true,
-  enablePanDownToClose = false,
-  closeOnBackdropPress = false,
-  overDragResistanceFactor = 3,
-  backdropProps = {},
-  onShow,
-  bottomSheetModalRef,
+  children,
+  isVisible,
+  onClose,
+  snapPoints = ['40%', '90%'],
 }) => {
+  const sheetRef = useRef(null);
+
+  // Show or hide when prop changes
   useEffect(() => {
-    onShow && bottomSheetModalRef.current?.present();
-  }, [onShow]);
-
-  const dismissModal = useCallback(() => {
-    bottomSheetModalRef.current?.dismiss();
-    onSetShow(false);
-  }, [onSetShow]);
-
-  const renderBackdrop = useCallback(
-    props => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.5}
-        pressBehavior={closeOnBackdropPress ? 'close' : 'none'} // Control backdrop press behavior
-        {...backdropProps}
-      />
-    ),
-    [closeOnBackdropPress, backdropProps],
-  );
+    if (isVisible) {
+      sheetRef.current?.present();
+    } else {
+      sheetRef.current?.dismiss();
+    }
+  }, [isVisible]);
 
   return (
     <BottomSheetModalProvider>
-      <YStack justifyContent="flex-start" alignItems="flex-start" marginBottom={24}>
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          index={0}
-          snapPoints={snapPoints}
-          backdropComponent={renderBackdrop}
-          enableHandlePanningGesture={enableHandlePanningGesture}
-          enableContentPanningGesture={enableContentPanningGesture}
-          enablePanDownToClose={enablePanDownToClose} // Prevent dismiss on drag down
-          overDragResistanceFactor={overDragResistanceFactor} // Resistance to over dragging
-          handleIndicatorStyle={styles.indicator}
-          containerStyle={styles.bottomSheetContainer}>
-          <YStack paddingHorizontal={16} paddingVertical={8}>
-            {title ? (
-              <XStack justifyContent="space-between" alignItems="center">
-                <StyledText
-                  paddingHorizontal={6}
-                  marginTop={4}
-                  marginBottom={4}
-                  fontWeight={theme.fontWeight.normal}
-                  fontSize={theme.fontSize.small}
-                  textAlign="left"
-                  readOnly
-                  color={theme.colors.gray[800]}>
-                  {title}
-                </StyledText>
-                <StyledCycle
-                  height={48}
-                  width={48}
-                  borderColor={theme.colors.gray[400]}>
-                  <StyledMIcon
-                    size={32}
-                    name="close"
-                    color={theme.colors.gray[800]}
-                    onPress={() => {
-                      dismissModal();
-                    }}
-                  />
-                </StyledCycle>
-              </XStack>
-            ) : null}
-            <>{children}</>
-          </YStack>
-        </BottomSheetModal>
-      </YStack>
+      <BottomSheetModal
+        ref={sheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        onDismiss={onClose}
+        handleIndicatorStyle={styles.indicator}
+        backgroundStyle={styles.sheetBackground}
+      >
+        <VStack px="$4" py="$3" space="sm">
+          {title ? (
+            <HStack justifyContent="space-between" alignItems="center" mb="$2">
+              <Text fontSize="$md" fontWeight="$medium" color="$text900">
+                {title}
+              </Text>
+              <Pressable onPress={onClose}>
+                <Icon name="close" size={24} color={theme.colors.gray[800]} />
+              </Pressable>
+            </HStack>
+          ) : null}
+
+          <Box>{children}</Box>
+        </VStack>
+      </BottomSheetModal>
     </BottomSheetModalProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  bottomSheetContainer: {
+  sheetBackground: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
     elevation: 5,
   },
   indicator: {
     width: 40,
     height: 4,
-    backgroundColor: theme.colors.gray[700],
+    borderRadius: 2,
+    backgroundColor: theme.colors.gray[400],
+    alignSelf: 'center',
   },
 });
 
