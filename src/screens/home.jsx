@@ -1,4 +1,4 @@
-import React, {useState, useRef, useCallback} from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   YStack,
   XStack,
@@ -9,31 +9,34 @@ import {
   StyledSpacer,
   StyledButton,
 } from 'fluent-styles';
-import {StyledMIcon} from '../components/icon';
-import {theme} from '../utils/theme';
-import {fontStyles} from '../utils/fontStyles';
-import {useNavigation, CommonActions} from '@react-navigation/native';
-import {useAppContext} from '../hooks/appContext';
-import {dateConverter, getGreetings, toWordCase} from '../utils/help';
+import { StyledMIcon } from '../components/icon';
+import { theme } from '../utils/theme';
+import { fontStyles } from '../utils/fontStyles';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useAppContext } from '../hooks/appContext';
+import { dateConverter, getGreetings, toWordCase } from '../utils/help';
 import TaskCalendar from '../components/calender';
 import Today from '../components/today';
-import {useFocus} from '../hooks/useFocus';
-import {Platform, ScrollView} from 'react-native';
-import {useTask} from '../hooks/useTask';
+import { useFocus } from '../hooks/useFocus';
+import { Platform, ScrollView } from 'react-native';
+import { useTask } from '../hooks/useTask';
 import CalendarCard from '../components/calender/calenderCard';
 import Dashboard from '../components/dashboard';
-import {useFocusEffect} from '@react-navigation/native';
-import {Pressable} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { Pressable } from 'react-native';
+import { Bell } from '../components/badges/bell';
+import { PROJECT_KEY, useStorage } from '../hooks/useStorage';
 
-const Home = ({route}) => {
-  const {setTabBarVisible} = route.params || {};
+const Home = ({ route }) => {
+  const { setTabBarVisible } = route.params || {};
   const navigate = useNavigation();
-  const {user} = useAppContext();
-  const {key} = useFocus();
+  const { user } = useAppContext();
+  const { key } = useFocus();
   const [selected, setSelected] = useState('dashboard');
   const [date, setDate] = useState(dateConverter(new Date(), false));
+  const {unReadCount} = useStorage(PROJECT_KEY)
   const scrollViewRef = useRef(null);
-  const {data} = useTask();
+  const { data } = useTask();
 
   useFocusEffect(
     useCallback(() => {
@@ -44,7 +47,7 @@ const Home = ({route}) => {
   const handleSelectItem = index => {
     const itemWidth = 100;
     const scrollToX = index * itemWidth;
-    scrollViewRef?.current?.scrollTo({x: scrollToX, animated: true});
+    scrollViewRef?.current?.scrollTo({ x: scrollToX, animated: true });
   };
 
   const RenderHeader = () => {
@@ -77,12 +80,16 @@ const Home = ({route}) => {
         <StyledSpacer flex={1} />
         <StyledSpacer marginHorizontal={4} />
         <XStack>
+          <Bell
+            onPress={() => { navigate.navigate('notify'); }}
+          />
+        <StyledSpacer marginHorizontal={2} />
           <Pressable
             onPress={() => {
               navigate.dispatch(
                 CommonActions.reset({
                   index: 0,
-                  routes: [{name: 'login'}],
+                  routes: [{ name: 'login' }],
                 }),
               );
             }}>
@@ -100,7 +107,7 @@ const Home = ({route}) => {
                   navigate.dispatch(
                     CommonActions.reset({
                       index: 0,
-                      routes: [{name: 'login'}],
+                      routes: [{ name: 'login' }],
                     }),
                   );
                 }}
@@ -115,7 +122,7 @@ const Home = ({route}) => {
   return (
     <StyledSafeAreaView flex={1} backgroundColor={theme.colors.gray[100]}>
       {Platform.OS === 'android' && <StyledSpacer marginVertical={6} />}
-      <StyledHeader skipAndroid={true} statusProps={{translucent: true}}>
+      <StyledHeader skipAndroid={true} statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>

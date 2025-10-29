@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useUtil} from '../store/';
 
 export const SCHEDULE_KEY = 'schedules';
 export const PROJECT_KEY = 'persisted_projects';
@@ -12,7 +13,7 @@ export const store = async (key, value) => {
   }
 };
 
-export const getStore = async (key) => {
+export const getStore = async key => {
   try {
     const value = await AsyncStorage.getItem(key);
     return value ? JSON.parse(value) : null;
@@ -24,6 +25,7 @@ export const getStore = async (key) => {
 
 export const add = async (key, notification) => {
   try {
+    const {set} = useUtil();
     /// clear(key);
     const notifications = await getAll(key);
 
@@ -40,6 +42,8 @@ export const add = async (key, notification) => {
 
     notifications.push(newNotification);
     await store(key, notifications);
+    const unReadCount = await getUnreadCount(key);
+    set(key, unReadCount);
     return newNotification;
   } catch (e) {
     console.error('Error adding notification:', e);
@@ -47,8 +51,7 @@ export const add = async (key, notification) => {
   }
 };
 
-
-export const getAll = async (key) => {
+export const getAll = async key => {
   try {
     const notifications = await getStore(key);
 
@@ -69,7 +72,7 @@ export const getAll = async (key) => {
   }
 };
 
-export const getByDate = async (key) => {
+export const getByDate = async key => {
   try {
     const notifications = await getAll(key);
     return notifications.sort((a, b) => {
@@ -83,7 +86,7 @@ export const getByDate = async (key) => {
   }
 };
 
-export const getReadCount = async (key) => {
+export const getReadCount = async key => {
   try {
     const notifications = await getAll(key);
     return notifications.filter(n => n.read === true).length;
@@ -93,7 +96,7 @@ export const getReadCount = async (key) => {
   }
 };
 
-export const getUnreadCount = async (key) => {
+export const getUnreadCount = async key => {
   try {
     const notifications = await getAll(key);
     return notifications.filter(n => n.read === false).length;
@@ -121,7 +124,6 @@ export const getReads = async (key, sortByDate = true) => {
   }
 };
 
-
 export const getUnread = async (key, sortByDate = true) => {
   try {
     const notifications = await getAll(key);
@@ -140,9 +142,9 @@ export const getUnread = async (key, sortByDate = true) => {
   }
 };
 
-
 export const markAsRead = async (key, id) => {
   try {
+    const {set} = useUtil();
     const notifications = await getAll(key);
     const index = notifications.findIndex(n => n.id === id);
 
@@ -154,7 +156,11 @@ export const markAsRead = async (key, id) => {
     notifications[index].read = true;
     notifications[index].readAt = Date.now();
 
+    console.warn(`Notification with ID "${id}" found`, notifications);
     await store(key, notifications);
+    const unReadCount = await getUnreadCount(key);
+    console.log('Updated unread count after marking as read:', unReadCount);
+    set(key, unReadCount === 1 ? 0 : unReadCount);
     return true;
   } catch (e) {
     console.error('Error marking notification as read:', e);
@@ -164,6 +170,8 @@ export const markAsRead = async (key, id) => {
 
 export const deleteOne = async (key, id) => {
   try {
+    const {set} = useUtil();
+
     const notifications = await getAll(key);
     const filter = notifications.filter(n => n.id !== id);
 
@@ -173,6 +181,8 @@ export const deleteOne = async (key, id) => {
     }
 
     await store(key, filter);
+    const unReadCount = await getUnreadCount(key);
+    set(key, unReadCount);
     return true;
   } catch (e) {
     console.error('Error deleting notification:', e);
@@ -180,7 +190,7 @@ export const deleteOne = async (key, id) => {
   }
 };
 
-export const clear = async (key) => {
+export const clear = async key => {
   try {
     await store(key, []);
     return true;

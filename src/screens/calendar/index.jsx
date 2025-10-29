@@ -30,7 +30,6 @@ import { validate } from '../../validator/index';
 import { useAppContext } from '../../hooks/appContext';
 import { useFocus } from '../../hooks/useFocus';
 
-
 const getUserSelectedRange = (start, end, color = '#3B82F6') => {
   const marked = {};
   if (!start) return marked;
@@ -248,7 +247,6 @@ const CalendarListScreen = () => {
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
         <CalendarList
-
           markingType="period"
           markedDates={mergedMarkedDates}
           pastScrollRange={6}

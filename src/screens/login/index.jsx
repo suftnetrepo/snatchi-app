@@ -17,18 +17,12 @@ import { useSecure } from '../../hooks/useSecure';
 import { useNavigation } from '@react-navigation/native';
 import { validate } from '../../validator';
 import { Pressable } from 'react-native';
-import { getStore } from '../../utils/asyncStorage';
-import { STORAGE_KEY } from '../../types/geofencing';
 
 const Login = () => {
   const navigator = useNavigation();
   const [errorMessages, setErrorMessages] = useState({});
   const [fields, setFields] = useState(validatorRules.fields);
   const { error, loading, handleLogin, handleReset } = useSecure();
-
-  getStore(STORAGE_KEY).then(j => {
-    console.log('Persisted projects:', j);
-  })
 
   const onSubmit = async () => {
     setErrorMessages({});

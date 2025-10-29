@@ -11,6 +11,8 @@ import {
   Divider,
 } from '@gluestack-ui/themed';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { StatusBadge } from '../../components/badges/status';
+import { PriorityBadge } from '../../components/badges/priority';
 
 const ProjectDetail = ({ project, handleClose }) => {
   if (!project) {
@@ -36,7 +38,7 @@ const ProjectDetail = ({ project, handleClose }) => {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f8f8fc' }}>
       <Box
-        m="$4"
+        m="$2"
         p="$5"
         bg="$backgroundLight0"
         borderRadius="$2xl"
@@ -45,55 +47,23 @@ const ProjectDetail = ({ project, handleClose }) => {
         shadowRadius={4}
       >
         {/* Header */}
-        <HStack justifyContent="space-between" alignItems="center" mb="$4">
-          <Pressable>
-            <Box
-              h={40}
-              w={40}
-              borderRadius="$full"
-              bg="$backgroundLight200"
-              alignItems="center"
-              justifyContent="center"
-            >
-              {/* <Icon name="arrow-back" size={20} color="#333" /> */}
-            </Box>
-          </Pressable>
+        <HStack justifyContent="flex-end" alignItems="center" mb="$4">
+          <Text fontSize="$lg" fontWeight="$bold" color="$text900" flexShrink={1}>
+            {project.siteName}
+          </Text>
           <Pressable onPress={handleClose}>
-             <Icon name="cancel" size={48} color="#333" />
+            <Icon name="cancel" size={48} color="#333" />
           </Pressable>
         </HStack>
 
-        {/* Title & Progress */}
         <VStack mb="$3" space="xs">
-          <Text fontSize="$xl" fontWeight="$bold" color="$text900" flexShrink={1}>
-            {project.siteName}
-          </Text>
-          <Box bg="$indigo200" px="$3" py="$1" borderRadius="$full">
-            <Text fontSize="$xs" color="$indigo800">
-              60% Progress
-            </Text>
-          </Box>
-
+          <HStack space="sm" mb="$3" alignItems="center">
+            <StatusBadge status="Pending" />
+            <PriorityBadge priority="High" />
+          </HStack>
           <Text fontSize="$sm" color="$text700" lineHeight="$sm">
             {project.description}
           </Text>
-        </VStack>
-
-        {/* Team Members */}
-        <VStack mt="$4" mb="$3" space="xs">
-          <Text fontSize="$sm" color="$text600" fontWeight="$medium">
-           Engineers
-          </Text>
-          <HStack mt="$2" space="md">
-            {[1, 2, 3, 4].map((i) => (
-              <Avatar key={i} size="sm">
-                <AvatarImage
-                  alt="member"
-                  source={{ uri: `https://i.pravatar.cc/150?img=${i + 2}` }}
-                />
-              </Avatar>
-            ))}
-          </HStack>
         </VStack>
 
         {/* Start and End Dates */}

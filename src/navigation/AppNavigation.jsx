@@ -18,7 +18,7 @@ import Notify from '../screens/notify';
 const Stack = createStackNavigator();
 function Navigator() {
   return (
-    <Stack.Navigator initialRouteName="notify">
+    <Stack.Navigator initialRouteName="start">
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
