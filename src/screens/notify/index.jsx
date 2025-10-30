@@ -21,7 +21,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useStorage, add, clear, PROJECT_KEY } from '../../hooks/useStorage';
 import { theme, fontStyles } from '../../utils/theme';
 import { notify as initialNotify } from '../../../data/notify';
-import { getRelativeTimeString } from '../../utils/help';
+import { getRelativeTimeString, truncate, formatShortDate } from '../../utils/help';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ProjectDetail } from './projectDetails';
 
@@ -30,24 +30,22 @@ export default function Notify() {
   const [selected, setSelected] = useState(null);
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
-  const { handleMarkAsRead, data , unReadCount, handleDelete} = useStorage(PROJECT_KEY);
-
-  console.log('Notifications data from storage hook:', data);
-  console.log('Unread count from storage hook:', unReadCount);  
+  const { handleMarkAsRead, data, unReadCount, handleDelete } =
+    useStorage(PROJECT_KEY);
 
   useEffect(() => {
     const addDummyNotification = async () => {
-       // await clear(PROJECT_KEY);
+      // await clear(PROJECT_KEY);
       for (const n of initialNotify) {
-       // const result = await add(PROJECT_KEY, n);
+        // const result = await add(PROJECT_KEY, n);
         console.log('Added notification:', result);
       }
     };
     addDummyNotification();
   }, []);
 
-  const onhandleDelete = (id) => {
-   handleDelete(PROJECT_KEY, id);
+  const onhandleDelete = id => {
+    handleDelete(PROJECT_KEY, id);
   };
 
   const RenderHeader = () => (
@@ -58,7 +56,10 @@ export default function Notify() {
       alignItems="center"
       backgroundColor={theme.colors.gray[50]}>
       <Pressable onPress={() => navigator.goBack()}>
-        <StyledCycle height={48} width={48} borderColor={theme.colors.gray[200]}>
+        <StyledCycle
+          height={48}
+          width={48}
+          borderColor={theme.colors.gray[200]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>
@@ -102,7 +103,10 @@ export default function Notify() {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader skipAndroid={true} marginHorizontal={8} statusProps={{ translucent: true }}>
+      <StyledHeader
+        skipAndroid={true}
+        marginHorizontal={8}
+        statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
@@ -115,22 +119,37 @@ export default function Notify() {
               <Swipeable
                 key={index}
                 renderRightActions={(progress, dragX) =>
-                  renderRightActions(progress, dragX, () => onhandleDelete(body.id))
+                  renderRightActions(progress, dragX, () => {
+                    onhandleDelete(body.id);
+                  })
                 }>
-                <Box my="$1" bg="$white" borderRadius="$md" p="$2">
+                <Box bg="$white" borderRadius="$md">
                   <HStack space="md" alignItems="flex-start">
                     <VStack flex={1}>
                       <HStack justifyContent="flex-start" alignItems="center">
-                        <Text flex={6} fontWeight="$medium" fontSize="$md" color="$text900">
+                        <Text
+                          flex={6}
+                          fontWeight="$medium"
+                          fontSize="$md"
+                          color="$text900">
                           {body.siteName}
                         </Text>
                         <Pressable
                           marginLeft={8}
                           flex={1}
                           onPress={() => {
-                            setSelected(body);
-                            handleMarkAsRead(PROJECT_KEY, body.id);
-                            bottomSheetRef.current?.snapToIndex(1);
+                            if (body.action === true) {
+                              setSelected(body);
+                              handleMarkAsRead(PROJECT_KEY, body.id);
+                              bottomSheetRef.current?.snapToIndex(1);
+                            } else {
+                              navigator.navigate(body.screen, {
+                                id: body.id,
+                                day :{
+                                  dateString : formatShortDate(body.startDate)
+                                }
+                              })
+                            }
                           }}>
                           <StyledCycle
                             height={40}
@@ -146,16 +165,17 @@ export default function Notify() {
                           </StyledCycle>
                         </Pressable>
                       </HStack>
-                      <Text color="$coolGray600" mt="$1" fontSize="$sm">
-                        {body.description || 'No description provided'}
+                      <Text color="$coolGray600" mb={'$1'} fontSize="$sm">
+                        {truncate(body.description, 100) ||
+                          'No description provided'}
                       </Text>
-                      <Text color="$coolGray400" mt="$1" fontSize="$xs">
+                      <Text color="$coolGray800" fontSize="$xs">
                         {getRelativeTimeString(body.createdAt)}
                       </Text>
                     </VStack>
                   </HStack>
                 </Box>
-                <Divider mt="$1" />
+                <Divider mt={'$8'} />
               </Swipeable>
             ))}
           </VStack>

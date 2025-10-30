@@ -1,23 +1,36 @@
 import messaging from '@react-native-firebase/messaging';
-import {Platform, PermissionsAndroid} from 'react-native';
-import {PERMISSIONS, request} from 'react-native-permissions';
-import {navigationRef} from '../navigation/NavigationRef';
-import {store} from './asyncStorage';
-import {geofencingSingleton} from '../types/geofencing/';
+import { Platform, PermissionsAndroid } from 'react-native';
+import { PERMISSIONS, request } from 'react-native-permissions';
+import { navigationRef } from '../navigation/NavigationRef';
+import { store, add,clear, PROJECT_KEY } from './asyncStorage';
+import { geofencingSingleton } from '../types/geofencing/';
 
 export const getFcmToken = async () => {
-  await checkApplicationNotificationPermission();
-  await registerListenerWithFCM();
-  setupNotificationNavigation(navigationRef);
-
   try {
+    // 1️⃣ Check app notification permission
+    await checkApplicationNotificationPermission();
+
+    // 2️⃣ Register the device for remote messages (required for iOS)
+    await messaging().registerDeviceForRemoteMessages();
+
+    // 3️⃣ Request Firebase token
     const token = await messaging().getToken();
+    if (__DEV__) console.log('getFcmToken -->', token);
+
+    // 4️⃣ Save the token for later use
     await store('fcm', token);
-    if (__DEV__) console.log('getFcmToken-->', token);
+
+    // 5️⃣ Register background/foreground listeners
+    await registerListenerWithFCM();
+
+    // 6️⃣ Link notifications to navigation handling
+    setupNotificationNavigation(navigationRef);
+
+    return token;
   } catch (error) {
-    if (__DEV__) console.log('getFcmToken Device Token error ', error);
+    console.log('getFcmToken Device Token error', error);
+    return null;
   }
-  return true;
 };
 
 export function setupNotificationNavigation(navigationRef) {
@@ -134,7 +147,7 @@ export function registerListenerWithFCM() {
     }
 
     if (remoteMessage?.data) {
-       
+
       try {
         // 🔹 ADD_PROJECTS
         if (remoteMessage.data.addProjects) {
@@ -145,7 +158,7 @@ export function registerListenerWithFCM() {
 
         // 🔹 REMOVE_PROJECTS
         if (remoteMessage.data.removeProjects) {
-          const ids = JSON.parse(remoteMessage.data.removeProjects); 
+          const ids = JSON.parse(remoteMessage.data.removeProjects);
           await geofencingSingleton.removeProjects(ids);
           if (__DEV__) console.log('🗑️ Projects removed from push');
         }
@@ -155,6 +168,29 @@ export function registerListenerWithFCM() {
           await geofencingSingleton.clearAllProjects();
           if (__DEV__) console.log('🧹 All projects cleared from push');
         }
+
+        if (remoteMessage.data.screen === 'calendar') {
+          const screenParams = JSON.parse(remoteMessage.data.screenParams);
+          const scheduleId = screenParams.scheduleId;
+          console.log('Handling calendar push for scheduleId:', scheduleId);
+            
+          const body = {
+            id: scheduleId,
+            siteName: remoteMessage.notification.title,
+            description: remoteMessage.notification.body,
+            action: false,
+            screen: remoteMessage.data.screen,
+            createdAt: Date.now(),
+            startDate: screenParams.startDate,
+            endDate: screenParams.endDate,
+            dateString: screenParams.startDate
+          };
+          // await clear(PROJECT_KEY);
+          await add(PROJECT_KEY, body);
+            console.log('Navigating to screen from geofence push:', remoteMessage.data.screen, body);
+         // navigationRef.current?.navigate(remoteMessage.data.screen, params);
+        }
+
       } catch (err) {
         console.error('❌ Failed to handle geofence push:', err);
       }

@@ -175,7 +175,7 @@ export const deleteOne = async (key, id) => {
     const notifications = await getAll(key);
     const filter = notifications.filter(n => n.id !== id);
 
-    if (filter.length === notifications.length) {
+    if (filter?.length === notifications.length) {
       console.warn(`Notification with ID "${id}" not found`);
       return false;
     }
@@ -192,7 +192,9 @@ export const deleteOne = async (key, id) => {
 
 export const clear = async key => {
   try {
+        const {set} = useUtil();
     await store(key, []);
+    set(key, 0);
     return true;
   } catch (e) {
     console.error('Error clearing all notifications:', e);

@@ -647,6 +647,14 @@ function toModel(event) {
   };
 }
 
+function formatShortDate(input) {
+  if (!input) return '';
+  const date = new Date(input);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 export {
   truncate,
   capitalizeFirstLetter,
@@ -687,5 +695,6 @@ export {
   personalDocumentsArray,
   statusOptions,
   jobPhotoCategories,
-  toModel
+  toModel,
+  formatShortDate
 };

@@ -7,13 +7,9 @@ import {
   StyledText,
   StyledCycle,
   StyledSpacer,
-  StyledCard,
-  StyledSeparator,
-  StyledBadge,
   StyledSpinner,
   StyledOkDialog,
   StyledButton,
-  StyledDialog,
   StyledInput,
   StyledMultiInput,
 } from 'fluent-styles';
@@ -54,6 +50,8 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 
 const CalendarListScreen = () => {
   const { key } = useFocus()
+  const route = useRoute()
+  const params = route.params;
   const {
     data,
     handleChange,
@@ -74,6 +72,12 @@ const CalendarListScreen = () => {
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [errorMessages, setErrorMessages] = useState({});
   const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    if (params?.day && params?.id) {
+      onDayPress(params.day)
+    }
+  }, [params?.day, params?.id]);
 
   const onDayPress = day => {
     const result = handleDayChange(day?.dateString?.trim());
