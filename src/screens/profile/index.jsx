@@ -121,7 +121,7 @@ const Profile = () => {
         My Profile
       </StyledText>
       <StyledSpacer flex={1} />
-      <Pressable onPress={testPermissions}>
+      <Pressable onPress={()=> navigator.navigate('user-documents')}>
         <StyledCycle
           height={48}
           width={48}
@@ -129,25 +129,11 @@ const Profile = () => {
           backgroundColor={theme.colors.cyan[500]}>
           <Icon
             name="file-upload"
-            size={16}
+            size={24}
             color={theme.colors.gray[1]}
           />
         </StyledCycle>
       </Pressable>
-      <Pressable onPress={testInitialize}>
-        <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.cyan[500]}
-          backgroundColor={theme.colors.cyan[500]}>
-          <Icon
-            name="file-upload"
-            size={16}
-            color={theme.colors.gray[1]}
-          />
-        </StyledCycle>
-      </Pressable>
-
     </XStack>
   );
 

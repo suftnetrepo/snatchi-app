@@ -23,7 +23,6 @@ import {useUserDocuments} from '../../../hooks/useUserDocuments';
 import { useAppContext } from '../../../hooks/appContext';
 import { useFocus } from '../../../hooks/useFocus';
 
-
 const UserDocuments = () => {
   const {key} = useFocus();
   const navigator = useNavigation();
