@@ -14,7 +14,7 @@ import {
 } from 'fluent-styles';
 import { StyledDropdown } from '../../../components/dropdown';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Pressable, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Pressable, ScrollView, KeyboardAvoidingView, Platform} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useUserDocuments } from '../../../hooks/useUserDocuments';
 import { ImagePickerModal } from '../../../components/imagePickerModal';
@@ -114,7 +114,7 @@ const UploadUserDocument = () => {
         style={{ flex: 1 }}
       >
         <StyledHeader
-          skipAndroid={true}
+         skipAndroid={Platform.OS === 'android' ? false : true}
           marginHorizontal={8}
           statusProps={{ translucent: true }}>
           <StyledHeader.Full>

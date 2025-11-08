@@ -15,7 +15,7 @@ import {
   Linking,
   Pressable,
 } from 'react-native';
-import {FlatList} from 'react-native';
+import {FlatList, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {fontStyles, theme} from '../../../utils/theme';
 import {StyledMIcon} from '../../../components/icon';
@@ -139,7 +139,7 @@ const UserDocuments = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+       skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{translucent: true}}>
         <StyledHeader.Full>

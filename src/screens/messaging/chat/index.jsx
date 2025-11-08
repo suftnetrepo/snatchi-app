@@ -17,7 +17,7 @@ import {GiftedChat, Send, Bubble} from 'react-native-gifted-chat';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useChatMessage} from '../../../hooks/useChat';
 import {StyledMIcon} from '../../../components/icon';
-import {Pressable} from 'react-native';
+import {Pressable, Platform} from 'react-native';
 import { Cycle } from '../../../components/gluestack/cycle';
 
 const MyChat = ({route}) => {
@@ -129,7 +129,7 @@ const MyChat = ({route}) => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+      skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{translucent: true}}>
         <StyledHeader.Full>

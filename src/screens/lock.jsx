@@ -12,7 +12,7 @@ import {
   StyledCycle,
 } from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Animated, Pressable, Vibration } from 'react-native';
+import { Animated, Pressable, Vibration,Platform } from 'react-native';
 import { theme } from '../utils/theme';
 import { fontStyles } from '../utils/fontStyles';
 import { useSecure } from '../hooks/useSecure';
@@ -117,7 +117,7 @@ const Keypad = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader marginHorizontal={8} statusProps={{ translucent: true }}>
+      <StyledHeader   skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>

@@ -16,7 +16,7 @@ import {StyledMIcon} from '../../components/icon';
 import {fontStyles} from '../../utils/fontStyles';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {Pressable} from 'react-native';
+import {Pressable, Platform} from 'react-native';
 
 const Settings = () => {
   const navigator = useNavigation();
@@ -84,7 +84,7 @@ const Settings = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+       skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{translucent: true}}>
         <StyledHeader.Full>

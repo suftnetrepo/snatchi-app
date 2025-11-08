@@ -48,7 +48,7 @@ const ProjectDetail = ({ project, handleClose }) => {
       >
         {/* Header */}
         <HStack justifyContent="flex-end" alignItems="center" mb="$4">
-          <Text fontSize="$lg" fontWeight="$bold" color="$text900" flexShrink={1}>
+          <Text fontSize="$lg" fontWeight="$bold" color="$black" flexShrink={1}>
             {project.siteName}
           </Text>
           <Pressable onPress={handleClose}>

@@ -67,6 +67,10 @@ export const FENCE = {
   removeOne: `${HOST_API_ADDRESS}fence/`
 };
 
+export const PROJECT = {
+  recent: `${HOST_API_ADDRESS}project/`,
+};
+
 export const USER_HOST_USER_STATUS = {
   action: `${HOST_API_ADDRESS}user/status`,
  }

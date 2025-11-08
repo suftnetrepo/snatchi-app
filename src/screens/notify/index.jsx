@@ -104,7 +104,7 @@ export default function Notify() {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+        skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{ translucent: true }}>
         <StyledHeader.Full>
@@ -129,9 +129,9 @@ export default function Notify() {
                       <HStack justifyContent="flex-start" alignItems="center">
                         <Text
                           flex={6}
-                          fontWeight="$medium"
+                          fontWeight="$bold"
                           fontSize="$md"
-                          color="$text900">
+                          color="$black">
                           {body.siteName}
                         </Text>
                         <Pressable

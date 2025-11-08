@@ -21,7 +21,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAppContext } from '../../hooks/appContext';
 import { validate } from '../../validator';
 import { ImagePickerModal } from '../../components/imagePickerModal';
-import { Pressable } from 'react-native';
+import { Pressable, Platform } from 'react-native';
 import { getStore } from '../../utils/asyncStorage';
 
 const Profile = () => {
@@ -140,7 +140,7 @@ const Profile = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+    skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{ translucent: true }}>
         <StyledHeader.Full>

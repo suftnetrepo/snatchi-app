@@ -14,7 +14,7 @@ import {
   StyledSpinner,
   StyledOkDialog,
 } from 'fluent-styles';
-import {FlatList, Pressable} from 'react-native';
+import {FlatList, Pressable, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {fontStyles, theme} from '../../utils/theme';
 import InvoiceProvider, {useInvoiceContext} from '../../hooks/invoiceContext';
@@ -425,7 +425,7 @@ const Invoices = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+     skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{translucent: true}}>
         <StyledHeader.Full>

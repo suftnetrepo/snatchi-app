@@ -129,7 +129,7 @@ const TaskDocument = () => {
         style={{ flex: 1 }}
       >
         <StyledHeader
-          skipAndroid={true}
+       skipAndroid={Platform.OS === 'android' ? false : true}
           marginHorizontal={8}
           statusProps={{ translucent: true }}>
           <StyledHeader.Full>

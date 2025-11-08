@@ -14,6 +14,9 @@ import Chat from '../screens/messaging/chat';
 import GeofenceTestApp from '../screens/geofence';
 import Start from '../screens/start';
 import Notify from '../screens/notify';
+import Home from '../screens/home';
+import ProjectDetails from '../screens/project';
+import TaskDetails from '../screens/task/task-details';
 
 const Stack = createStackNavigator();
 function Navigator() {
@@ -22,6 +25,27 @@ function Navigator() {
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="home"
+        component={Home}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="project-details"
+        component={ProjectDetails}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="task-details"
+        component={TaskDetails}
         options={{
           headerShown: false,
         }}

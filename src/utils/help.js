@@ -103,7 +103,7 @@ const timeConverter = stringDate => {
 function formatDateTime(dateTimeString) {
   const [datePart, timePart] = dateTimeString.split('T');
   const formattedDate = datePart?.split('-').reverse().join('-');
-  const formattedTime = timePart?.split('.')[0];
+  const formattedTime = timePart?.split('.')[0].slice(0, 5); 
 
   return `${formattedDate} ${formattedTime}`;
 }
@@ -373,6 +373,15 @@ const priorityTextColorHelper = priority => {
       return theme.colors.gray[800];
   }
 };
+
+ const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'High': return '#0EA5E9';
+      case 'Medium': return '#F472B6';
+      case 'Low': return '#F59E0B';
+      default: return '#9CA3AF';
+    }
+  };
 
 const taskStatusArray = [
   {label: 'Pending', value: 'Pending'},
@@ -655,7 +664,89 @@ function formatShortDate(input) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+const getStatusTheme = (status) => {
+  switch (status) {
+    case 'Pending':
+      return { bg: '#FFF5E1', badge: '#F59E0B', progress: '#F59E0B' }; // amber theme
+    case 'Ongoing':
+      return { bg: '#E0F2FE', badge: '#0EA5E9', progress: '#0EA5E9' }; // blue theme
+    case 'Completed':
+      return { bg: '#DCFCE7', badge: '#22C55E', progress: '#22C55E' }; // green theme
+    case 'On Hold':
+      return { bg: '#FCE7F3', badge: '#EC4899', progress: '#EC4899' }; // pink theme
+    default:
+      return { bg: '#F3F4F6', badge: '#9CA3AF', progress: '#9CA3AF' }; // gray
+  }
+};
+ const limitHtmlText = (html, limit = 50, ellipsis = '...') => {
+  if (!html) return '';
+  
+  // Convert to string
+  const htmlStr = html.toString();
+  
+  // Strip HTML tags
+  let text = htmlStr
+    .replace(/<style[^>]*>.*?<\/style>/gi, '') // Remove style tags and content
+    .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script tags and content
+    .replace(/<[^>]+>/g, '') // Remove all HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&') // Replace &amp; with &
+    .replace(/&lt;/g, '<') // Replace &lt; with 
+    .replace(/&gt;/g, '>') // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'") // Replace &#39; with '
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
+    .trim();
+  
+  // Return if within limit
+  if (text.length <= limit) {
+    return text;
+  }
+  
+  // Truncate
+  return text.slice(0, limit - ellipsis.length).trim() + ellipsis;
+};
+
+const limitHtmlTextByWord = (html, limit = 50, ellipsis = '...') => {
+  if (!html) return '';
+  
+  const htmlStr = html.toString();
+  
+  // Strip HTML tags (same as above)
+  let text = htmlStr
+    .replace(/<style[^>]*>.*?<\/style>/gi, '')
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  if (text.length <= limit) {
+    return text;
+  }
+  
+  // Find last space before limit
+  const truncated = text.slice(0, limit - ellipsis.length);
+  const lastSpace = truncated.lastIndexOf(' ');
+  
+  if (lastSpace === -1 || lastSpace < limit * 0.5) {
+    return truncated.trim() + ellipsis;
+  }
+  
+  return truncated.slice(0, lastSpace).trim() + ellipsis;
+};
+
 export {
+  limitHtmlTextByWord,
+  limitHtmlText,
+  getPriorityColor,
+  getStatusTheme,
   truncate,
   capitalizeFirstLetter,
   formatMessageTimestamp,

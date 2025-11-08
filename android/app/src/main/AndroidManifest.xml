@@ -4,9 +4,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />   
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
@@ -40,6 +42,7 @@
             android:name=".MainActivity"
             android:theme="@style/AppTheme"
             android:exported="true" />
+      <meta-data android:name="com.transistorsoft.locationmanager.license" android:value="baf873c77534c6a9e53776515f01b34680f630448ab54bc91decfba90752a9d3" />
     </application>
 
 </manifest>

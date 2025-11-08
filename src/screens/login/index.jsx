@@ -16,7 +16,7 @@ import { validatorRules } from './validatorRules';
 import { useSecure } from '../../hooks/useSecure';
 import { useNavigation } from '@react-navigation/native';
 import { validate } from '../../validator';
-import { Pressable, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 
 const Login = () => {
   const navigator = useNavigation();
@@ -56,7 +56,7 @@ const Login = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <StyledHeader marginHorizontal={8} statusProps={{ translucent: true }}>
+        <StyledHeader   skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
           <StyledHeader.Full></StyledHeader.Full>
         </StyledHeader>
         <ScrollView showsVerticalScrollIndicator={false}>

@@ -25,7 +25,6 @@ import Dashboard from '../components/dashboard';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
-import { PROJECT_KEY, useStorage } from '../hooks/useStorage';
 
 const Home = ({ route }) => {
   const { setTabBarVisible } = route.params || {};
@@ -34,7 +33,6 @@ const Home = ({ route }) => {
   const { key } = useFocus();
   const [selected, setSelected] = useState('dashboard');
   const [date, setDate] = useState(dateConverter(new Date(), false));
-  const {unReadCount} = useStorage(PROJECT_KEY)
   const scrollViewRef = useRef(null);
   const { data } = useTask();
 
@@ -122,7 +120,7 @@ const Home = ({ route }) => {
   return (
     <StyledSafeAreaView flex={1} backgroundColor={theme.colors.gray[100]}>
       {Platform.OS === 'android' && <StyledSpacer marginVertical={6} />}
-      <StyledHeader skipAndroid={true} statusProps={{ translucent: true }}>
+      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
@@ -238,7 +236,7 @@ const Home = ({ route }) => {
           </>
         )}
         {selected === 'dashboard' && (
-          <Dashboard recentTasks={data} navigate={navigate} />
+          <Dashboard tasks={data} user_id={user?.user_id} navigate={navigate} />
         )}
       </YStack>
     </StyledSafeAreaView>

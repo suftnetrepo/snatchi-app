@@ -1,25 +1,32 @@
-import React, {useCallback} from 'react';
-import {Box, HStack, VStack, Icon, Text} from '@gluestack-ui/themed';
-import {Platform, StatusBar as RNStatusBar, Pressable} from 'react-native';
-import {ArrowLeftIcon} from '@gluestack-ui/themed';
-import {theme} from '../../utils/theme';
-import {useChatContext} from '../../hooks/ChatContext';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {ChatContextProvider} from '../../hooks/ChatContext';
-import {useChatRoom} from '../../hooks/useChat';
-import {FlatList} from 'react-native';
-import {formatMessageTimestamp} from '../../utils/help';
-import {StyledMIcon} from '../../components/icon';
+import React, { useCallback } from 'react';
+import { HStack, VStack, Text } from '@gluestack-ui/themed';
+import {
+  StyledCycle,
+  StyledSpacer,
+  StyledText,
+  StyledHeader,
+  StyledSafeAreaView,
+} from 'fluent-styles';
+import { Platform, Pressable } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { fontStyles, theme } from '../../utils/theme';
+import { useChatContext } from '../../hooks/ChatContext';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { ChatContextProvider } from '../../hooks/ChatContext';
+import { useChatRoom } from '../../hooks/useChat';
+import { FlatList } from 'react-native';
+import { formatMessageTimestamp } from '../../utils/help';
+import { StyledMIcon } from '../../components/icon';
 import ChatRoomScrollView from '../../components/chatRooms';
-import {Spacer} from '../../components/gluestack/spacer';
-import {Cycle} from '../../components/gluestack/cycle';
+import { Spacer } from '../../components/gluestack/spacer';
+import { Cycle } from '../../components/gluestack/cycle';
 
 const MyMessaging = () => {
   const navigator = useNavigation();
-  const {currentChatUser} = useChatContext();
-  const {data, handleFilterChatRooms} = useChatRoom(currentChatUser?.uid);
+  const { currentChatUser } = useChatContext();
+  const { data, handleFilterChatRooms } = useChatRoom(currentChatUser?.uid);
 
-  const RenderChatRoom = ({room}) => {
+  const RenderChatRoom = ({ room }) => {
     const unreadCount = room?.unreadCount
       ? room?.unreadCount[currentChatUser?.uid]
       : 0;
@@ -67,25 +74,25 @@ const MyMessaging = () => {
             />
           </Cycle>
           <VStack justifyContent="start" alignItems="start">
-          <Text
-            paddingHorizontal={8}
-            fontSize={'$sm'}
-            color="$gray800"
-            fontWeight={'$medium'}
-            fontFamily="$crimson.bold">
-            {room?.name}
-          </Text>
-          <Text
-            paddingHorizontal={8}
-            fontSize={'$xs'}
-            color="$gray400"
-            fontWeight={'$normal'}
-            fontFamily="$crimson.regular">
-            {room?.lastMessage}
-          </Text>
-          
+            <Text
+              paddingHorizontal={8}
+              fontSize={'$sm'}
+              color="$gray800"
+              fontWeight={'$medium'}
+              fontFamily="$crimson.bold">
+              {room?.name}
+            </Text>
+            <Text
+              paddingHorizontal={8}
+              fontSize={'$xs'}
+              color="$gray400"
+              fontWeight={'$normal'}
+              fontFamily="$crimson.regular">
+              {room?.lastMessage}
+            </Text>
+
           </VStack>
-         
+
           <Spacer flex={1} />
           <VStack justifyContent="center" alignItems="center">
             <Text color="$gray400" paddingHorizontal={8} size={'xs'}>
@@ -112,29 +119,43 @@ const MyMessaging = () => {
     );
   };
 
-  return (
-    <Box flex={1} safeAreaTop safeAreaBottom backgroundColor="$gray200">
-      <RNStatusBar
-        barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'}
-      />
-      <HStack
-        width="$auto"
-        paddingTop={48}
-        bg="$gray100"
-        paddingHorizontal={16}
-        paddingVertical={8}
-        justifyContent="flex-start"
-        alignItems="center">
-        <Pressable onPress={() => navigator.canGoBack() && navigator.goBack()}>
-          <Cycle width={48} height={48}>
-            <Icon as={ArrowLeftIcon} size="md" color="$gray800" />
-          </Cycle>
-        </Pressable>
+  const RenderHeader = () => (
+    <HStack
+      paddingHorizontal={8}
+      paddingVertical={8}
+      justifyContent="flex-start"
+      alignItems="center"
+      backgroundColor={theme.colors.gray[50]}>
+      <Pressable onPress={() => navigator.goBack()}>
+        <StyledCycle
+          height={48}
+          width={48}
+          borderColor={theme.colors.gray[200]}>
+          <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
+        </StyledCycle>
+      </Pressable>
+      <StyledSpacer marginHorizontal={2} />
+      <StyledText
+        fontFamily={fontStyles.Roboto_Regular}
+        fontWeight={theme.fontWeight.normal}
+        color={theme.colors.gray[600]}
+        fontSize={theme.fontSize.normal}>
+        Chats
+      </StyledText>
+      <StyledSpacer flex={1} />
+    </HStack>
+  );
 
-        <Text paddingHorizontal={8} fontSize={'$md'} fontWeight={'$bold'}>
-          Chats
-        </Text>
-      </HStack>
+  return (
+    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
+      <StyledHeader
+        skipAndroid={Platform.OS === 'android' ? false : true}
+        marginHorizontal={8}
+        statusProps={{ translucent: true }}>
+        <StyledHeader.Full>
+          <RenderHeader />
+        </StyledHeader.Full>
+      </StyledHeader>
 
       <VStack
         marginHorizontal={4}
@@ -146,16 +167,16 @@ const MyMessaging = () => {
       <FlatList
         data={data}
         keyExtractor={item => item.id}
-        renderItem={({item, index}) => (
+        renderItem={({ item, index }) => (
           <RenderChatRoom key={`${item.id}-${index}`} room={item} />
         )}
       />
-    </Box>
+    </StyledSafeAreaView>
   );
 };
 
-const Messaging = ({route}) => {
-  const {setTabBarVisible} = route.params || {};
+const Messaging = ({ route }) => {
+  const { setTabBarVisible } = route.params || {};
 
   useFocusEffect(
     useCallback(() => {

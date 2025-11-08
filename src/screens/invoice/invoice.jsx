@@ -25,7 +25,7 @@ import DatePicker from 'react-native-date-picker';
 import uuid from 'react-native-uuid';
 import { formatCurrency, dateConverter, statusOptions } from '../../utils/help';
 import { useInvoice } from '../../hooks/useInvoice';
-import { Pressable, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import {
   itemValidator,
   invoiceValidator,
@@ -263,7 +263,7 @@ const Invoice = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <StyledHeader skipAndroid={true} statusProps={{ translucent: true }}>
+        <StyledHeader  skipAndroid={Platform.OS === 'android' ? false : true} statusProps={{ translucent: true }}>
           <StyledHeader.Full>
             <RenderHeader />
           </StyledHeader.Full>

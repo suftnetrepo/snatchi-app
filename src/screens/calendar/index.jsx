@@ -25,6 +25,7 @@ import { statusOptions } from '../../utils/help';
 import { validate } from '../../validator/index';
 import { useAppContext } from '../../hooks/appContext';
 import { useFocus } from '../../hooks/useFocus';
+import { Platform } from 'react-native';
 
 const getUserSelectedRange = (start, end, color = '#3B82F6') => {
   const marked = {};
@@ -242,7 +243,7 @@ const CalendarListScreen = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-        skipAndroid={true}
+     skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{ translucent: true }}>
         <StyledHeader.Full>
