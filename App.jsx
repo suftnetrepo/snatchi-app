@@ -27,14 +27,14 @@ function App() {
         if (__DEV__) console.log('Geofence saved:', res);
       }).catch((err) => {
         if (__DEV__) console.error('Error saving geofence:', err);
-      }); 
+      });
     },
     (event) => {
-       handleSave(toModel(event)).then((res) => {
+      handleSave(toModel(event)).then((res) => {
         if (__DEV__) console.log('Geofence saved:', res);
       }).catch((err) => {
         if (__DEV__) console.error('Error saving geofence:', err);
-      }); 
+      });
     },
     (event) => {
       console.log('⏰ User DWELLING in:', event);
@@ -55,7 +55,6 @@ function App() {
       }
     };
     setUpFcm();
-
   }, []);
 
   return (

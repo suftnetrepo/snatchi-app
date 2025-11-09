@@ -103,39 +103,31 @@ export async function unRegisterAppWithFCM() {
     );
 }
 
-export const checkApplicationNotificationPermission = async () => {
+export  const checkApplicationNotificationPermission = async () => {
   try {
+    // 🔐 Request Firebase-level notification permission (iOS + Android)
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
-      if (__DEV__) console.log('FCM Notification Permission Denied');
+      if (__DEV__) console.log('🚫 FCM Notification Permission Denied');
       return false;
     }
 
-    if (Platform.OS === 'android') {
-      if (Platform.Version >= 33) {
-        const notificationResult = await request(
-          PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
-        );
-        if (notificationResult !== PermissionsAndroid.RESULTS.GRANTED) {
-          if (__DEV__)
-            console.log(
-              'Android POST_NOTIFICATIONS permission denied:',
-              notificationResult,
-            );
-          return false;
-        }
-      }
-    }
+    // 🟠 Android 13+ requires POST_NOTIFICATIONS permission
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+  // Defer requesting until Activity is ready via InteractionManager
+  return false;
+}
 
+    // ✅ Register device for remote FCM messages
     await messaging().registerDeviceForRemoteMessages();
     return true;
+
   } catch (error) {
-    if (__DEV__)
-      console.error('Error checking notification permissions:', error);
+    console.error('🛑 Error checking notification permissions:', error);
     return false;
   }
 };
