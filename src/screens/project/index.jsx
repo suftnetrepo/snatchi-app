@@ -40,13 +40,19 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Pressable, Platform,  Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { useProject } from '../../hooks/useProject';
+
 
 const { width } = Dimensions.get('window');
 
 export const ProjectDetails = () => {
     const navigator = useNavigation();
+  
     const route = useRoute();
     const { id } = route.params;
+      const { data } = useProject(id)
+
+      console.log("........................", JSON.stringify(data))
 
     const project = {
         name: 'Zenithloop Redesign',
