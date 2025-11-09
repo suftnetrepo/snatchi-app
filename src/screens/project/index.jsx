@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView } from 'react-native';
 import {
     YStack,
-  XStack,
-  StyledHeader,
-  StyledSafeAreaView,
-  StyledSpacer,
-  StyledText,
-  StyledBadge,
-  StyledCard,
-  StyledCycle,
-  StyledSeparator,
-  FlexStyledImage,
-  StyledOkDialog,
-  StyledButton,
-  StyledInput,
-  StyledDialog,
+    XStack,
+    StyledHeader,
+    StyledSafeAreaView,
+    StyledSpacer,
+    StyledText,
+    StyledBadge,
+    StyledCard,
+    StyledCycle,
+    StyledSeparator,
+    FlexStyledImage,
+    StyledOkDialog,
+    StyledButton,
+    StyledInput,
+    StyledDialog,
 } from 'fluent-styles';
 import {
     Box,
@@ -37,22 +37,25 @@ import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
 import { getStatusTheme, formatDateTime } from '../../utils/help';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Pressable, Platform,  Linking, Dimensions } from 'react-native';
+import { Pressable, Platform, Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useProject } from '../../hooks/useProject';
-
 
 const { width } = Dimensions.get('window');
 
 export const ProjectDetails = () => {
     const navigator = useNavigation();
-  
+
     const route = useRoute();
     const { id } = route.params;
-      const { data } = useProject(id)
+    const { data, fetchOneProject } = useProject()
 
-      console.log("........................", JSON.stringify(data))
+    useEffect(() => {
+        fetchOneProject(id)
+    }, [id])
+
+    console.log("........................", JSON.stringify(data))
 
     const project = {
         name: 'Zenithloop Redesign',
@@ -76,72 +79,72 @@ export const ProjectDetails = () => {
             "PE2 5SP, Orton Waterville, City of Peterborough, Cambridgeshire and Peterborough, England, United Kingdom"
     };
 
-      const FileIcon = ({ fileType }) => {
+    const FileIcon = ({ fileType }) => {
         let icon;
         let color;
         switch (fileType?.toLowerCase()) {
-          case 'pdf':
-            icon = 'file-pdf-o';
-            color = '#FF0000';
-            break;
-          case 'word':
-            icon = 'file-word-o';
-            color = '#0000FF';
-            break;
-          case 'image':
-            icon = 'image';
-            color = '#00FF00';
-            break;
-          default:
-            icon = 'file-o';
-            color = '#000000';
+            case 'pdf':
+                icon = 'file-pdf-o';
+                color = '#FF0000';
+                break;
+            case 'word':
+                icon = 'file-word-o';
+                color = '#0000FF';
+                break;
+            case 'image':
+                icon = 'image';
+                color = '#00FF00';
+                break;
+            default:
+                icon = 'file-o';
+                color = '#000000';
         }
-    
+
         return <FontAwesome name={icon} size={20} color={color} />;
-      };
-    
-      const openGoogleSearch = () => {
+    };
+
+    const openGoogleSearch = () => {
         const encodedQuery = encodeURIComponent(`hotels near ${project?.postcode}`);
         const url = `https://www.google.com/search?q=${encodedQuery}`;
         Linking.openURL(url);
-      };
-    
-      const openGoogleSearchNearByAirport = () => {
+    };
+
+    const openGoogleSearchNearByAirport = () => {
         const encodedQuery = encodeURIComponent(
-          `airport near ${project?.postcode}`,
+            `airport near ${project?.postcode}`,
         );
         const url = `https://www.google.com/search?q=${encodedQuery}`;
         Linking.openURL(url);
-      };
-    
-      const openGoogleMapsForTrainStations = () => {
+    };
+
+    const openGoogleMapsForTrainStations = () => {
         const encodedQuery = encodeURIComponent(
-          `train stations near ${project?.postcode}`,
+            `train stations near ${project?.postcode}`,
         );
         const url = `https://www.google.com/maps/search/?q=${encodedQuery}`;
         Linking.openURL(url);
-      };
-    
-      const openGoogleMaps = () => {
+    };
+
+    const openGoogleMaps = () => {
         const encodedAddress = encodeURIComponent(project?.postcode);
         let url;
-    
+
         if (Platform.OS === 'android') {
-          url = `geo:0,0?q=${encodedAddress}`;
+            url = `geo:0,0?q=${encodedAddress}`;
         } else {
-          url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+            url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
         }
-    
+
         Linking.canOpenURL(url)
-          .then(supported => {
-            if (supported) {
-              Linking.openURL(url);
-            } else {
-              console.log('Unable to open Google Maps.');
-            }
-          })
-          .catch(err => console.error('Error opening URL:', err));
-      };
+            .then(supported => {
+                if (supported) {
+                    Linking.openURL(url);
+                } else {
+                    console.log('Unable to open Google Maps.');
+                }
+            })
+            .catch(err => console.error('Error opening URL:', err));
+    };
 
     const themeProgress = getStatusTheme(project.status);
 
