@@ -102,7 +102,7 @@ const ProjectCard = ({ data }) => {
                           name="chevron-right"
                           color={theme.colors.gray[800]}
                           onPress={() => {
-                            navigator.navigate('project-details', { id: item.id });
+                            navigator.navigate('project-details', { id: item._id });
                           }}
                         />
                       </StyledCycle>

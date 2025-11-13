@@ -101,7 +101,8 @@ const timeConverter = stringDate => {
 };
 
 function formatDateTime(dateTimeString) {
-  const [datePart, timePart] = dateTimeString.split('T');
+  if(dateTimeString===null || dateTimeString===undefined) return '';
+  const [datePart, timePart] = dateTimeString?.split('T');
   const formattedDate = datePart?.split('-').reverse().join('-');
   const formattedTime = timePart?.split('.')[0].slice(0, 5); 
 

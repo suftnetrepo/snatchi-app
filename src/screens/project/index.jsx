@@ -7,40 +7,30 @@ import {
     StyledSafeAreaView,
     StyledSpacer,
     StyledText,
-    StyledBadge,
     StyledCard,
     StyledCycle,
     StyledSeparator,
     FlexStyledImage,
-    StyledOkDialog,
     StyledButton,
-    StyledInput,
-    StyledDialog,
 } from 'fluent-styles';
 import {
     Box,
     HStack,
     VStack,
     Text,
-    Avatar,
-    AvatarImage,
-    AvatarFallbackText,
     Badge,
     BadgeText,
-    Divider,
-    Input,
-    InputField,
-    Icon,
 } from '@gluestack-ui/themed';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
-import { getStatusTheme, formatDateTime } from '../../utils/help';
+import { getStatusTheme, formatDateTime,limitHtmlTextByWord, capitalizeFirstLetter } from '../../utils/help';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Pressable, Platform, Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useProject } from '../../hooks/useProject';
+import { ContactCard } from '../../components/projectCard/contact';
 
 const { width } = Dimensions.get('window');
 
@@ -51,11 +41,14 @@ export const ProjectDetails = () => {
     const { id } = route.params;
     const { data, fetchOneProject } = useProject()
 
+
+    console.log("........................id", id)
+
     useEffect(() => {
         fetchOneProject(id)
     }, [id])
 
-    console.log("........................", JSON.stringify(data))
+    console.log("........................", data)
 
     const project = {
         name: 'Zenithloop Redesign',
@@ -73,6 +66,11 @@ export const ProjectDetails = () => {
         attachments: [
             { name: 'Brief landing page.pdf', size: '12 MB', icon: 'picture-as-pdf' },
             { name: 'Reference.jpg', size: '8 MB', icon: 'image' },
+        ],
+        ppe: [
+            "goggles",
+            "earplugs",
+            "vest"
         ],
         completeAddress
             :
@@ -219,13 +217,13 @@ export const ProjectDetails = () => {
                     <HStack justifyContent="space-between" alignItems="center">
                         <HStack space="sm" mb="$2">
                             <Badge bg="$blue100" borderRadius="$xl" px="$2">
-                                <BadgeText color="$blue600">{project.status}</BadgeText>
+                                <BadgeText color="$blue600">{data?.status}</BadgeText>
                             </Badge>
                             <Badge bg="$amber100" borderRadius="$xl" px="$2">
-                                <BadgeText color="$amber600">{project.priority}</BadgeText>
+                                <BadgeText color="$amber600">{data?.priority}</BadgeText>
                             </Badge>
                         </HStack>
-                        <ProgressCircleSvg progress={project.progress} color={themeProgress.progress} size={64} />
+                        <ProgressCircleSvg progress={data?.progress} color={themeProgress.progress} size={64} />
                     </HStack>
                     <HStack justifyContent="space-between" alignItems="center">
                         <VStack flex={1} space="xs">
@@ -235,11 +233,11 @@ export const ProjectDetails = () => {
                                 color="$black"
                                 numberOfLines={2}
                             >
-                                {project?.name}
+                                {data?.name}
                             </Text>
                         </VStack>
                     </HStack>
-                    <ProjectDescription description={project.description} />
+                    <ProjectDescription description={limitHtmlTextByWord(data?.description, 200)} />
                     <StyledSpacer marginVertical={4} />
                     <XStack
                         justifyContent="space-between"
@@ -252,14 +250,14 @@ export const ProjectDetails = () => {
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.bold}
-                                fontSize={theme.fontSize.normal}
+                                fontSize={theme.fontSize.small}
                                 color={theme.colors.gray[800]}>
                                 Start Date
                             </StyledText>
                             <XStack justifyContent="flex-start" alignItems="center">
                                 <MaterialIcons
                                     name="access-time"
-                                    size={14}
+                                    size={20}
                                     color={theme.colors.gray[900]}
                                 />
                                 <StyledText
@@ -268,33 +266,31 @@ export const ProjectDetails = () => {
                                     fontWeight={theme.fontWeight.normal}
                                     fontSize={theme.fontSize.small}
                                     color={theme.colors.gray[800]}>
-                                    {formatDateTime(project.startDate)}
+                                    {formatDateTime(data?.startDate)}
                                 </StyledText>
                             </XStack>
                         </YStack>
-
                         <YStack>
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.bold}
-                                fontSize={theme.fontSize.normal}
+                                fontSize={theme.fontSize.small}
                                 color={theme.colors.gray[800]}>
                                 End Date
                             </StyledText>
                             <XStack justifyContent="flex-start" alignItems="center">
                                 <MaterialIcons
                                     name="access-time"
-                                    size={14}
+                                    size={20}
                                     color={theme.colors.gray[900]}
                                 />
-
                                 <StyledText
                                     paddingHorizontal={4}
                                     fontFamily={fontStyles.Roboto_Regular}
                                     fontWeight={theme.fontWeight.normal}
                                     fontSize={theme.fontSize.small}
                                     color={theme.colors.gray[800]}>
-                                    {formatDateTime(project.endDate)}
+                                    {formatDateTime(data?.endDate)}
                                 </StyledText>
                             </XStack>
                         </YStack>
@@ -305,14 +301,14 @@ export const ProjectDetails = () => {
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.normal}
+                                fontSize={theme.fontSize.small}
                                 color={theme.colors.gray[800]}>
-                                Attactments({project.attachments.length})
+                                Attactments({data?.attachments?.length})
                             </StyledText>
                         }
                     />
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        {project.attachments.map((item, index) => {
+                        {data?.attachments?.map((item, index) => {
                             return (
                                 <Pressable
                                     key={index}
@@ -323,7 +319,7 @@ export const ProjectDetails = () => {
                                     }}>
                                     <StyledCard
                                         borderRadius={16}
-                                        marginBottom={8}
+                                        marginHorizontal={7}
                                         borderColor={theme.colors.gray[200]}
                                         backgroundColor={theme.colors.gray[1]}
                                         borderWidth={1}>
@@ -366,12 +362,13 @@ export const ProjectDetails = () => {
                             );
                         })}
                     </ScrollView>
+                    <StyledSpacer marginVertical={2} />
                     <StyledSeparator
                         left={
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.normal}
+                                fontSize={theme.fontSize.small}
                                 color={theme.colors.gray[800]}>
                                 Location
                             </StyledText>
@@ -404,7 +401,7 @@ export const ProjectDetails = () => {
                                 fontWeight={theme.fontWeight.normal}
                                 fontSize={theme.fontSize.small}
                                 color={theme.colors.gray[800]}>
-                                {project?.completeAddress}
+                                {data?.completeAddress}
                             </StyledText>
                         </XStack>
                         <XStack
@@ -447,7 +444,61 @@ export const ProjectDetails = () => {
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.normal}
+                                fontSize={theme.fontSize.small}
+                                color={theme.colors.gray[800]}>
+                                Contact
+                            </StyledText>
+                        }
+                    />
+                    <ContactCard name={data?.manager}
+                        email={data?.email}
+                        mobile={data?.mobile}>
+                        </ContactCard>
+                          <StyledSpacer marginVertical={4} />
+                          <StyledSeparator
+                        left={
+                            <StyledText
+                                fontFamily={fontStyles.Roboto_Regular}
+                                fontWeight={theme.fontWeight.medium}
+                                fontSize={theme.fontSize.small}
+                                color={theme.colors.gray[800]}>
+                                Safety Gear
+                            </StyledText>
+                        }
+                    />
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <XStack
+                            justifyContent="flex-start"
+                            alignItems="center"
+                            paddingHorizontal={8}
+                            
+                            flexWrap="wrap"
+                            gap={2}>
+                            {data?.ppe?.map((ppe, index) => (
+                                <StyledButton
+                                key={index}
+                                    borderColor={theme.colors.gray[200]}
+                                    backgroundColor={theme.colors.gray[100]}
+                                >
+                                    <StyledText
+                                        fontFamily={fontStyles.Roboto_Regular}
+                                        fontWeight={theme.fontWeight.normal}
+                                        fontSize={theme.fontSize.small}
+                                        paddingVertical={4}
+                                        paddingHorizontal={8}
+                                        color={theme.colors.gray[800]}>
+                                        {capitalizeFirstLetter(ppe)}
+                                    </StyledText>
+                                </StyledButton>))}
+                        </XStack>
+                    </ScrollView>
+                         <StyledSpacer marginVertical={4} />
+                    <StyledSeparator
+                        left={
+                            <StyledText
+                                fontFamily={fontStyles.Roboto_Regular}
+                                fontWeight={theme.fontWeight.medium}
+                                fontSize={theme.fontSize.small}
                                 color={theme.colors.gray[800]}>
                                 NearBy
                             </StyledText>
