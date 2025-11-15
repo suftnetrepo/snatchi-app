@@ -10,9 +10,7 @@ import {
   StyledCard,
   StyledCycle,
   StyledSeparator,
-  FlexStyledImage,
   StyledOkDialog,
-  StyledButton,
   StyledInput,
   StyledDialog,
 } from 'fluent-styles';
@@ -26,7 +24,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
 } from 'react-native';
-import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {
@@ -38,6 +36,7 @@ import {
   taskStatusArray,
   timeAgo,
   randomColor,
+  FileIcon
 } from '../../utils/help';
 import { StyledMIcon } from '../../components/icon';
 import TaskDropdown from '../../components/taskDropdown';
@@ -118,73 +117,6 @@ const TaskDetails = () => {
     });
   };
 
-  const FileIcon = ({ fileType }) => {
-    let icon;
-    let color;
-    switch (fileType.toLowerCase()) {
-      case 'pdf':
-        icon = 'file-pdf-o';
-        color = '#FF0000';
-        break;
-      case 'word':
-        icon = 'file-word-o';
-        color = '#0000FF';
-        break;
-      case 'image':
-        icon = 'image';
-        color = '#00FF00';
-        break;
-      default:
-        icon = 'file-o';
-        color = '#000000';
-    }
-
-    return <FontAwesome name={icon} size={20} color={color} />;
-  };
-
-  const openGoogleSearch = () => {
-    const encodedQuery = encodeURIComponent(`hotels near ${project?.postcode}`);
-    const url = `https://www.google.com/search?q=${encodedQuery}`;
-    Linking.openURL(url);
-  };
-
-  const openGoogleSearchNearByAirport = () => {
-    const encodedQuery = encodeURIComponent(
-      `airport near ${project?.postcode}`,
-    );
-    const url = `https://www.google.com/search?q=${encodedQuery}`;
-    Linking.openURL(url);
-  };
-
-  const openGoogleMapsForTrainStations = () => {
-    const encodedQuery = encodeURIComponent(
-      `train stations near ${project?.postcode}`,
-    );
-    const url = `https://www.google.com/maps/search/?q=${encodedQuery}`;
-    Linking.openURL(url);
-  };
-
-  const openGoogleMaps = () => {
-    const encodedAddress = encodeURIComponent(project?.postcode);
-    let url;
-
-    if (Platform.OS === 'android') {
-      url = `geo:0,0?q=${encodedAddress}`;
-    } else {
-      url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
-    }
-
-    Linking.canOpenURL(url)
-      .then(supported => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          console.log('Unable to open Google Maps.');
-        }
-      })
-      .catch(err => console.error('Error opening URL:', err));
-  };
-
   const RenderHeader = () => (
     <XStack
       paddingHorizontal={16}
@@ -209,7 +141,7 @@ const TaskDetails = () => {
         fontWeight={theme.fontWeight.normal}
         color={theme.colors.gray[600]}
         fontSize={theme.fontSize.normal}>
-        Tasks
+        Task
       </StyledText>
       <StyledSpacer flex={1} />
       <StyledCycle
@@ -382,17 +314,31 @@ const TaskDetails = () => {
                 {priority}
               </StyledBadge>
             </XStack>
+                  <StyledSpacer marginVertical={8} />
             <XStack
-              paddingVertical={8}
+              paddingVertical={1}
               justifyContent="flex-start"
               alignItems="center"
               gap={1}>
               <StyledText
                 fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.medium}
+                fontWeight={theme.fontWeight.bold}
                 fontSize={theme.fontSize.normal}
                 color={theme.colors.gray[800]}>
                 {name}
+              </StyledText>
+            </XStack>
+            <XStack
+              paddingVertical={1}
+              justifyContent="flex-start"
+              alignItems="center"
+              gap={1}>
+              <StyledText
+                fontFamily={fontStyles.Roboto_Regular}
+                fontWeight={theme.fontWeight.normal}
+                fontSize={theme.fontSize.medium}
+                color={theme.colors.gray[600]}>
+                {description}
               </StyledText>
             </XStack>
             <XStack
@@ -433,27 +379,15 @@ const TaskDetails = () => {
                 </StyledText>
               </XStack>
             </XStack>
-            <XStack
-              paddingVertical={8}
-              justifyContent="flex-start"
-              alignItems="center"
-              gap={1}>
-              <StyledText
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.medium}
-                color={theme.colors.gray[600]}>
-                {description}
-              </StyledText>
-            </XStack>
+            
             <StyledSeparator
               left={
                 <StyledText
                   fontFamily={fontStyles.Roboto_Regular}
                   fontWeight={theme.fontWeight.medium}
                   fontSize={theme.fontSize.normal}
-                  color={theme.colors.gray[800]}>
-                  Attactments({attachments.length})
+                  color={theme.colors.gray[500]}>
+                  Attactments ({attachments.length})
                 </StyledText>
               }
             />
@@ -513,9 +447,10 @@ const TaskDetails = () => {
                 );
               })}
             </ScrollView>
-         
+
           </YStack>
         </StyledCard>
+        <StyledSpacer marginVertical={8} />
         <Pressable onPress={handleShow}>
           <StyledCard
             borderRadius={16}

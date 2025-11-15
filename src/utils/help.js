@@ -1,8 +1,7 @@
-  /* eslint-disable prettier/prettier */
-/* eslint-disable no-unsafe-optional-chaining */
-/* eslint-disable prettier/prettier */
-import {faker} from '@faker-js/faker';
-import {theme} from './theme';
+
+import { faker } from '@faker-js/faker';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { theme } from './theme';
 
 export const isValidColor = value =>
   /^#([0-9A-F]{3}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(value);
@@ -101,10 +100,10 @@ const timeConverter = stringDate => {
 };
 
 function formatDateTime(dateTimeString) {
-  if(dateTimeString===null || dateTimeString===undefined) return '';
+  if (dateTimeString === null || dateTimeString === undefined) return '';
   const [datePart, timePart] = dateTimeString?.split('T');
   const formattedDate = datePart?.split('-').reverse().join('-');
-  const formattedTime = timePart?.split('.')[0].slice(0, 5); 
+  const formattedTime = timePart?.split('.')[0].slice(0, 5);
 
   return `${formattedDate} ${formattedTime}`;
 }
@@ -269,7 +268,7 @@ function generateShades(hex) {
   const lighter = adjustColor(hex, lightAmount);
   const darker = adjustColor(hex, -darkAmount);
 
-  return {lighter, darker};
+  return { lighter, darker };
 }
 function addTimeToCurrentDate(timeStr) {
   const now = new Date();
@@ -375,54 +374,54 @@ const priorityTextColorHelper = priority => {
   }
 };
 
- const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'High': return '#0EA5E9';
-      case 'Medium': return '#F472B6';
-      case 'Low': return '#F59E0B';
-      default: return '#9CA3AF';
-    }
-  };
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case 'High': return '#0EA5E9';
+    case 'Medium': return '#F472B6';
+    case 'Low': return '#F59E0B';
+    default: return '#9CA3AF';
+  }
+};
 
 const taskStatusArray = [
-  {label: 'Pending', value: 'Pending'},
-  {label: 'Progress', value: 'Progress'},
-  {label: 'Completed', value: 'Completed'},
-  {label: 'Canceled', value: 'Canceled'},
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Progress', value: 'Progress' },
+  { label: 'Completed', value: 'Completed' },
+  { label: 'Canceled', value: 'Canceled' },
 ];
 
 const statusOptions = {
   empty: [
-    {label: 'Select...', value: ''},
-    {label: 'Lock', value: 'Lock'},
+    { label: 'Select...', value: '' },
+    { label: 'Lock', value: 'Lock' },
   ],
   pending: [
-    {label: 'Select...', value: ''},
-    {label: 'Declined', value: 'Declined'},
-    {label: 'Accepted', value: 'Accepted'},
+    { label: 'Select...', value: '' },
+    { label: 'Declined', value: 'Declined' },
+    { label: 'Accepted', value: 'Accepted' },
   ],
   invoice: [
-    {label: 'Select...', value: ''},
-    {label: 'Draft', value: 'Draft'},
-    {label: 'Save', value: 'Save'},
-    {label: 'Quote', value: 'Quote'},
+    { label: 'Select...', value: '' },
+    { label: 'Draft', value: 'Draft' },
+    { label: 'Save', value: 'Save' },
+    { label: 'Quote', value: 'Quote' },
   ],
 };
 
 const personalDocumentsArray = [
-  {label: 'NI Number / Social Security', value: 'NINumber'},
-  {label: 'Passport', value: 'Passport'},
-  {label: 'Driver’s License', value: 'DriversLicense'},
-  {label: 'Work Permit / Visa', value: 'WorkPermit'},
-  {label: 'Professional Certificates', value: 'ProfessionalCertificates'},
-  {label: 'ID Card', value: 'IDCard'},
-  {label: 'Proof of Address', value: 'ProofOfAddress'},
-  {label: 'CV / Resume', value: 'CVResume'},
-  {label: 'DBS / Background Check', value: 'BackgroundCheck'},
-  {label: 'Emergency Contact Info', value: 'EmergencyContactInfo'},
-  {label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate'},
-  {label: 'Insurance Certificate', value: 'InsuranceCertificate'},
-  {label: 'Vaccination Record', value: 'VaccinationRecord'},
+  { label: 'NI Number / Social Security', value: 'NINumber' },
+  { label: 'Passport', value: 'Passport' },
+  { label: 'Driver’s License', value: 'DriversLicense' },
+  { label: 'Work Permit / Visa', value: 'WorkPermit' },
+  { label: 'Professional Certificates', value: 'ProfessionalCertificates' },
+  { label: 'ID Card', value: 'IDCard' },
+  { label: 'Proof of Address', value: 'ProofOfAddress' },
+  { label: 'CV / Resume', value: 'CVResume' },
+  { label: 'DBS / Background Check', value: 'BackgroundCheck' },
+  { label: 'Emergency Contact Info', value: 'EmergencyContactInfo' },
+  { label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate' },
+  { label: 'Insurance Certificate', value: 'InsuranceCertificate' },
+  { label: 'Vaccination Record', value: 'VaccinationRecord' },
 ];
 
 const jobPhotoCategories = [
@@ -493,7 +492,7 @@ const randomColor = () => {
 
 function formatReadableDate(isoDate) {
   const date = new Date(isoDate);
-  const options = {year: 'numeric', month: 'long', day: 'numeric'};
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return date.toLocaleDateString('en-US', options);
 }
 
@@ -563,7 +562,7 @@ function formatMessageTimestamp(timestamp) {
   const isThisWeek = now - date < 7 * 24 * 60 * 60 * 1000;
 
   if (isToday) {
-    return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   if (isYesterday) {
@@ -588,13 +587,13 @@ function formatMessageTimestamp(timestamp) {
 
 function getRelativeTimeString(timestamp) {
   let date;
-  
+
   // Handle Firestore timestamp format
   if (timestamp && typeof timestamp === 'object' && 'seconds' in timestamp) {
     date = new Date(
       timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
     );
-  } 
+  }
   // Handle millisecond timestamp
   else if (typeof timestamp === 'number') {
     date = new Date(timestamp);
@@ -638,7 +637,7 @@ const truncate = (str, max = 100) =>
 
 function toModel(event) {
   const now = new Date();
-  const time = now.toISOString().substring(11, 16); 
+  const time = now.toISOString().substring(11, 16);
 
   return {
     integrator: event.integrator,
@@ -680,12 +679,12 @@ const getStatusTheme = (status) => {
       return { bg: '#F3F4F6', badge: '#9CA3AF', progress: '#9CA3AF' }; // gray
   }
 };
- const limitHtmlText = (html, limit = 50, ellipsis = '...') => {
+const limitHtmlText = (html, limit = 50, ellipsis = '...') => {
   if (!html) return '';
-  
+
   // Convert to string
   const htmlStr = html.toString();
-  
+
   // Strip HTML tags
   let text = htmlStr
     .replace(/<style[^>]*>.*?<\/style>/gi, '') // Remove style tags and content
@@ -699,21 +698,21 @@ const getStatusTheme = (status) => {
     .replace(/&#39;/g, "'") // Replace &#39; with '
     .replace(/\s+/g, ' ') // Collapse multiple spaces
     .trim();
-  
+
   // Return if within limit
   if (text.length <= limit) {
     return text;
   }
-  
+
   // Truncate
   return text.slice(0, limit - ellipsis.length).trim() + ellipsis;
 };
 
 const limitHtmlTextByWord = (html, limit = 50, ellipsis = '...') => {
   if (!html) return '';
-  
+
   const htmlStr = html.toString();
-  
+
   // Strip HTML tags (same as above)
   let text = htmlStr
     .replace(/<style[^>]*>.*?<\/style>/gi, '')
@@ -727,23 +726,49 @@ const limitHtmlTextByWord = (html, limit = 50, ellipsis = '...') => {
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .trim();
-  
+
   if (text.length <= limit) {
     return text;
   }
-  
+
   // Find last space before limit
   const truncated = text.slice(0, limit - ellipsis.length);
   const lastSpace = truncated.lastIndexOf(' ');
-  
+
   if (lastSpace === -1 || lastSpace < limit * 0.5) {
     return truncated.trim() + ellipsis;
   }
-  
+
   return truncated.slice(0, lastSpace).trim() + ellipsis;
 };
 
+const FileIcon = ({ fileType }) => {
+  let icon;
+  let color;
+  switch (fileType?.toLowerCase()) {
+    case 'pdf':
+      icon = 'file-pdf-o';
+      color = '#FF0000';
+      break;
+    case 'word':
+      icon = 'file-word-o';
+      color = '#0000FF';
+      break;
+    case 'image':
+      icon = 'image';
+      color = '#00FF00';
+      break;
+    default:
+      icon = 'file-o';
+      color = '#000000';
+  }
+
+  return <FontAwesome name={icon} size={20} color={color} />;
+};
+
+
 export {
+  FileIcon,
   limitHtmlTextByWord,
   limitHtmlText,
   getPriorityColor,

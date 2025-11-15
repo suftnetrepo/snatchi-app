@@ -3,7 +3,7 @@ import { Box, Text } from '@gluestack-ui/themed';
 import Svg, { Circle } from 'react-native-svg';
 
 const ProgressCircleSvg = ({
-  progress,
+  progress = 0, // default to 0
   size = 64,
   thickness = 6,
   color = '#3B82F6',
@@ -14,7 +14,8 @@ const ProgressCircleSvg = ({
   fontSize = '$sm',
   roundedCaps = true,
 }) => {
-  const pct = Math.max(0, Math.min(100, progress));
+  // ensure it's always a number between 0–100
+  const pct = Math.max(0, Math.min(100, Number(progress) || 0));
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - pct / 100);
@@ -27,12 +28,16 @@ const ProgressCircleSvg = ({
       alignItems="center"
       justifyContent="center"
       accessibilityRole="progressbar"
-      accessibilityValue={{ min: 0, max: 100, now: Math.round(pct) }}
+      accessibilityValue={{
+        min: 0,
+        max: 100,
+        now: isNaN(pct) ? 0 : Math.round(pct),
+      }}
     >
       <Svg
         width={size}
         height={size}
-        rotation={-90}              // start at 12 o’clock
+        rotation={-90} // start at 12 o’clock
         originX={size / 2}
         originY={size / 2}
       >
@@ -60,7 +65,15 @@ const ProgressCircleSvg = ({
       </Svg>
 
       {showLabel && (
-        <Box position="absolute" top={0} right={0} bottom={0} left={0} alignItems="center" justifyContent="center">
+        <Box
+          position="absolute"
+          top={0}
+          right={0}
+          bottom={0}
+          left={0}
+          alignItems="center"
+          justifyContent="center"
+        >
           <Text fontSize={fontSize} fontWeight="$bold" color={labelColor}>
             {label ?? `${Math.round(pct)}%`}
           </Text>

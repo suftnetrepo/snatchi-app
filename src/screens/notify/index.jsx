@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { ScrollView, Animated } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import {
@@ -18,9 +18,8 @@ import {
 } from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
-import { useStorage, add, clear, PROJECT_KEY } from '../../hooks/useStorage';
+import { useStorage, PROJECT_KEY } from '../../hooks/useStorage';
 import { theme, fontStyles } from '../../utils/theme';
-import { notify as initialNotify } from '../../../data/notify';
 import { getRelativeTimeString, truncate, formatShortDate } from '../../utils/help';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ProjectDetail } from './projectDetails';
@@ -30,19 +29,8 @@ export default function Notify() {
   const [selected, setSelected] = useState(null);
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
-  const { handleMarkAsRead, data, unReadCount, handleDelete } =
+  const { handleMarkAsRead, data, handleDelete } =
     useStorage(PROJECT_KEY);
-
-  useEffect(() => {
-    const addDummyNotification = async () => {
-      // await clear(PROJECT_KEY);
-      for (const n of initialNotify) {
-        // const result = await add(PROJECT_KEY, n);
-        console.log('Added notification:', result);
-      }
-    };
-    addDummyNotification();
-  }, []);
 
   const onhandleDelete = id => {
     handleDelete(PROJECT_KEY, id);

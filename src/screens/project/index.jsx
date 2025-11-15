@@ -12,6 +12,8 @@ import {
     StyledSeparator,
     FlexStyledImage,
     StyledButton,
+    StyledSpinner,
+    StyledOkDialog,
 } from 'fluent-styles';
 import {
     Box,
@@ -24,7 +26,7 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
-import { getStatusTheme, formatDateTime,limitHtmlTextByWord, capitalizeFirstLetter } from '../../utils/help';
+import { getStatusTheme, formatDateTime, limitHtmlTextByWord, capitalizeFirstLetter, getPriorityColor, FileIcon } from '../../utils/help';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Pressable, Platform, Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
@@ -32,84 +34,26 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useProject } from '../../hooks/useProject';
 import { ContactCard } from '../../components/projectCard/contact';
 
-const { width } = Dimensions.get('window');
-
 export const ProjectDetails = () => {
+    const { width } = Dimensions.get('window');
     const navigator = useNavigation();
-
     const route = useRoute();
     const { id } = route.params;
-    const { data, fetchOneProject } = useProject()
-
-
-    console.log("........................id", id)
+    const { data, error, loading, fetchOneProject } = useProject()
 
     useEffect(() => {
         fetchOneProject(id)
     }, [id])
 
-    console.log("........................", data)
-
-    const project = {
-        name: 'Zenithloop Redesign',
-        status: 'Pending',
-        priority: 'Medium',
-        description:
-            'Zenithloop is a company engaged in interior design, already has an existing web design with a fresh and clean',
-        startDate: "2025-02-24T08:19:00.000Z",
-        endDate: "2025-02-28T08:19:00.000Z",
-        progress: 80,
-        members: [
-            { name: 'Nadia Wilson', image: 'https://i.pravatar.cc/150?img=1' },
-            { name: 'Eleanor Pena', image: 'https://i.pravatar.cc/150?img=2' },
-        ],
-        attachments: [
-            { name: 'Brief landing page.pdf', size: '12 MB', icon: 'picture-as-pdf' },
-            { name: 'Reference.jpg', size: '8 MB', icon: 'image' },
-        ],
-        ppe: [
-            "goggles",
-            "earplugs",
-            "vest"
-        ],
-        completeAddress
-            :
-            "PE2 5SP, Orton Waterville, City of Peterborough, Cambridgeshire and Peterborough, England, United Kingdom"
-    };
-
-    const FileIcon = ({ fileType }) => {
-        let icon;
-        let color;
-        switch (fileType?.toLowerCase()) {
-            case 'pdf':
-                icon = 'file-pdf-o';
-                color = '#FF0000';
-                break;
-            case 'word':
-                icon = 'file-word-o';
-                color = '#0000FF';
-                break;
-            case 'image':
-                icon = 'image';
-                color = '#00FF00';
-                break;
-            default:
-                icon = 'file-o';
-                color = '#000000';
-        }
-
-        return <FontAwesome name={icon} size={20} color={color} />;
-    };
-
     const openGoogleSearch = () => {
-        const encodedQuery = encodeURIComponent(`hotels near ${project?.postcode}`);
+        const encodedQuery = encodeURIComponent(`hotels near ${data?.postcode}`);
         const url = `https://www.google.com/search?q=${encodedQuery}`;
         Linking.openURL(url);
     };
 
     const openGoogleSearchNearByAirport = () => {
         const encodedQuery = encodeURIComponent(
-            `airport near ${project?.postcode}`,
+            `airport near ${data?.postcode}`,
         );
         const url = `https://www.google.com/search?q=${encodedQuery}`;
         Linking.openURL(url);
@@ -117,14 +61,14 @@ export const ProjectDetails = () => {
 
     const openGoogleMapsForTrainStations = () => {
         const encodedQuery = encodeURIComponent(
-            `train stations near ${project?.postcode}`,
+            `train stations near ${data?.postcode}`,
         );
         const url = `https://www.google.com/maps/search/?q=${encodedQuery}`;
         Linking.openURL(url);
     };
 
     const openGoogleMaps = () => {
-        const encodedAddress = encodeURIComponent(project?.postcode);
+        const encodedAddress = encodeURIComponent(data?.postcode);
         let url;
 
         if (Platform.OS === 'android') {
@@ -138,13 +82,14 @@ export const ProjectDetails = () => {
                 if (supported) {
                     Linking.openURL(url);
                 } else {
+                    __DEV__ &&
                     console.log('Unable to open Google Maps.');
                 }
             })
-            .catch(err => console.error('Error opening URL:', err));
+            .catch(err => __DEV__ && console.error('Error opening URL:', err));
     };
 
-    const themeProgress = getStatusTheme(project.status);
+    const themeProgress = getStatusTheme(data.status);
 
     const ProjectDescription = ({ description }) => {
         const [expanded, setExpanded] = useState(false);
@@ -154,7 +99,7 @@ export const ProjectDetails = () => {
                 <Text
                     fontSize="$sm"
                     color="$textLight700"
-                    numberOfLines={expanded ? undefined : 3} // limit lines when collapsed
+                    numberOfLines={expanded ? undefined : 3} 
                 >
                     {description}
                 </Text>
@@ -219,8 +164,10 @@ export const ProjectDetails = () => {
                             <Badge bg="$blue100" borderRadius="$xl" px="$2">
                                 <BadgeText color="$blue600">{data?.status}</BadgeText>
                             </Badge>
-                            <Badge bg="$amber100" borderRadius="$xl" px="$2">
-                                <BadgeText color="$amber600">{data?.priority}</BadgeText>
+                            <Badge size="md" variant="solid" bg={getPriorityColor(data.priority)} rounded="$full" px="$3" py="$1">
+                                <BadgeText color="$white" fontSize="$sm" fontWeight="$medium">
+                                    {data.priority}
+                                </BadgeText>
                             </Badge>
                         </HStack>
                         <ProgressCircleSvg progress={data?.progress} color={themeProgress.progress} size={64} />
@@ -301,8 +248,8 @@ export const ProjectDetails = () => {
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.small}
-                                color={theme.colors.gray[800]}>
+                                fontSize={theme.fontSize.normal}
+                                color={theme.colors.gray[400]}>
                                 Attactments({data?.attachments?.length})
                             </StyledText>
                         }
@@ -319,7 +266,7 @@ export const ProjectDetails = () => {
                                     }}>
                                     <StyledCard
                                         borderRadius={16}
-                                        marginHorizontal={7}
+                                        marginHorizontal={8}
                                         borderColor={theme.colors.gray[200]}
                                         backgroundColor={theme.colors.gray[1]}
                                         borderWidth={1}>
@@ -368,8 +315,8 @@ export const ProjectDetails = () => {
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.small}
-                                color={theme.colors.gray[800]}>
+                                fontSize={theme.fontSize.normal}
+                                color={theme.colors.gray[400]}>
                                 Location
                             </StyledText>
                         }
@@ -412,13 +359,13 @@ export const ProjectDetails = () => {
                             flexWrap="wrap"
                             gap={2}>
                             <StyledButton
-                                borderColor={theme.colors.blue[500]}
-                                backgroundColor={theme.colors.blue[500]}
+                                borderColor={theme.colors.cyan[500]}
+                                backgroundColor={theme.colors.cyan[500]}
                                 onPress={() => openGoogleMaps()}>
                                 <XStack
                                     justifyContent="flex-end"
                                     alignItems="center"
-                                    paddingHorizontal={14}
+                                    paddingHorizontal={8}
                                     flexWrap="wrap"
                                     gap={1}>
                                     <StyledText
@@ -426,13 +373,13 @@ export const ProjectDetails = () => {
                                         fontWeight={theme.fontWeight.normal}
                                         fontSize={theme.fontSize.small}
                                         paddingLeft={4}
-                                        paddingVertical={10}
+                                        paddingVertical={4}
                                         color={theme.colors.gray[1]}>
                                         Routes
                                     </StyledText>
                                     <MaterialIcons
                                         name="navigation"
-                                        size={25}
+                                        size={18}
                                         color={theme.colors.gray[1]}
                                     />
                                 </XStack>
@@ -444,24 +391,24 @@ export const ProjectDetails = () => {
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.small}
-                                color={theme.colors.gray[800]}>
+                                fontSize={theme.fontSize.normal}
+                                color={theme.colors.gray[400]}>
                                 Contact
                             </StyledText>
                         }
                     />
-                    <ContactCard name={data?.manager}
+                    <ContactCard name={`${data?.manager} ${data?.stakeholder}`}
                         email={data?.email}
                         mobile={data?.mobile}>
-                        </ContactCard>
-                          <StyledSpacer marginVertical={4} />
-                          <StyledSeparator
+                    </ContactCard>
+                    <StyledSpacer marginVertical={4} />
+                    <StyledSeparator
                         left={
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.small}
-                                color={theme.colors.gray[800]}>
+                                fontSize={theme.fontSize.normal}
+                                color={theme.colors.gray[400]}>
                                 Safety Gear
                             </StyledText>
                         }
@@ -471,12 +418,12 @@ export const ProjectDetails = () => {
                             justifyContent="flex-start"
                             alignItems="center"
                             paddingHorizontal={8}
-                            
+
                             flexWrap="wrap"
                             gap={2}>
                             {data?.ppe?.map((ppe, index) => (
                                 <StyledButton
-                                key={index}
+                                    key={index}
                                     borderColor={theme.colors.gray[200]}
                                     backgroundColor={theme.colors.gray[100]}
                                 >
@@ -492,14 +439,14 @@ export const ProjectDetails = () => {
                                 </StyledButton>))}
                         </XStack>
                     </ScrollView>
-                         <StyledSpacer marginVertical={4} />
+                    <StyledSpacer marginVertical={4} />
                     <StyledSeparator
                         left={
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
                                 fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.small}
-                                color={theme.colors.gray[800]}>
+                                fontSize={theme.fontSize.normal}
+                                color={theme.colors.gray[400]}>
                                 NearBy
                             </StyledText>
                         }
@@ -580,8 +527,18 @@ export const ProjectDetails = () => {
                     </XStack>
                 </Box>
             </ScrollView>
+            {error && (
+                <StyledOkDialog
+                    title={error}
+                    description="Please try again later"
+                    visible={true}
+                    onOk={() => {
+                        navigator.goBack();
+                    }}
+                />
+            )}
+            {loading && <StyledSpinner />}
         </StyledSafeAreaView>
-
     );
 };
 export default ProjectDetails;

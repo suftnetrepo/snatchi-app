@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import {
   YStack,
   XStack,
@@ -9,22 +9,13 @@ import {
   StyledBadge,
   StyledCard,
   StyledCycle,
-  StyledSeparator,
-  FlexStyledImage,
   StyledOkDialog,
-  StyledButton,
-  StyledInput,
-  StyledDialog,
 } from 'fluent-styles';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
 import {
-  Linking,
-  Pressable,
   ScrollView,
   Platform,
-  KeyboardAvoidingView,
-  Dimensions,
 } from 'react-native';
 import {
   backgroundColorHelper,
@@ -32,17 +23,15 @@ import {
   priorityTextColorHelper,
   formatTimeFromDate,
   textColorHelper,
+  limitHtmlTextByWord
 } from '../../utils/help';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useTask } from '../../hooks/useTask';
 
 const Task = () => {
   const navigator = useNavigation();
   const { data: taskData, error, success, handleReset } = useTask();
-
-  console.log('Task Data:', taskData);
 
   const RenderHeader = () => (
     <XStack
@@ -76,7 +65,7 @@ const Task = () => {
   )
 
   const RenderCard = ({ item }) => {
-    const { name, priority, status, startDate, endDate } = item;
+    const { name, priority, status, startDate, endDate, description } = item;
 
     return (
       <StyledCard
@@ -95,37 +84,46 @@ const Task = () => {
             }),
         }}>
         <YStack>
-          <XStack justifyContent="space-between" alignItems="center" gap={1}>
-            <StyledText
-              fontFamily={fontStyles.Roboto_Regular}
-              fontWeight={theme.fontWeight.bold}
-              fontSize={theme.fontSize.large}
-              flex={1}
-              color={theme.colors.gray[800]}>
-              {name}
-            </StyledText>
-            <StyledSpacer marginHorizontal={2} />
-            <StyledCycle
-              height={48}
-              width={48}
-              borderColor={theme.colors.gray[200]}>
-              <Icon
-                name="chevron-right"
-                size={25}
-                color={theme.colors.gray[800]}
-              />
-            </StyledCycle>
-          </XStack>
-          <XStack justifyContent="space-between" alignItems="center" gap={1}>
+          <StyledText
+            fontFamily={fontStyles.Roboto_Regular}
+            fontWeight={theme.fontWeight.bold}
+            fontSize={theme.fontSize.normal}
+            flex={1}
+            color={theme.colors.gray[800]}>
+            {name}
+          </StyledText>
+          <StyledSpacer marginVertical={2} />
+          <StyledText
+            fontFamily={fontStyles.Roboto_Regular}
+            fontWeight={theme.fontWeight.normal}
+            fontSize={theme.fontSize.medium}
+            flex={1}
+            color={theme.colors.gray[800]}>
+            {limitHtmlTextByWord(description, 200)}
+          </StyledText>
+          <StyledSpacer marginVertical={8} />
+          <XStack justifyContent="flex-start" alignItems="center" gap={4}>
             <StyledBadge
               paddingHorizontal={8}
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.medium}
               fontSize={theme.fontSize.small}
+              paddingVertical={4}
               backgroundColor={backgroundColorHelper(status)}
               borderColor={backgroundColorHelper(status)}
               color={textColorHelper(status)}>
               {status}
+            </StyledBadge>
+            <StyledBadge
+              paddingHorizontal={8}
+              fontFamily={fontStyles.Roboto_Regular}
+              fontWeight={theme.fontWeight.medium}
+              fontSize={theme.fontSize.small}
+              backgroundColor={priorityBackgroundColorHelper(priority)}
+              paddingVertical={4}
+              borderColor={priorityBackgroundColorHelper(priority)}
+              color={priorityTextColorHelper(priority)}>
+              {priority}
             </StyledBadge>
           </XStack>
           <XStack
@@ -136,6 +134,7 @@ const Task = () => {
               justifyContent="space-between"
               alignItems="center"
               gap={2}
+              marginHorizontal={3}
               paddingVertical={4}
               borderRadius={32}>
               <XStack justifyContent="flex-start" alignItems="center" gap={1}>
@@ -177,17 +176,17 @@ const Task = () => {
                 </StyledText>
               </XStack>
             </XStack>
-            <StyledBadge
-              paddingHorizontal={8}
-              fontFamily={fontStyles.Roboto_Regular}
-              fontWeight={theme.fontWeight.medium}
-              fontSize={theme.fontSize.small}
-              backgroundColor={priorityBackgroundColorHelper(priority)}
-              paddingVertical={4}
-              borderColor={priorityBackgroundColorHelper(priority)}
-              color={priorityTextColorHelper(priority)}>
-              {priority}
-            </StyledBadge>
+
+            <StyledCycle
+              height={48}
+              width={48}
+              borderColor={theme.colors.gray[200]}>
+              <Icon
+                name="chevron-right"
+                size={25}
+                color={theme.colors.gray[800]}
+              />
+            </StyledCycle>
           </XStack>
         </YStack>
       </StyledCard>
@@ -204,15 +203,13 @@ const Task = () => {
           <RenderHeader />
         </StyledHeader.Full>
       </StyledHeader>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <YStack backgroundColor={theme.colors.gray[100]} paddingHorizontal={8} paddingVertical={8}>
+      <YStack flex={1} backgroundColor={theme.colors.gray[100]} paddingHorizontal={16} paddingVertical={16}>
+        <ScrollView showsVerticalScrollIndicator={false}>
           {taskData?.map((item, index) => (
             <RenderCard key={index} item={item} />
           ))}
-        </YStack>
-      </ScrollView>
-
+        </ScrollView>
+      </YStack>
       {error && (
         <StyledOkDialog
           title={error?.message}

@@ -5,8 +5,6 @@ import {
   VStack,
   HStack,
   Text,
-  Avatar,
-  AvatarImage,
   Pressable,
   Divider,
 } from '@gluestack-ui/themed';
@@ -58,36 +56,36 @@ const ProjectDetail = ({ project, handleClose }) => {
 
         <VStack mb="$3" space="xs">
           <HStack space="sm" mb="$3" alignItems="center">
-            <StatusBadge status="Pending" />
-            <PriorityBadge priority="High" />
+            <StatusBadge status={project?.status} />
+            <PriorityBadge priority={project?.priority} />
           </HStack>
           <Text fontSize="$sm" color="$text700" lineHeight="$sm">
-            {project.description}
+            {project?.description}
           </Text>
         </VStack>
 
         {/* Start and End Dates */}
         <HStack justifyContent="space-between" mb="$4" mt="$2">
           <VStack>
-            <Text fontSize="$xs" color="$text500">
+            <Text fontSize="$md" fontWeight={"$bold"}  color="$text800">
               Start Date
             </Text>
             <HStack alignItems="center" space="xs" mt="$1">
               <Icon name="access-time" size={16} color="#555" />
               <Text fontSize="$sm" color="$text700">
-                {formatDate(project.startDate)}
+                {formatDate(project?.startDate)}
               </Text>
             </HStack>
           </VStack>
 
           <VStack>
-            <Text fontSize="$xs" color="$text500">
+            <Text fontSize="$md" fontWeight={"$bold"} color="$text800">
               End Date
             </Text>
             <HStack alignItems="center" space="xs" mt="$1">
               <Icon name="access-time" size={16} color="#555" />
               <Text fontSize="$sm" color="$text700">
-                {formatDate(project.endDate)}
+                {formatDate(project?.endDate)}
               </Text>
             </HStack>
           </VStack>
