@@ -8,6 +8,8 @@ const useProject = (id) => {
     loading: false,
     error: null,
     success: false,
+    filterValue: '',
+    aggregateData: []
   });
 
   const handleError = useCallback((error) => {
@@ -27,12 +29,37 @@ const useProject = (id) => {
         ...pre,
         success: false,
         loading: false,
-        error: null
+        error: null,
+        filterValue: ''
       };
     });
   }, []);
 
-  const fetchMyProjects = useCallback(async (id) => {
+  const filteMyProjects = useCallback((filterValue) => {
+    // Source data: prefer the original copy (copyData) so successive filters don't shrink the dataset
+    const source = state.copyData ?? state.data ?? [];
+
+    // If no filter provided, reset to the original dataset
+    if (!filterValue) {
+      setState((prevState) => ({ ...prevState, data: source }));
+      return;
+    }
+
+    const value = String(filterValue).toLowerCase();
+
+    const filtered = source.filter((j) => {
+      const status = String(j?.status ?? '');
+      return status.toLowerCase().includes(value);
+    });
+
+    setState((prevState) => ({
+      ...prevState,
+      data: filtered,
+      filterValue
+    }));
+  }, [state.copyData, state.data]);
+
+  const fetchMyRecentProjects = useCallback(async (id) => {
     setState((prev) => ({ ...prev, loading: true }));
     const { success, data, errorMessage } = await zat(PROJECT.recent, null, VERBS.GET, {
       action: 'userProjects',
@@ -43,6 +70,7 @@ const useProject = (id) => {
       setState((prevState) => ({
         ...prevState,
         data: data,
+        copyData: data,
         loading: false,
         success: true
       }));
@@ -52,7 +80,49 @@ const useProject = (id) => {
 
   }, [handleError]);
 
-    const fetchOneProject = useCallback(async (id) => {
+  const fetchMyProjects = useCallback(async (id) => {
+    setState((prev) => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(PROJECT.recent, null, VERBS.GET, {
+      action: 'getMyProjects',
+      id: id
+    });
+
+    if (success) {
+      setState((prevState) => ({
+        ...prevState,
+        data: data,
+        copyData: data,
+        loading: false,
+        success: true
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the my projects.');
+    }
+
+  }, [handleError]);
+
+
+  const getMyProjectAggregates = useCallback(async (id) => {
+    setState((prev) => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(PROJECT.recent, null, VERBS.GET, {
+      action: 'getMyProjectAggregates',
+      id: id
+    });
+
+    if (success) {
+      setState((prevState) => ({
+        ...prevState,
+        aggregateData: data,
+        loading: false,
+        success: true
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the my projects.');
+    }
+
+  }, [handleError]);
+
+  const fetchOneProject = useCallback(async (id) => {
     setState((prev) => ({ ...prev, loading: true }));
     const { success, data, errorMessage } = await zat(PROJECT.recent, null, VERBS.GET, {
       action: 'getUserProjectById',
@@ -74,15 +144,18 @@ const useProject = (id) => {
 
   useEffect(() => {
     if (id) {
-      fetchMyProjects(id);
+      fetchMyRecentProjects(id);
     }
   }, [id]);
 
   return {
     ...state,
-    fetchMyProjects,
+    fetchMyRecentProjects,
     handleReset,
-    fetchOneProject
+    fetchOneProject,
+    filteMyProjects,
+    fetchMyProjects,
+    getMyProjectAggregates
   };
 };
 
