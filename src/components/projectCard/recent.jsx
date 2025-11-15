@@ -84,7 +84,7 @@ const ProjectCard = ({ data }) => {
                         <MaterialIcons
                           size={18}
                           name="assignment"
-                          color={theme.colors.cyan[800]}
+                          color={theme.colors.blueGray[500]}
                           onPress={() => {
                             navigator.navigate('task');
                           }}

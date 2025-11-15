@@ -14,8 +14,8 @@ import Chat from '../screens/messaging/chat';
 import GeofenceTestApp from '../screens/geofence';
 import Start from '../screens/start';
 import Notify from '../screens/notify';
-import Home from '../screens/home';
-import ProjectDetails from '../screens/project';
+import ProjectDetails from '../screens/project/projectDetails';
+import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
 
 const Stack = createStackNavigator();
@@ -30,8 +30,8 @@ function Navigator() {
         }}
       />
       <Stack.Screen
-        name="home"
-        component={Home}
+        name="project"
+        component={Project}
         options={{
           headerShown: false,
         }}

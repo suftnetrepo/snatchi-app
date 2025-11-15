@@ -1,34 +1,28 @@
-import React from 'react';
+import React, { useEffect} from 'react';
 import {
   YStack,
   XStack,
-  StyledCycle,
   StyledText,
   StyledSpacer,
   StyledSeparator,
   StyledCard,
   StyledBadge,
 } from 'fluent-styles';
-import { StyledMIcon } from '../icon';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {
   backgroundColorHelper,
-  priorityBackgroundColorHelper,
-  priorityTextColorHelper,
-  formatTimeFromDate,
   textColorHelper,
 } from '../../utils/help';
-import { useMyTaskDashboard } from '../../hooks/useTask';
 import { useProject } from '../../hooks/useProject';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { ScrollView } from 'react-native';
+import { Pressable, ScrollView } from 'react-native';
 import ProjectCard from '../../components/projectCard/recent';
+import { useNavigation } from '@react-navigation/native';
 
-const Dashboard = ({ tasks, user_id, navigate }) => {
-  const { data } = useMyTaskDashboard();
-  const { data: myProject } = useProject(user_id);
+const Dashboard = ({  user_id }) => {
+  const navigator = useNavigation();
+  const { data: myProject, aggregateData} = useProject(user_id);
 
   const getAggregate = (data, status) => {
     {
@@ -76,7 +70,7 @@ const Dashboard = ({ tasks, user_id, navigate }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Pending')}
                 color={textColorHelper('Pending')}>
-                {getAggregate(data?.statuses, 'Pending')}
+                {getAggregate(aggregateData?.statuses, 'Pending')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -115,7 +109,7 @@ const Dashboard = ({ tasks, user_id, navigate }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Progress')}
                 color={textColorHelper('Progress')}>
-                {getAggregate(data?.statuses, 'Progress')}
+                {getAggregate(aggregateData?.statuses, 'Progress')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -156,7 +150,7 @@ const Dashboard = ({ tasks, user_id, navigate }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Completed')}
                 color={textColorHelper('Completed')}>
-                {getAggregate(data?.statuses, 'Completed')}
+                {getAggregate(aggregateData?.statuses, 'Completed')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -195,7 +189,7 @@ const Dashboard = ({ tasks, user_id, navigate }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Cancelled')}
                 color={textColorHelper('Cancelled')}>
-                {getAggregate(data?.statuses, 'Canceled')}
+                {getAggregate(aggregateData?.statuses, 'Canceled')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -206,11 +200,20 @@ const Dashboard = ({ tasks, user_id, navigate }) => {
             <StyledText
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
-              fontSize={theme.fontSize.normal}
-              color={theme.colors.gray[800]}>
+              fontSize={theme.fontSize.medium}
+              color={theme.colors.gray[400]}>
               My Recent Projects ({myProject?.length})
             </StyledText>
           }
+          right={<Pressable onPress={()=> navigator.navigate('project')}>
+            <StyledText
+              fontFamily={fontStyles.Roboto_Regular}
+              fontWeight={theme.fontWeight.light}
+              fontSize={theme.fontSize.medium}
+              color={theme.colors.gray[300]}>
+              View All
+            </StyledText>
+          </Pressable>}
         />
 
         <YStack borderRadius={16} marginBottom={64} paddingVertical={8}>
