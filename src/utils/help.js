@@ -766,8 +766,17 @@ const FileIcon = ({ fileType }) => {
   return <FontAwesome name={icon} size={20} color={color} />;
 };
 
+function safetyGear(list) {
+  return list?.map(item =>
+    item
+      .split("_")               // split by underscore
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
+      .join(" ")                // join back with spaces
+  );
+}
 
 export {
+  safetyGear,
   FileIcon,
   limitHtmlTextByWord,
   limitHtmlText,

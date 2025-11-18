@@ -24,6 +24,8 @@ const Dashboard = ({  user_id }) => {
   const navigator = useNavigation();
   const { data: myProject, aggregateData} = useProject(user_id);
 
+  console.log('Dashboard Aggregate Data:', aggregateData);
+
   const getAggregate = (data, status) => {
     {
       const result = (data || []).find(j => j.status === status);
@@ -70,7 +72,7 @@ const Dashboard = ({  user_id }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Pending')}
                 color={textColorHelper('Pending')}>
-                {getAggregate(aggregateData?.statuses, 'Pending')}
+                {getAggregate(aggregateData, 'Pending')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -109,7 +111,7 @@ const Dashboard = ({  user_id }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Progress')}
                 color={textColorHelper('Progress')}>
-                {getAggregate(aggregateData?.statuses, 'Progress')}
+                {getAggregate(aggregateData, 'Progress')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -150,7 +152,7 @@ const Dashboard = ({  user_id }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Completed')}
                 color={textColorHelper('Completed')}>
-                {getAggregate(aggregateData?.statuses, 'Completed')}
+                {getAggregate(aggregateData, 'Completed')}
               </StyledBadge>
             </XStack>
           </StyledCard>
@@ -189,7 +191,7 @@ const Dashboard = ({  user_id }) => {
                 paddingVertical={4}
                 borderColor={backgroundColorHelper('Cancelled')}
                 color={textColorHelper('Cancelled')}>
-                {getAggregate(aggregateData?.statuses, 'Canceled')}
+                {getAggregate(aggregateData, 'Canceled')}
               </StyledBadge>
             </XStack>
           </StyledCard>

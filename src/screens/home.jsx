@@ -14,17 +14,14 @@ import { theme } from '../utils/theme';
 import { fontStyles } from '../utils/fontStyles';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { useAppContext } from '../hooks/appContext';
-import { dateConverter, getGreetings, toWordCase } from '../utils/help';
-import TaskCalendar from '../components/calender';
-import Today from '../components/today';
+import { getGreetings, toWordCase } from '../utils/help';
 import { useFocus } from '../hooks/useFocus';
 import { Platform, ScrollView } from 'react-native';
-import { useTask } from '../hooks/useTask';
-import CalendarCard from '../components/calender/calenderCard';
 import Dashboard from '../components/dashboard';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
+import CalendarStrip from '../components/calender/calendarStrip';
 
 const Home = ({ route }) => {
   const { setTabBarVisible } = route.params || {};
@@ -32,9 +29,7 @@ const Home = ({ route }) => {
   const { user } = useAppContext();
   const { key } = useFocus();
   const [selected, setSelected] = useState('dashboard');
-  const [date, setDate] = useState(dateConverter(new Date(), false));
   const scrollViewRef = useRef(null);
-  const { data } = useTask();
 
   useFocusEffect(
     useCallback(() => {
@@ -81,7 +76,7 @@ const Home = ({ route }) => {
           <Bell
             onPress={() => { navigate.navigate('notify'); }}
           />
-        <StyledSpacer marginHorizontal={2} />
+          <StyledSpacer marginHorizontal={2} />
           <Pressable
             onPress={() => {
               navigate.dispatch(
@@ -211,32 +206,13 @@ const Home = ({ route }) => {
         </ScrollView>
       </YStack>
       <YStack flex={1}>
-        {selected === 'today' && (
-          <Today
-            onSelect={item => {
-              navigate.navigate('task', {
-                task: item,
-              });
-            }}
-            data={data}
-            navigate={navigate}
-          />
-        )}
         {selected === 'calender' && (
-          <>
-            <TaskCalendar onSelect={date => setDate(date)} date={date} />
-            <CalendarCard
-              date={date}
-              onSelect={item => {
-                navigate.navigate('task', {
-                  task: item,
-                });
-              }}
+           <CalendarStrip
+           user_id={user?.user_id}
             />
-          </>
         )}
         {selected === 'dashboard' && (
-          <Dashboard tasks={data} user_id={user?.user_id} navigate={navigate} />
+          <Dashboard user_id={user?.user_id} />
         )}
       </YStack>
     </StyledSafeAreaView>

@@ -26,7 +26,7 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
-import { getStatusTheme, formatDateTime, limitHtmlTextByWord, capitalizeFirstLetter, getPriorityColor, FileIcon } from '../../utils/help';
+import { getStatusTheme, safetyGear, formatDateTime, limitHtmlTextByWord, capitalizeFirstLetter, getPriorityColor, FileIcon } from '../../utils/help';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Pressable, Platform, Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
@@ -40,6 +40,9 @@ export const ProjectDetails = () => {
     const route = useRoute();
     const { id } = route.params;
     const { data, error, loading, fetchOneProject } = useProject()
+    const themeProgress = getStatusTheme(data?.status);
+
+    console.log('Project Details Data:', data);
 
     useEffect(() => {
         fetchOneProject(id)
@@ -83,13 +86,11 @@ export const ProjectDetails = () => {
                     Linking.openURL(url);
                 } else {
                     __DEV__ &&
-                    console.log('Unable to open Google Maps.');
+                        console.log('Unable to open Google Maps.');
                 }
             })
             .catch(err => __DEV__ && console.error('Error opening URL:', err));
     };
-
-    const themeProgress = getStatusTheme(data.status);
 
     const ProjectDescription = ({ description }) => {
         const [expanded, setExpanded] = useState(false);
@@ -99,7 +100,7 @@ export const ProjectDetails = () => {
                 <Text
                     fontSize="$sm"
                     color="$textLight700"
-                    numberOfLines={expanded ? undefined : 3} 
+                    numberOfLines={expanded ? undefined : 3}
                 >
                     {description}
                 </Text>
@@ -242,18 +243,27 @@ export const ProjectDetails = () => {
                             </XStack>
                         </YStack>
                     </XStack>
-                    <StyledSpacer marginVertical={4} />
-                    <StyledSeparator
-                        left={
-                            <StyledText
-                                fontFamily={fontStyles.Roboto_Regular}
-                                fontWeight={theme.fontWeight.medium}
-                                fontSize={theme.fontSize.normal}
-                                color={theme.colors.gray[400]}>
-                                Attactments({data?.attachments?.length})
-                            </StyledText>
-                        }
-                    />
+
+                    {
+                        data?.attachments?.length > 0 && (
+                            <>
+                                <StyledSpacer marginVertical={4} />
+                                <StyledSeparator
+                                    left={
+                                        <StyledText
+                                            fontFamily={fontStyles.Roboto_Regular}
+                                            fontWeight={theme.fontWeight.medium}
+                                            fontSize={theme.fontSize.normal}
+                                            color={theme.colors.gray[400]}>
+                                            Attactments({data?.attachments?.length})
+                                        </StyledText>
+                                    }
+                                />
+                            </>
+
+                        )
+                    }
+
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         {data?.attachments?.map((item, index) => {
                             return (
@@ -413,15 +423,14 @@ export const ProjectDetails = () => {
                             </StyledText>
                         }
                     />
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <ScrollView  showsHorizontalScrollIndicator={false}>
                         <XStack
                             justifyContent="flex-start"
                             alignItems="center"
                             paddingHorizontal={8}
-
                             flexWrap="wrap"
                             gap={2}>
-                            {data?.ppe?.map((ppe, index) => (
+                            {safetyGear(data?.ppe)?.map((ppe, index) => (
                                 <StyledButton
                                     key={index}
                                     borderColor={theme.colors.gray[200]}

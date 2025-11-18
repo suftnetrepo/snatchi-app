@@ -145,6 +145,7 @@ const useProject = (id) => {
   useEffect(() => {
     if (id) {
       fetchMyRecentProjects(id);
+      getMyProjectAggregates(id);
     }
   }, [id]);
 
