@@ -75,7 +75,8 @@ const Login = () => {
               <Pressable onLongPress={() => navigator.navigate("GeofenceTestApp")}>
                 <StyledImage
                   borderWidth={0}
-                  source={require('../../../assets/img/icons8-login-100-2.png')}></StyledImage>
+                  resizeMode="cover"
+                  source={require('../../../assets/img/4.png')}></StyledImage>
               </Pressable>
               <StyledText
                 paddingVertical={16}

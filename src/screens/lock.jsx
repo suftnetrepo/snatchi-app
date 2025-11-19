@@ -129,7 +129,7 @@ const Keypad = () => {
           alignItems="center">
           <StyledImage
             borderWidth={0}
-            source={require('../../assets/img/icons8-secure-100.png')}></StyledImage>
+            source={require('../../assets/img/4.png')}></StyledImage>
 
           <StyledText
             paddingTop={16}
