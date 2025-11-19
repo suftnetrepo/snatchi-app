@@ -56,7 +56,7 @@ const Login = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <StyledHeader   skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
+        <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true, hidden: true }}>
           <StyledHeader.Full></StyledHeader.Full>
         </StyledHeader>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -67,7 +67,6 @@ const Login = () => {
             justifyContent="flex-start"
             alignItems="center">
             <StyledSpacer marginVertical={64} />
-
             <YStack
               marginHorizontal={16}
               justifyContent="center"
@@ -83,11 +82,10 @@ const Login = () => {
                 paddingHorizontal={16}
                 fontFamily={fontStyles.Roboto_Regular}
                 fontWeight={theme.fontWeight.normal}
-                color={theme.colors.gray[400]}
+                color={theme.colors.gray[500]}
                 textAlign="center"
                 fontSize={theme.fontSize.normal}>
-                Enter your registered email address to receive a One-Time Password
-                (OTP)
+                Please enter your account email to receive an access code.
               </StyledText>
             </YStack>
             <StyledSpacer marginVertical={16} />
@@ -98,12 +96,12 @@ const Login = () => {
               returnKeyType="next"
               maxLength={50}
               fontSize={theme.fontSize.normal}
-              borderColor={theme.colors.gray[800]}
+              borderColor={theme.colors.gray[300]}
               backgroundColor={theme.colors.gray[1]}
               borderRadius={32}
               paddingHorizontal={8}
               value={fields.user_name}
-              placeholderTextColor={theme.colors.gray[300]}
+              placeholderTextColor={theme.colors.gray[400]}
               onChangeText={text => setFields({ ...fields, user_name: text })}
               error={!!errorMessages?.user_name}
               errorMessage={errorMessages?.user_name?.message}

@@ -1,6 +1,7 @@
-/* eslint-disable prettier/prettier */
-import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+
+import React, { useEffect, useState } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { HStack, Spinner } from "@gluestack-ui/themed";
 import Login from '../screens/login';
 import Keypad from '../screens/lock';
 import task from '../screens/task';
@@ -17,11 +18,32 @@ import Notify from '../screens/notify';
 import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
+import { getStore } from '../utils/asyncStorage';
 
 const Stack = createStackNavigator();
 function Navigator() {
+  const [granted, setGranted] = useState(false);
+
+  useEffect(() => {
+    const fetchGeofencingStatus = async () => {
+      const status = await getStore('GeofencingGranted');
+      setGranted(status);
+    };
+
+    fetchGeofencingStatus();
+  }, []);
+
+  if (granted === false) {
+    return (
+      //  <HStack flex={1} space="md" justifyContent="center" alignItems="center">
+      //        <Spinner color={"$gray200"} size={100} mt="$4" />
+      // </HStack>
+      <></>
+    );
+  }
+
   return (
-    <Stack.Navigator initialRouteName="start">
+    <Stack.Navigator initialRouteName={granted ? 'login' : 'start'}>
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
@@ -43,21 +65,21 @@ function Navigator() {
           headerShown: false,
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="task-details"
         component={TaskDetails}
         options={{
           headerShown: false,
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="start"
         component={Start}
         options={{
           headerShown: false,
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="notify"
         component={Notify}
         options={{
@@ -78,14 +100,14 @@ function Navigator() {
           headerShown: false,
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="upload-user-documents"
         component={UploadUserDocument}
         options={{
           headerShown: false,
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="chat"
         component={Chat}
         options={{
@@ -138,4 +160,4 @@ function Navigator() {
   );
 }
 
-export {Navigator};
+export { Navigator };

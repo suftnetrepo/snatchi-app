@@ -1,4 +1,4 @@
-import React, { useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -7,22 +7,24 @@ import {
   StyledSeparator,
   StyledCard,
   StyledBadge,
+  StyledSpinner,
+  StyledOkDialog,
 } from 'fluent-styles';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import { Pressable, ScrollView } from 'react-native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {
   backgroundColorHelper,
   textColorHelper,
 } from '../../utils/help';
 import { useProject } from '../../hooks/useProject';
-import { Pressable, ScrollView } from 'react-native';
 import ProjectCard from '../../components/projectCard/recent';
-import { useNavigation } from '@react-navigation/native';
 
-const Dashboard = ({  user_id }) => {
+const Dashboard = ({ user_id }) => {
   const navigator = useNavigation();
-  const { data: myProject, aggregateData} = useProject(user_id);
+  const { data: myProject, aggregateData, error, loading } = useProject(user_id);
 
   console.log('Dashboard Aggregate Data:', aggregateData);
 
@@ -207,7 +209,7 @@ const Dashboard = ({  user_id }) => {
               My Recent Projects ({myProject?.length})
             </StyledText>
           }
-          right={<Pressable onPress={()=> navigator.navigate('project')}>
+          right={<Pressable onPress={() => navigator.navigate('project')}>
             <StyledText
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
@@ -222,6 +224,21 @@ const Dashboard = ({  user_id }) => {
           <ProjectCard data={myProject} />
         </YStack>
       </ScrollView>
+      {error && (
+        <StyledOkDialog
+          title={error}
+          description="Please try again later"
+          visible={true}
+          onOk={() => {
+            navigator.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'login' }],
+              }))
+          }}
+        />
+      )}
+      {loading && <StyledSpinner />}
     </YStack>
   );
 };

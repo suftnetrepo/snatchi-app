@@ -157,7 +157,7 @@ export const ProjectDetails = () => {
 
             <ScrollView showsVerticalScrollIndicator={false} >
                 {/* Rounded white card */}
-                <Box bg="$white" borderTopRadius={30} p="$5" flex={1}>
+                <Box bg="$white" borderTopRadius={30}  py={"$3"} px={"$4"} flex={1}>
 
                     {/* Category badges */}
                     <HStack justifyContent="space-between" alignItems="center">
@@ -461,10 +461,10 @@ export const ProjectDetails = () => {
                         }
                     />
                     <XStack
+                      flex={1}
                         justifyContent="flex-start"
                         alignItems="center"
                         paddingHorizontal={8}
-                        flexWrap="wrap"
                         gap={4}>
                         <StyledButton
                             borderColor={theme.colors.orange[500]}

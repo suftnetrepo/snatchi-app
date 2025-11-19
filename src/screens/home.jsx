@@ -115,7 +115,7 @@ const Home = ({ route }) => {
   return (
     <StyledSafeAreaView flex={1} backgroundColor={theme.colors.gray[100]}>
       {Platform.OS === 'android' && <StyledSpacer marginVertical={6} />}
-      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} statusProps={{ translucent: true }}>
+      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} statusProps={{ translucent: true, hidden: false }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
@@ -207,9 +207,13 @@ const Home = ({ route }) => {
       </YStack>
       <YStack flex={1}>
         {selected === 'calender' && (
-           <CalendarStrip
-           user_id={user?.user_id}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-start', paddingBottom: 100 }}>
+            <CalendarStrip
+              user_id={user?.user_id}
             />
+          </ScrollView>
         )}
         {selected === 'dashboard' && (
           <Dashboard user_id={user?.user_id} />

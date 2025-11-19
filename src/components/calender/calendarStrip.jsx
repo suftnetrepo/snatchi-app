@@ -6,7 +6,7 @@ import {
 } from 'fluent-styles';
 import { CalendarList } from "react-native-calendars";
 import { Box, Text, VStack } from "@gluestack-ui/themed";
-import { FlatList } from "react-native";
+import { ScrollView } from "react-native";
 import { theme } from "../../utils/theme";
 import { StyledMIcon } from "../../components/icon";
 import { useNavigation } from "@react-navigation/native";
@@ -85,11 +85,10 @@ export default function CalendarStrip({ user_id }) {
             <Text color="$textLight500">No projects scheduled.</Text>
           </Box>
         ) : (
-          <FlatList
-            data={todaysProjects}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {todaysProjects.map((item) => (
               <Box
+                key={item._id}
                 bg="$backgroundLight0"
                 py="$2"
                 px="$2"
@@ -127,8 +126,8 @@ export default function CalendarStrip({ user_id }) {
                   />
                 </StyledCycle>
               </Box>
-            )}
-          />
+            ))}
+          </ScrollView>
         )}
       </VStack>
       {error && (

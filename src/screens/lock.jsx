@@ -12,11 +12,11 @@ import {
   StyledCycle,
 } from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Animated, Pressable, Vibration,Platform } from 'react-native';
+import { Animated, Pressable, Vibration, Platform } from 'react-native';
 import { theme } from '../utils/theme';
 import { fontStyles } from '../utils/fontStyles';
 import { useSecure } from '../hooks/useSecure';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { useAppContext } from '../hooks/appContext';
 import { useUserChat } from '../hooks/useChat';
 
@@ -76,7 +76,13 @@ const Keypad = () => {
           if (result) {
             await login(result);
             handleChatSignIn(email, '12345!').then(() => { });
-            navigator.navigate('bottom-tabs');
+
+            navigator.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'bottom-tabs' }],
+              })
+            );
           }
         });
       }
@@ -117,7 +123,7 @@ const Keypad = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader   skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
+      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true, hidden: false }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
@@ -129,8 +135,7 @@ const Keypad = () => {
           alignItems="center">
           <StyledImage
             borderWidth={0}
-            source={require('../../assets/img/4.png')}></StyledImage>
-
+            source={require('../../assets/img/icons8-login-100-2.png')}></StyledImage>
           <StyledText
             paddingTop={16}
             paddingHorizontal={24}
@@ -139,7 +144,7 @@ const Keypad = () => {
             color={theme.colors.gray[400]}
             textAlign="center"
             fontSize={theme.fontSize.normal}>
-          Enter the 6-digit OTP sent to your registered email address.
+            Enter the 6-digit OTP sent to your registered email address.
           </StyledText>
           <StyledText
             paddingVertical={2}
