@@ -348,5 +348,7 @@
     <color name="semi_transparent_black">#90000000</color>
     <color name="secondary_text">#757575</color>
     <color name="button_bg">#f20056</color>
+    <color name="notification_color">#FF6200EE</color>
+
 
 </resources>

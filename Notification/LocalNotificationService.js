@@ -1,12 +1,17 @@
 import PushNotification from "react-native-push-notification"
 
-class LocalNotificationService { 
+class LocalNotificationService {
+    // Use a stable, descriptive channel id. Changing this will create a new channel
+    // on the device which avoids issues if an existing channel was created with
+    // the wrong importance/visibility settings.
+    CHANNEL_ID = 'default_channel_32_v2';
+
     configure = (onOpenNotification) => {
         PushNotification.configure({
-            onRegister : function (token) {           
+            onRegister: function (token) {
             },
-            onNotification: function (notification) {              
-                if(!notification?.data) {
+            onNotification: function (notification) {
+                if (!notification?.data) {
                     return
                 }
                 notification.userInteraction = true;
@@ -39,33 +44,63 @@ class LocalNotificationService {
     }
 
     showNotification = (id, title, message, data = {}, options = {}) => {
+           const safeId = Number(id);
+    const finalId = !isNaN(safeId)
+        ? (safeId % 2147483647)
+        : (Date.now() % 100000); // fallback safe ID
+        if (__DEV__) console.log('LocalNotificationService.showNotification', { finalId, title, message, data, options });
+
         PushNotification.localNotification({
             /* Android Only Properties */
-            ...this.buildAndroidNotification(id, title, message, data, options),
-            title : title || "",
-            message : message || "",
-            playSound : options.playSound || false,
-            soundName : options.soundName || 'default',
-            userInteraction : false , // BOOLEAN : If notification was opened by the user from notification
-            channelId: "32",
-            badge : true,   
-            sound : true      
+            ...this.buildAndroidNotification(finalId, title, message, data, options),
+            title: title || "",
+            message: message || "",
+            playSound: options.playSound || false,
+            soundName: options.soundName || 'default',
+            userInteraction: false,
+            channelId: this.CHANNEL_ID,
+            badge: true,
+            sound: true
         });
     }
+
+    defaultChannel = () => {
+        if (__DEV__) {
+            // Remove any existing broken channel
+            PushNotification.deleteChannel(this.CHANNEL_ID);
+            PushNotification.deleteChannel('32'); // old one
+            console.log("Deleted dev channels to force recreation");
+        }
+
+        PushNotification.createChannel(
+            {
+                channelId: this.CHANNEL_ID,
+                channelName: "Default Notification Channel",
+                channelDescription: "Channel for local notifications",
+                importance: 4,        // MAX
+                vibrate: true,
+                soundName: "default",
+                playSound: true
+            },
+            (created) => {
+                console.log(`createChannel (${this.CHANNEL_ID}) returned '${created}'`);
+            }
+        );
+    };
 
     buildAndroidNotification = (id, title, message, data = {}, options = {}) => {
         return {
             id: id,
-            autoCancel : true,
-            largeIcon : options.largeIcon || "ic_launcher",
-            smallIcon : options.smallIcon || "ic_notification",
-            bigText : message || '',
-            subText : title || '',
-            vibrate : options.vibrate || true,
-            vibration : options.vibration || 300,
-            priority : options.priority || 'high',
-            importance : options.importance || 'high',
-            data : data,
+            autoCancel: true,
+            largeIcon: options.largeIcon || "ic_launcher",
+            smallIcon: options.smallIcon || "ic_launcher",
+            bigText: message || '',
+            subText: title || '',
+            vibrate: options.vibrate || true,
+            vibration: options.vibration || 300,
+            priority: options.priority || 'high',
+            importance: options.importance || 'high',
+            data: data,
         }
     }
 
@@ -73,16 +108,10 @@ class LocalNotificationService {
         PushNotification.cancelAllLocalNotifications();
     }
 
-    removeDeliveredNotificationByID = (notificationId) => {    
-        PushNotification.cancelLocalNotifications({id: `${notificationId}`})
+    removeDeliveredNotificationByID = (notificationId) => {
+        PushNotification.cancelLocalNotifications({ id: `${notificationId}` })
     }
 
-    // applicationBadge = () => {
-    //     // PushNotification.setApplicationIconBadgeNumber(2);
-    //     // const ShortcutBadger = NativeModules.ShortcutBadger;
-    //     // let count = 1;
-    //     // ShortcutBadger.applyCount(count);
-    // }
 }
 
 export const localNotificationService = new LocalNotificationService();

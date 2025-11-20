@@ -2,9 +2,8 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Navigator } from './src/navigation/AppNavigation';
 import AppProvider from './src/hooks/appContext';
-import { getFcmToken } from './src/utils/pushNotification';
+import { fcmStart } from './src/utils/pushNotification';
 import { toModel } from './src/utils/help';
-import useLocation from './src/hooks/useLocation';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
@@ -12,7 +11,6 @@ import { useProjectGeofencing, useGeofenceEvents } from './src/hooks/useGeofenci
 import { useFence } from './src/hooks/useFence';
 
 function App() {
-  useLocation();
   const { handleSave } = useFence();
   const { isInitialized, isInitializing, error, retry } = useProjectGeofencing({
     enableBackgroundSync: true,
@@ -47,14 +45,14 @@ function App() {
   );
 
   useEffect(() => {
-    const setUpFcm = async () => {
+    const initFcm = async () => {
       try {
-        await getFcmToken();
+        await fcmStart();
       } catch (error) {
         if (__DEV__) console.error('Error with getFcmToken:', error);
       }
     };
-    setUpFcm();
+    initFcm();
   }, []);
 
   return (

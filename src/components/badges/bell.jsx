@@ -1,24 +1,45 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Pressable, Box, Badge, Text } from '@gluestack-ui/themed';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { useUtil } from '../../store';
 import { useFocus } from '../../hooks/useFocus';
 import { PROJECT_KEY } from '../../utils/asyncStorage';
+import { NotificationBus } from '../../../scripts/notificationBus';
+import { AppState } from 'react-native';
 
 export const Bell = ({ onPress }) => {
   const { key } = useFocus();
   const [count, setCount] = useState(0);
   const { get } = useUtil();
 
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      const unreadCount = await get(PROJECT_KEY);
-      setCount(unreadCount || 0);
-    };
+  const loadCount = async () => {
+    const unreadCount = await get(PROJECT_KEY);
+    setCount(unreadCount || 0);
+  };
 
-    fetchUnreadCount();
-  }, [key]);
+  // 👉 ONE AND ONLY useEffect
+  useEffect(() => {
+    // Load existing count (startup, login, first mount)
+    loadCount();
+
+    // Listen for new push notifications
+    const sub = NotificationBus.on('new-notification', () => {
+      loadCount();
+    });
+
+    const appStateSub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        loadCount();   // refresh when returning from background
+      }
+    });
+
+    return () => {
+      sub.remove();
+      appStateSub.remove();
+    };
+  }, [key]); // also refreshes when screen gains focus
+
 
   return (
     <Pressable onPress={onPress}>
@@ -29,28 +50,28 @@ export const Bell = ({ onPress }) => {
           color={theme.colors.gray[800]}
         />
 
-          <Badge
-            position="absolute"
-            top={-2}
-            right={-2}
-            px="$2"
-            py="$1"
-            bg={theme.colors.red[500]}
-            borderRadius="$full"
-            borderWidth={0}
-            borderColor={theme.colors.red[500]}
-            justifyContent="center"
-            alignItems="center"
+        <Badge
+          position="absolute"
+          top={-2}
+          right={-2}
+          px="$2"
+          py="$1"
+          bg={theme.colors.red[500]}
+          borderRadius="$full"
+          borderWidth={0}
+          borderColor={theme.colors.red[500]}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Text
+            color="$white"
+            fontSize="$xs"
+            fontWeight="$bold"
+            textAlign="center"
           >
-            <Text
-              color="$white"
-              fontSize="$xs"
-              fontWeight="$bold"
-              textAlign="center"
-            >
-              {count}
-            </Text>
-          </Badge>
+            {count}
+          </Text>
+        </Badge>
       </Box>
     </Pressable>
   );

@@ -11,10 +11,11 @@ import {
 } from 'react-native';
 import { geofencingSingleton } from '../../types/geofencing'; // Adjust import path
 import type { GeofenceEvent, ProjectGeofence, GeofencingState } from '../../types/geofencing/types'; // Adjust import path
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { localNotificationService } from '../../../Notification/LocalNotificationService';
 
 const GeofenceTestApp = () => {
-    const navigator = useNavigation();
+  const navigator = useNavigation();
   const [state, setState] = useState<GeofencingState>({
     isInitialized: false,
     isLoading: false,
@@ -87,26 +88,26 @@ const GeofenceTestApp = () => {
 
   console.log('GeofenceTestApp rendered, current state:', state);
 
-useEffect(() => {
-  // Subscribe to state changes
-  const unsubscribeState = geofencingSingleton.addStateListener((newState: any) => {
-setState((prevState) => ({
-  ...prevState,
-  isInitialized: newState.isInitialized,
-  isLoading: newState.isLoading,
-  error: newState.error,
-  geofences: [...prevState.geofences, ...newState?.geofences],
-}));
-  });
+  useEffect(() => {
+    // Subscribe to state changes
+    const unsubscribeState = geofencingSingleton.addStateListener((newState: any) => {
+      setState((prevState) => ({
+        ...prevState,
+        isInitialized: newState.isInitialized,
+        isLoading: newState.isLoading,
+        error: newState.error,
+        geofences: [...prevState.geofences, ...newState?.geofences],
+      }));
+    });
 
-  // Subscribe to geofence events
-  const unsubscribeEvents = geofencingSingleton.addEventListener((event: GeofenceEvent) => {
+    // Subscribe to geofence events
+    const unsubscribeEvents = geofencingSingleton.addEventListener((event: GeofenceEvent) => {
       console.log('📱 App received geofence event:', event);
       setEvents(prev => [event, ...prev].slice(0, 20)); // Keep last 20 events
-      
+
       // Update inside tracking
       setInsideGeofences(geofencingSingleton.getCurrentGeofenceStates());
-      
+
       // Show alert for demonstration
       Alert.alert(
         `Geofence ${event.transition}`,
@@ -115,11 +116,11 @@ setState((prevState) => ({
       );
     });
 
-  return () => {
-    unsubscribeState();
-    unsubscribeEvents();
-  };
-}, []);
+    return () => {
+      unsubscribeState();
+      unsubscribeEvents();
+    };
+  }, []);
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -205,7 +206,7 @@ setState((prevState) => ({
     try {
       // const location = await geofencingSingleton.getCurrentPosition();
       // console.log('🌍 Current location:', location);
-      
+
       // Alert.alert(
       //   'Current Location',
       //   `Lat: ${location.latitude.toFixed(6)}\nLng: ${location.longitude.toFixed(6)}\n\nDistance to PE2 5SP:\n${calculateDistance(
@@ -221,10 +222,22 @@ setState((prevState) => ({
     }
   };
 
+
+  const triggerNotification = () => {
+    localNotificationService.defaultChannel();
+    localNotificationService.showNotification(
+        Date.now() % 100000,
+      'Test notification',
+      'This is a test notification body',
+      { test: true },
+      { playSound: true }
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Geofencing Test App</Text>
-      
+
       {/* Status */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Status</Text>
@@ -248,57 +261,64 @@ setState((prevState) => ({
       {/* Controls */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Controls</Text>
-        
-        <TouchableOpacity 
-          style={[styles.button, !state.isInitialized && styles.buttonPrimary]} 
+
+        <TouchableOpacity
+          style={[styles.button, !state.isInitialized && styles.buttonPrimary]}
           onPress={initializeGeofencing}
           disabled={state.isLoading}
         >
           <Text style={styles.buttonText}>Initialize Geofencing</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.button, styles.buttonSuccess]} 
+        <TouchableOpacity
+          style={[styles.button, styles.buttonSuccess]}
           onPress={addTestGeofences}
           disabled={!state.isInitialized || state.isLoading}
         >
           <Text style={styles.buttonText}>Add Test Geofences</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.button, styles.buttonInfo]} 
+        <TouchableOpacity
+          style={[styles.button, styles.buttonInfo]}
           onPress={debugCurrentLocation}
           disabled={!state.isInitialized}
         >
           <Text style={styles.buttonText}>Debug Current Location</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.button, styles.buttonInfo]} 
+        <TouchableOpacity
+          style={[styles.button, styles.buttonInfo]}
           onPress={forceCheck}
           disabled={!state.isInitialized}
         >
           <Text style={styles.buttonText}>Force Manual Check</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.button, styles.buttonInfo]} 
+        <TouchableOpacity
+          style={[styles.button, styles.buttonInfo]}
           onPress={refreshGeofences}
           disabled={!state.isInitialized}
         >
           <Text style={styles.buttonText}>Refresh Geofences</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.button, styles.buttonDanger]} 
+        <TouchableOpacity
+          style={[styles.button, styles.buttonDanger]}
           onPress={clearAllGeofences}
           disabled={!state.isInitialized}
         >
           <Text style={styles.buttonText}>Clear All Geofences</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.button, styles.clearButton]} 
-          onPress={()=> navigator.goBack()}
+        <TouchableOpacity
+          style={[styles.button, styles.clearButton]}
+          onPress={() => triggerNotification()}
+
+        >
+          <Text style={styles.buttonText}>Trigger Notification </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.clearButton]}
+          onPress={() => navigator.goBack()}
           disabled={!state.isInitialized}
         >
           <Text style={styles.buttonText}>Go Back</Text>
@@ -318,7 +338,7 @@ setState((prevState) => ({
               {geofence.latitude.toFixed(6)}, {geofence.longitude.toFixed(6)}
             </Text>
             <Text style={[
-              styles.geofenceStatus, 
+              styles.geofenceStatus,
               insideGeofences.includes(`${geofence.projectId}-${geofence.id}`) && styles.insideStatus
             ]}>
               {insideGeofences.includes(`${geofence.projectId}-${geofence.id}`) ? 'INSIDE' : 'OUTSIDE'}
@@ -334,11 +354,11 @@ setState((prevState) => ({
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Events Log ({events.length})</Text>
-          <TouchableOpacity onPress={()=> {}} style={styles.clearButton}>
+          <TouchableOpacity onPress={() => { }} style={styles.clearButton}>
             <Text style={styles.clearButtonText}>Clear</Text>
           </TouchableOpacity>
         </View>
-        
+
         {events.map((event, index) => (
           <View key={`${event.id}-${event.timestamp}-${index}`} style={styles.eventItem}>
             <View style={styles.eventHeader}>
@@ -358,7 +378,7 @@ setState((prevState) => ({
             </Text>
           </View>
         ))}
-        
+
         {events.length === 0 && (
           <Text style={styles.emptyText}>No events yet - try walking near a geofence!</Text>
         )}

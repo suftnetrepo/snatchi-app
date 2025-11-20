@@ -14,7 +14,7 @@ import {
   ScrollView,
 } from '@gluestack-ui/themed';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { formatReadableDate } from '../../utils/help';
+import { formatReadableDate, formatShortDate } from '../../utils/help';
 import { StyledMIcon } from '../../components/icon';
 import { theme } from '../../utils/theme';
 import { getPriorityColor, getStatusTheme, limitHtmlTextByWord } from '../../utils/help';
@@ -68,9 +68,9 @@ const ProjectCard = ({ data }) => {
                       </BadgeText>
                     </Badge>
 
-                    <HStack space="sm" alignItems="center">
-                      <MaterialIcons name="calendar-today" size={16} color="#999" />
-                      <Text fontSize="$sm" color="$gray600">{formatReadableDate(item.startDate)}</Text>
+                    <HStack space="sm" alignItems="center" marginHorizontal={8}>
+                      <MaterialIcons name="calendar-today" size={20} color="#999" />
+                      <Text fontSize="$sm" color="$gray800">{formatShortDate(item.startDate)}</Text>
                     </HStack>
 
                     {/* Avatar Group */}

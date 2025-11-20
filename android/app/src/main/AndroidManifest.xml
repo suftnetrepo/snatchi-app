@@ -39,10 +39,22 @@
 
         </activity>
 
+        <service
+            android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
+            android:exported="false" />
+
+        <service
+            android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions"
+            android:exported="false" />
+
         <!-- TransistorSoft License -->
         <meta-data
             android:name="com.transistorsoft.locationmanager.license"
             android:value="baf873c77534c6a9e53776515f01b34680f630448ab54bc91decfba90752a9d3" />
+
+        <meta-data
+            android:name="com.dieam.reactnativepushnotification.notification_color"
+            android:resource="@color/notification_color"/>
 
     </application>
 
