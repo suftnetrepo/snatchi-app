@@ -19,6 +19,7 @@ import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
 import { getStore } from '../utils/asyncStorage';
+import Profile from '../screens/profile';
 
 const Stack = createStackNavigator();
 function Navigator() {
@@ -47,6 +48,13 @@ function Navigator() {
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="profile"
+        component={Profile}
         options={{
           headerShown: false,
         }}

@@ -3,7 +3,6 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {theme} from '../utils/theme';
 import Home from '../screens/home';
-import Profile from '../screens/profile';
 import Invoices from '../screens/invoice';
 import Settings from '../screens/settings';
 import Messaging from '../screens/messaging';
@@ -113,24 +112,6 @@ export default function BottomTabs() {
                 size={32}
                 color={focused ? theme.colors.gray[1] : theme.colors.gray[600]}
                 name="event"
-              />
-            );
-          },
-        }}
-      />
-
-      <Tab.Screen
-        name="profile"
-        component={Profile}
-        initialParams={{setTabBarVisible}}
-        options={{
-          tabBarIcon: ({focused}) => {
-            return (
-              <Icon
-                focused={focused}
-                size={32}
-                color={focused ? theme.colors.gray[1] : theme.colors.gray[600]}
-                name="account-circle"
               />
             );
           },

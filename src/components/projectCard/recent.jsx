@@ -14,7 +14,7 @@ import {
   ScrollView,
 } from '@gluestack-ui/themed';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { formatReadableDate, formatShortDate } from '../../utils/help';
+import { formatShortDate } from '../../utils/help';
 import { StyledMIcon } from '../../components/icon';
 import { theme } from '../../utils/theme';
 import { getPriorityColor, getStatusTheme, limitHtmlTextByWord } from '../../utils/help';
@@ -73,7 +73,6 @@ const ProjectCard = ({ data }) => {
                       <Text fontSize="$sm" color="$gray800">{formatShortDate(item.startDate)}</Text>
                     </HStack>
 
-                    {/* Avatar Group */}
                     <HStack justifyContent='' ml="$2">
                       <StyledCycle
                         paddingHorizontal={10}
@@ -86,7 +85,10 @@ const ProjectCard = ({ data }) => {
                           name="assignment"
                           color={theme.colors.blueGray[500]}
                           onPress={() => {
-                            navigator.navigate('task');
+                            navigator.navigate('task', {
+                              id: item?._id,
+                              from : 'bottom-tabs',
+                            });
                           }}
                         />
                       </StyledCycle>

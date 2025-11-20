@@ -26,8 +26,16 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
-import { getStatusTheme, safetyGear, formatDateTime, limitHtmlTextByWord, capitalizeFirstLetter, getPriorityColor, FileIcon } from '../../utils/help';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+    getStatusTheme,
+    safetyGear,
+    formatDateTime,
+    limitHtmlTextByWord,
+    capitalizeFirstLetter,
+    getPriorityColor,
+    FileIcon,
+} from '../../utils/help';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { Pressable, Platform, Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -39,14 +47,14 @@ export const ProjectDetails = () => {
     const navigator = useNavigation();
     const route = useRoute();
     const { id } = route.params;
-    const { data, error, loading, fetchOneProject } = useProject()
+    const { data, error, loading, fetchOneProject } = useProject();
     const themeProgress = getStatusTheme(data?.status);
 
     console.log('Project Details Data:', data);
 
     useEffect(() => {
-        fetchOneProject(id)
-    }, [id])
+        fetchOneProject(id);
+    }, [id]);
 
     const openGoogleSearch = () => {
         const encodedQuery = encodeURIComponent(`hotels near ${data?.postcode}`);
@@ -55,9 +63,7 @@ export const ProjectDetails = () => {
     };
 
     const openGoogleSearchNearByAirport = () => {
-        const encodedQuery = encodeURIComponent(
-            `airport near ${data?.postcode}`,
-        );
+        const encodedQuery = encodeURIComponent(`airport near ${data?.postcode}`);
         const url = `https://www.google.com/search?q=${encodedQuery}`;
         Linking.openURL(url);
     };
@@ -85,8 +91,7 @@ export const ProjectDetails = () => {
                 if (supported) {
                     Linking.openURL(url);
                 } else {
-                    __DEV__ &&
-                        console.log('Unable to open Google Maps.');
+                    __DEV__ && console.log('Unable to open Google Maps.');
                 }
             })
             .catch(err => __DEV__ && console.error('Error opening URL:', err));
@@ -100,8 +105,7 @@ export const ProjectDetails = () => {
                 <Text
                     fontSize="$sm"
                     color="$textLight700"
-                    numberOfLines={expanded ? undefined : 3}
-                >
+                    numberOfLines={expanded ? undefined : 3}>
                     {description}
                 </Text>
 
@@ -128,7 +132,11 @@ export const ProjectDetails = () => {
                     height={48}
                     width={48}
                     borderColor={theme.colors.gray[200]}>
-                    <MaterialIcons name="arrow-back" size={15} color={theme.colors.gray[800]} />
+                    <MaterialIcons
+                        name="arrow-back"
+                        size={15}
+                        color={theme.colors.gray[800]}
+                    />
                 </StyledCycle>
             </Pressable>
             <StyledSpacer marginHorizontal={2} />
@@ -140,7 +148,26 @@ export const ProjectDetails = () => {
                 Project Details
             </StyledText>
             <StyledSpacer flex={1} />
-
+            <Pressable
+                onPress={() => {
+                    navigator.navigate('task', {
+                        id: data?._id,
+                        from: 'project-details',
+                    });
+                }}>
+                <StyledCycle
+                    height={48}
+                    width={48}
+                    backgroundColor={theme.colors.cyan[500]}
+                    borderColor={theme.colors.cyan[500]}>
+                    <MaterialIcons
+                        size={18}
+                        name="assignment"
+                        color={theme.colors.gray[50]}
+                    />
+                </StyledCycle>
+            </Pressable>
+            <StyledSpacer marginHorizontal={8} />
         </XStack>
     );
 
@@ -155,23 +182,32 @@ export const ProjectDetails = () => {
                 </StyledHeader.Full>
             </StyledHeader>
 
-            <ScrollView showsVerticalScrollIndicator={false} >
+            <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Rounded white card */}
-                <Box bg="$white" borderTopRadius={30}  py={"$3"} px={"$4"} flex={1}>
-
+                <Box bg="$white" borderTopRadius={30} py={'$3'} px={'$4'} flex={1}>
                     {/* Category badges */}
                     <HStack justifyContent="space-between" alignItems="center">
                         <HStack space="sm" mb="$2">
                             <Badge bg="$blue100" borderRadius="$xl" px="$2">
                                 <BadgeText color="$blue600">{data?.status}</BadgeText>
                             </Badge>
-                            <Badge size="md" variant="solid" bg={getPriorityColor(data.priority)} rounded="$full" px="$3" py="$1">
+                            <Badge
+                                size="md"
+                                variant="solid"
+                                bg={getPriorityColor(data.priority)}
+                                rounded="$full"
+                                px="$3"
+                                py="$1">
                                 <BadgeText color="$white" fontSize="$sm" fontWeight="$medium">
                                     {data.priority}
                                 </BadgeText>
                             </Badge>
                         </HStack>
-                        <ProgressCircleSvg progress={data?.progress} color={themeProgress.progress} size={64} />
+                        <ProgressCircleSvg
+                            progress={data?.progress}
+                            color={themeProgress.progress}
+                            size={64}
+                        />
                     </HStack>
                     <HStack justifyContent="space-between" alignItems="center">
                         <VStack flex={1} space="xs">
@@ -179,13 +215,14 @@ export const ProjectDetails = () => {
                                 fontSize="$lg"
                                 fontWeight="$medium"
                                 color="$black"
-                                numberOfLines={2}
-                            >
+                                numberOfLines={2}>
                                 {data?.name}
                             </Text>
                         </VStack>
                     </HStack>
-                    <ProjectDescription description={limitHtmlTextByWord(data?.description, 200)} />
+                    <ProjectDescription
+                        description={limitHtmlTextByWord(data?.description, 200)}
+                    />
                     <StyledSpacer marginVertical={4} />
                     <XStack
                         justifyContent="space-between"
@@ -193,7 +230,6 @@ export const ProjectDetails = () => {
                         gap={2}
                         paddingVertical={4}
                         borderRadius={32}>
-
                         <YStack>
                             <StyledText
                                 fontFamily={fontStyles.Roboto_Regular}
@@ -244,25 +280,22 @@ export const ProjectDetails = () => {
                         </YStack>
                     </XStack>
 
-                    {
-                        data?.attachments?.length > 0 && (
-                            <>
-                                <StyledSpacer marginVertical={4} />
-                                <StyledSeparator
-                                    left={
-                                        <StyledText
-                                            fontFamily={fontStyles.Roboto_Regular}
-                                            fontWeight={theme.fontWeight.medium}
-                                            fontSize={theme.fontSize.normal}
-                                            color={theme.colors.gray[400]}>
-                                            Attactments({data?.attachments?.length})
-                                        </StyledText>
-                                    }
-                                />
-                            </>
-
-                        )
-                    }
+                    {data?.attachments?.length > 0 && (
+                        <>
+                            <StyledSpacer marginVertical={4} />
+                            <StyledSeparator
+                                left={
+                                    <StyledText
+                                        fontFamily={fontStyles.Roboto_Regular}
+                                        fontWeight={theme.fontWeight.medium}
+                                        fontSize={theme.fontSize.normal}
+                                        color={theme.colors.gray[400]}>
+                                        Attactments({data?.attachments?.length})
+                                    </StyledText>
+                                }
+                            />
+                        </>
+                    )}
 
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         {data?.attachments?.map((item, index) => {
@@ -407,10 +440,10 @@ export const ProjectDetails = () => {
                             </StyledText>
                         }
                     />
-                    <ContactCard name={`${data?.manager} ${data?.stakeholder}`}
+                    <ContactCard
+                        name={`${data?.manager} ${data?.stakeholder}`}
                         email={data?.email}
-                        mobile={data?.mobile}>
-                    </ContactCard>
+                        mobile={data?.mobile}></ContactCard>
                     <StyledSpacer marginVertical={4} />
                     <StyledSeparator
                         left={
@@ -423,7 +456,7 @@ export const ProjectDetails = () => {
                             </StyledText>
                         }
                     />
-                    <ScrollView  showsHorizontalScrollIndicator={false}>
+                    <ScrollView showsHorizontalScrollIndicator={false}>
                         <XStack
                             justifyContent="flex-start"
                             alignItems="center"
@@ -434,8 +467,7 @@ export const ProjectDetails = () => {
                                 <StyledButton
                                     key={index}
                                     borderColor={theme.colors.gray[200]}
-                                    backgroundColor={theme.colors.gray[100]}
-                                >
+                                    backgroundColor={theme.colors.gray[100]}>
                                     <StyledText
                                         fontFamily={fontStyles.Roboto_Regular}
                                         fontWeight={theme.fontWeight.normal}
@@ -445,7 +477,8 @@ export const ProjectDetails = () => {
                                         color={theme.colors.gray[800]}>
                                         {capitalizeFirstLetter(ppe)}
                                     </StyledText>
-                                </StyledButton>))}
+                                </StyledButton>
+                            ))}
                         </XStack>
                     </ScrollView>
                     <StyledSpacer marginVertical={4} />
@@ -461,7 +494,7 @@ export const ProjectDetails = () => {
                         }
                     />
                     <XStack
-                      flex={1}
+                        flex={1}
                         justifyContent="flex-start"
                         alignItems="center"
                         paddingHorizontal={8}
@@ -476,7 +509,11 @@ export const ProjectDetails = () => {
                                 paddingHorizontal={14}
                                 flexWrap="wrap"
                                 gap={1}>
-                                <MaterialIcons name="hotel" size={18} color={theme.colors.gray[1]} />
+                                <MaterialIcons
+                                    name="hotel"
+                                    size={18}
+                                    color={theme.colors.gray[1]}
+                                />
                                 <StyledText
                                     fontFamily={fontStyles.Roboto_Regular}
                                     fontWeight={theme.fontWeight.light}
@@ -497,7 +534,11 @@ export const ProjectDetails = () => {
                                 paddingHorizontal={14}
                                 flexWrap="wrap"
                                 gap={1}>
-                                <MaterialIcons name="train" size={18} color={theme.colors.gray[1]} />
+                                <MaterialIcons
+                                    name="train"
+                                    size={18}
+                                    color={theme.colors.gray[1]}
+                                />
                                 <StyledText
                                     fontFamily={fontStyles.Roboto_Regular}
                                     fontWeight={theme.fontWeight.light}
@@ -542,7 +583,12 @@ export const ProjectDetails = () => {
                     description="Please try again later"
                     visible={true}
                     onOk={() => {
-                        navigator.goBack();
+                        navigator.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'bottom-tabs' }],
+                            })
+                        );
                     }}
                 />
             )}

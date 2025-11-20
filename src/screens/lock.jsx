@@ -76,7 +76,6 @@ const Keypad = () => {
           if (result) {
             await login(result);
             handleChatSignIn(email, '12345!').then(() => { });
-
             navigator.dispatch(
               CommonActions.reset({
                 index: 0,
@@ -135,7 +134,7 @@ const Keypad = () => {
           alignItems="center">
           <StyledImage
             borderWidth={0}
-            source={require('../../assets/img/icons8-login-100-2.png')}></StyledImage>
+            source={require('../../assets/img/icons8--ogin-64.png')}></StyledImage>
           <StyledText
             paddingTop={16}
             paddingHorizontal={24}

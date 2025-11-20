@@ -85,7 +85,7 @@ const MyChat = ({route}) => {
       <Pressable onPress={() => navigator.goBack()}>
       <StyledMIcon
             name="arrow-back"
-            size={15}
+            size={30}
             color={theme.colors.gray[800]}
             onPress={() => navigator.goBack()}
           />
@@ -137,7 +137,8 @@ const MyChat = ({route}) => {
         </StyledHeader.Full>
       </StyledHeader>
 
-      <GiftedChat
+    <YStack flex={1} backgroundColor={theme.colors.gray[100]} >
+ <GiftedChat
         messages={[...messages].reverse()}
         onSend={newMessages =>
           handleSend(room_id, currentChatUser?.uid, newMessages)
@@ -152,6 +153,8 @@ const MyChat = ({route}) => {
         scrollToBottom
         scrollToBottomComponent={scrollToBottomComponent}
       />
+    </YStack>
+     
     </StyledSafeAreaView>
   );
 };

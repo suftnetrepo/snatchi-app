@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -11,12 +11,12 @@ import {
   StyledCycle,
   StyledSeparator,
 } from 'fluent-styles';
-import {theme} from '../../utils/theme';
-import {StyledMIcon} from '../../components/icon';
-import {fontStyles} from '../../utils/fontStyles';
-import {useNavigation} from '@react-navigation/native';
+import { theme } from '../../utils/theme';
+import { StyledMIcon } from '../../components/icon';
+import { fontStyles } from '../../utils/fontStyles';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {Pressable, Platform} from 'react-native';
+import { Pressable, Platform } from 'react-native';
 
 const Settings = () => {
   const navigator = useNavigation();
@@ -48,7 +48,7 @@ const Settings = () => {
     </XStack>
   );
 
-  const RenderRow = ({icon = 'account-circle', title, screen}) => {
+  const RenderRow = ({ icon = 'account-circle', title, screen }) => {
     return (
       <Pressable onPress={() => screen && navigator.navigate(screen)}>
         <XStack
@@ -82,21 +82,24 @@ const Settings = () => {
   };
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
+    <StyledSafeAreaView backgroundColor={theme.colors.gray[100]}>
       <StyledHeader
-       skipAndroid={Platform.OS === 'android' ? false : true}
+        skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
-        statusProps={{translucent: true}}>
+        statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
       </StyledHeader>
       <StyledSpacer marginVertical={8} />
       <XStack
-        paddingHorizontal={16}
+        paddingHorizontal={8}
         paddingVertical={8}
         borderRadius={16}
+        marginHorizontal={16}
         justifyContent="flex-start"
+        borderColor={theme.colors.gray[200]}
+          backgroundColor={theme.colors.gray[1]}
         alignItems="center">
         <StyledImage
           local
@@ -130,30 +133,25 @@ const Settings = () => {
           </XStack>
         </YStack>
       </XStack>
-      <StyledSpacer marginVertical={8} />
+
       <StyledScrollView>
         <YStack
           flex={1}
           marginHorizontal={16}
-          paddingHorizontal={8}
           paddingBottom={8}
           backgroundColor={theme.colors.gray[100]}
           borderRadius={16}>
-          <StyledSeparator
-            left={
-              <StyledText
-                fontFamily={fontStyles.Roboto_Regular}
-                paddingHorizontal={8}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.large}
-                color={theme.colors.gray[400]}>
-                Help
-              </StyledText>
-            }></StyledSeparator>
+          <StyledSpacer marginVertical={6} />
           <RenderRow
             icon="info-outline"
             title="Help Center"
             screen="help-center"
+          />
+          <StyledSpacer marginVertical={4} />
+          <RenderRow
+            icon="account-circle"
+            title="Edit Profile"
+            screen="profile"
           />
         </YStack>
       </StyledScrollView>

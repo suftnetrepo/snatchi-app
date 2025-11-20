@@ -14,6 +14,7 @@ import {
   StyledMultiInput,
 } from 'fluent-styles';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { Box, VStack, Text, Button, HStack, useToast, Spinner } from "@gluestack-ui/themed";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { fontStyles, theme } from '../../utils/theme';
@@ -50,8 +51,8 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 };
 
 const CalendarListScreen = () => {
-  const { key } = useFocus()
-  const route = useRoute()
+  const { key } = useFocus();
+  const route = useRoute();
   const params = route.params;
   const {
     data,
@@ -76,7 +77,7 @@ const CalendarListScreen = () => {
 
   useEffect(() => {
     if (params?.day && params?.id) {
-      onDayPress(params.day)
+      onDayPress(params.day);
     }
   }, [params?.day, params?.id]);
 
@@ -243,7 +244,7 @@ const CalendarListScreen = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-     skipAndroid={Platform.OS === 'android' ? false : true}
+        skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{ translucent: true }}>
         <StyledHeader.Full>
@@ -252,20 +253,21 @@ const CalendarListScreen = () => {
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
         <CalendarList
-          markingType="period"
-          markedDates={mergedMarkedDates}
-          pastScrollRange={6}
-          futureScrollRange={6}
-          scrollEnabled
-          showScrollIndicator
-          onDayPress={e => onDayPress(e)}
-          showsVerticalScrollIndicator={false}
-          theme={{
-            textDayFontSize: 14,
-            textMonthFontSize: 16,
-            textDayHeaderFontSize: 13,
-          }}
-        />
+              markingType="period"
+              markedDates={mergedMarkedDates}
+              pastScrollRange={6}
+              futureScrollRange={6}
+              scrollEnabled
+              showScrollIndicator
+              onDayPress={e => onDayPress(e)}
+              showsVerticalScrollIndicator={false}
+              theme={{
+                textDayFontSize: 14,
+                textMonthFontSize: 16,
+                textDayHeaderFontSize: 13,
+              }}
+            />
+
         <BottomSheet
           ref={bottomSheetRef}
           index={-1}
@@ -475,7 +477,7 @@ const CalendarListScreen = () => {
       {loading && <StyledSpinner />}
       {error && (
         <StyledOkDialog
-          title={"Something went wrong"}
+          title={'Something went wrong'}
           description="Please try again later"
           visible={true}
           onOk={() => {

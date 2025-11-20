@@ -9,7 +9,8 @@ const useProject = (id) => {
     error: null,
     success: false,
     filterValue: '',
-    aggregateData: []
+    aggregateData: [],
+    copyData: []
   });
 
   const handleError = useCallback((error) => {

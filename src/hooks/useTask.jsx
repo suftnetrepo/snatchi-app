@@ -1,33 +1,83 @@
-import React, {useState, useEffect} from 'react';
-import {MYTASK_HOST_ADDRESS, VERBS} from '../../config';
-import {zat} from '../utils/zap';
-import {useUtil} from '../store';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MYTASK_HOST_ADDRESS, VERBS } from '../../config';
+import { zat } from '../utils/zap';
+import { useUtil } from '../store';
 
-const useTask = (flag = true) => {
-  const {set} = useUtil();
+const useTask = (id) => {
+  const { set } = useUtil();
   const [state, setState] = useState({
     data: [],
     calenderData: [],
     loading: false,
     error: null,
     success: false,
+    filterValue: '',
+    copyData: []
   });
 
   const handleError = error => {
     setState(pre => {
-      return {...pre, error: error, loading: false};
+      return { ...pre, error: error, loading: false };
     });
   };
 
   const handleReset = () => {
     setState(pre => {
-      return {...pre, success: false, loading: false, error: null};
+      return { ...pre, success: false, loading: false, error: null, filterValue: ''};
     });
   };
 
+  const filteMyTasks = useCallback((filterValue) => {
+    // Source data: prefer the original copy (copyData) so successive filters don't shrink the dataset
+    const source = state.copyData ?? state.data ?? [];
+
+    // If no filter provided, reset to the original dataset
+    if (!filterValue) {
+      setState((prevState) => ({ ...prevState, data: source }));
+      return;
+    }
+
+    const value = String(filterValue).toLowerCase();
+
+    const filtered = source.filter((j) => {
+      const status = String(j?.status ?? '');
+      return status.toLowerCase().includes(value);
+    });
+
+    setState((prevState) => ({
+      ...prevState,
+      data: filtered,
+      filterValue
+    }));
+  }, [state.copyData, state.data]);
+
+  async function handleMyTasksById(id) {
+    setState(prev => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(
+      MYTASK_HOST_ADDRESS.myTasks,
+      null,
+      VERBS.GET,
+      {
+        action: 'getMyTasksById',
+        id,
+      },
+    );
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: data,
+         copyData: data,
+        loading: false,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
   async function handleMyTasks(date) {
-    setState(prev => ({...prev, loading: true}));
-    const {success, data, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(
       MYTASK_HOST_ADDRESS.myTasks,
       null,
       VERBS.GET,
@@ -49,8 +99,8 @@ const useTask = (flag = true) => {
   }
 
   async function handleMyRecentTasks() {
-    setState(prev => ({...prev, loading: true}));
-    const {success, data, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(
       MYTASK_HOST_ADDRESS.myTasks,
       null,
       VERBS.GET,
@@ -68,7 +118,7 @@ const useTask = (flag = true) => {
           };
         });
         set('myRecentTasks', tasks);
-      } catch (error) {}
+      } catch (error) { }
 
       setState(prevState => ({
         ...prevState,
@@ -81,7 +131,7 @@ const useTask = (flag = true) => {
   }
 
   const handleAggregate = async () => {
-    const {data, success, errorMessage} = await zat(
+    const { data, success, errorMessage } = await zat(
       MYTASK_HOST_ADDRESS.aggregate,
       null,
       VERBS.GET,
@@ -89,25 +139,25 @@ const useTask = (flag = true) => {
 
     if (success) {
       setState(pre => {
-        return {...pre, data: data, loading: false};
+        return { ...pre, data: data, loading: false };
       });
-      return {data};
+      return { data };
     } else {
       handleError(errorMessage);
     }
   };
 
   async function handleEdit(body, id) {
-    setState(prev => ({...prev, loading: true, error: null, success: false}));
-    const {success, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true, error: null, success: false }));
+    const { success, errorMessage } = await zat(
       MYTASK_HOST_ADDRESS.updateOne,
       body,
       VERBS.PUT,
-      {id: id, action: 'single'},
+      { id: id, action: 'single' },
     );
 
     if (success) {
-      setState(prev => ({...prev, success: true, loading: false}));
+      setState(prev => ({ ...prev, success: true, loading: false }));
       return true;
     } else {
       handleError(errorMessage || 'Failed to update the task.');
@@ -116,8 +166,8 @@ const useTask = (flag = true) => {
   }
 
   useEffect(() => {
-    flag && handleMyRecentTasks().then(() => {});
-  }, [flag]);
+    id && handleMyTasksById(id).then(() => { });
+  }, [id]);
 
   return {
     ...state,
@@ -126,6 +176,8 @@ const useTask = (flag = true) => {
     handleAggregate,
     handleEdit,
     handleMyRecentTasks,
+    handleMyTasksById,
+    filteMyTasks
   };
 };
 
@@ -138,18 +190,18 @@ const useMyTaskDashboard = () => {
 
   const handleError = error => {
     setState(pre => {
-      return {...pre, error: error, loading: false};
+      return { ...pre, error: error, loading: false };
     });
   };
 
   const handleReset = () => {
     setState(pre => {
-      return {...pre, editData: null, error: null};
+      return { ...pre, editData: null, error: null };
     });
   };
 
   const handleAggregate = async () => {
-    const {data, success, errorMessage} = await zat(
+    const { data, success, errorMessage } = await zat(
       MYTASK_HOST_ADDRESS.aggregate,
       null,
       VERBS.GET,
@@ -157,9 +209,9 @@ const useMyTaskDashboard = () => {
 
     if (success) {
       setState(pre => {
-        return {...pre, data: data, loading: false};
+        return { ...pre, data: data, loading: false };
       });
-      return {data};
+      return { data };
     } else {
       handleError(errorMessage);
     }
@@ -173,7 +225,8 @@ const useMyTaskDashboard = () => {
     ...state,
     handleReset,
     handleAggregate,
+
   };
 };
 
-export {useTask, useMyTaskDashboard};
+export { useTask, useMyTaskDashboard };

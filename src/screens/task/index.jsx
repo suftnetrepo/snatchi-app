@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment} from 'react';
 import {
   YStack,
   XStack,
@@ -10,6 +10,8 @@ import {
   StyledCard,
   StyledCycle,
   StyledOkDialog,
+  StyledSpinner,
+  StyledButton
 } from 'fluent-styles';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
@@ -25,13 +27,23 @@ import {
   textColorHelper,
   limitHtmlTextByWord
 } from '../../utils/help';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTask } from '../../hooks/useTask';
 
 const Task = () => {
   const navigator = useNavigation();
-  const { data: taskData, error, success, handleReset } = useTask();
+  const route = useRoute();
+  const { id, from } = route.params;
+  const { data: taskData, error, loading, filteMyTasks, filterValue } = useTask(id);
+
+  const Status_data = [
+    'All',
+    'Pending',
+    'Progress',
+    'Completed',
+    'Cancelled',
+  ];
 
   const RenderHeader = () => (
     <XStack
@@ -44,7 +56,9 @@ const Task = () => {
         pressable
         pressableProps={{
           onPress: () =>
-            navigator.goBack(),
+            navigator.navigate(from, {
+              id: id,
+            }),
         }}
         height={48}
         width={48}
@@ -73,8 +87,8 @@ const Task = () => {
         marginBottom={8}
         borderColor={theme.colors.gray[1]}
         backgroundColor={theme.colors.gray[1]}
-        paddingVertical={16}
-        paddingHorizontal={16}
+        paddingVertical={12}
+        paddingHorizontal={12}
         borderWidth={1}
         pressable={true}
         pressableProps={{
@@ -193,6 +207,52 @@ const Task = () => {
     );
   };
 
+  const RenderStatus = () => {
+    return (
+      <XStack
+        gap={8}
+        justifyContent="flex-start"
+        alignItems="center"
+        borderRadius={32}
+        paddingHorizontal={8}
+        paddingVertical={8}
+        backgroundColor={theme.colors.gray[1]}
+      >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {Status_data.map((status, index) => (
+            <Fragment key={index}>
+              <StyledButton
+                borderRadius={32}
+                borderWidth={filterValue === status ? 2 : 0}
+                borderColor={filterValue === status ? theme.colors.blue[500] : theme.colors.gray[100]}
+                backgroundColor={theme.colors.gray[100]}
+                onPress={() => {
+                  if (status === 'All') {
+                    filteMyTasks('');
+                  } else {
+                    filteMyTasks(status);
+                  }
+                }}
+              >
+                <StyledText
+                  fontFamily={fontStyles.Roboto_Regular}
+                  fontWeight={theme.fontWeight.normal}
+                  color={theme.colors.gray[800]}
+                  paddingHorizontal={12}
+                  paddingVertical={4}
+                  fontSize={theme.fontSize.small}>
+                  {status}
+                </StyledText>
+              </StyledButton>
+              <StyledSpacer marginHorizontal={2} />
+            </Fragment>
+
+          ))}
+        </ScrollView>
+      </XStack>
+    )
+  }
+
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
@@ -204,6 +264,8 @@ const Task = () => {
         </StyledHeader.Full>
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[100]} paddingHorizontal={16} paddingVertical={16}>
+        <RenderStatus />
+        <StyledSpacer marginVertical={6} />
         <ScrollView showsVerticalScrollIndicator={false}>
           {taskData?.map((item, index) => (
             <RenderCard key={index} item={item} />
@@ -216,20 +278,11 @@ const Task = () => {
           description="please try again"
           visible={true}
           onOk={() => {
-            handleReset();
+            navigator.goBack();
           }}
         />
       )}
-      {success && (
-        <StyledOkDialog
-          title="Confirmation"
-          description="Task status was updated successfully"
-          visible={true}
-          onOk={() => {
-            handleReset();
-          }}
-        />
-      )}
+      {loading && <StyledSpinner />}
     </StyledSafeAreaView>
   );
 };
