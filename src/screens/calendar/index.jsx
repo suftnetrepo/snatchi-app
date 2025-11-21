@@ -67,6 +67,7 @@ const CalendarListScreen = () => {
     handleDayChange,
     handleDateRange,
     handleDelete,
+    handleMySchedulesByDates
   } = useScheduler(key);
   const { user } = useAppContext();
   const navigator = useNavigation();
@@ -253,21 +254,24 @@ const CalendarListScreen = () => {
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
         <CalendarList
-              markingType="period"
-              markedDates={mergedMarkedDates}
-              pastScrollRange={6}
-              futureScrollRange={6}
-              scrollEnabled
-              showScrollIndicator
-              onDayPress={e => onDayPress(e)}
-              showsVerticalScrollIndicator={false}
-              theme={{
-                textDayFontSize: 14,
-                textMonthFontSize: 16,
-                textDayHeaderFontSize: 13,
-              }}
-            />
-
+          markingType="period"
+          markedDates={mergedMarkedDates}
+          pastScrollRange={6}
+          futureScrollRange={6}
+          scrollEnabled
+          showScrollIndicator
+          onDayPress={e => onDayPress(e)}
+          showsVerticalScrollIndicator={false}
+          theme={{
+            textDayFontSize: 14,
+            textMonthFontSize: 16,
+            textDayHeaderFontSize: 13,
+          }}
+          onVisibleMonthsChange={async(months) => {
+            if (!months || months.length === 0) return;
+            await handleMySchedulesByDates(months);
+          }}
+        />
         <BottomSheet
           ref={bottomSheetRef}
           index={-1}

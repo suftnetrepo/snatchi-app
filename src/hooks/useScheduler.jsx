@@ -1,14 +1,14 @@
-import React, {useState, useEffect, useCallback} from 'react';
-import {SCHEDULER, VERBS} from '../../config';
-import {zat} from '../utils/zap';
-import {schedulerValidator} from '../validator/schedulerValidator';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SCHEDULER, VERBS } from '../../config';
+import { zat } from '../utils/zap';
+import { schedulerValidator } from '../validator/schedulerValidator';
 import { theme } from '../utils/theme';
 
 const statusColorMap = {
   Accepted: theme.colors.green[500],
   Pending: theme.colors.amber[600],
   Declined: theme.colors.red[400],
-  Lock :theme.colors.gray[400]
+  Lock: theme.colors.gray[400]
 };
 
 const ymd = iso => iso?.slice(0, 10);
@@ -33,8 +33,8 @@ const getMarkedDatesFromEvents = eventOrArray => {
 
       marked[cur] = {
         ...(marked[cur] || {}),
-        ...(isStart ? {startingDay: true} : {}),
-        ...(isEnd ? {endingDay: true} : {}),
+        ...(isStart ? { startingDay: true } : {}),
+        ...(isEnd ? { endingDay: true } : {}),
         color: marked[cur]?.color || color,
         textColor: 'white',
         id: event._id,
@@ -89,7 +89,7 @@ const useScheduler = (key) => {
           endDate: ymd(schedule.endDate),
         },
       }));
-      return {...schedule, showSheet};
+      return { ...schedule, showSheet };
     }
   };
 
@@ -105,7 +105,7 @@ const useScheduler = (key) => {
 
   const handleError = useCallback(error => {
     setState(pre => {
-      return {...pre, error: error, loading: false};
+      return { ...pre, error: error, loading: false };
     });
   }, []);
 
@@ -122,8 +122,8 @@ const useScheduler = (key) => {
   }, []);
 
   async function handleMySchedules() {
-    setState(prev => ({...prev, loading: true}));
-    const {success, data, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(
       SCHEDULER.getByUser,
       null,
       VERBS.GET,
@@ -145,19 +145,58 @@ const useScheduler = (key) => {
     }
   }
 
+  async function handleMySchedulesByDates(months) {
+    setState(prev => ({ ...prev, loading: true }));
+
+    const sorted = [...months].sort(
+      (a, b) => new Date(a.dateString) - new Date(b.dateString)
+    );
+
+    const first = sorted[0];            
+    const last = sorted[sorted.length - 1]; 
+
+    const startDate = `${first.year}-${String(first.month).padStart(2, '0')}-01`;
+    const endDate = new Date(last.year, last.month, 0) 
+      .toISOString()
+      .slice(0, 10);
+
+    const { success, data, errorMessage } = await zat(
+      SCHEDULER.getByUser,
+      null,
+      VERBS.GET,
+      {
+        action: 'getByUser',
+        startDate,
+        endDate
+      },
+    );
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: getMarkedDatesFromEvents(data.data),
+        rawData: data.data,
+        success: true,
+        loading: false,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
   async function handleEdit(body, id) {
-    setState(prev => ({...prev, loading: true, error: null, success: false}));
-    const {success, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true, error: null, success: false }));
+    const { success, errorMessage } = await zat(
       SCHEDULER.updateOne,
       body,
       VERBS.PUT,
-      {id: id, action: 'update'},
+      { id: id, action: 'update' },
     );
 
     if (success) {
       setState(prev => {
         const newRawData = prev.rawData.map(item =>
-          item._id === id ? {...item, ...body} : item,
+          item._id === id ? { ...item, ...body } : item,
         );
         return {
           ...prev,
@@ -175,8 +214,8 @@ const useScheduler = (key) => {
   }
 
   async function handleSave(body) {
-    setState(prev => ({...prev, loading: true, error: null, success: false}));
-    const {success, data, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true, error: null, success: false }));
+    const { success, data, errorMessage } = await zat(
       SCHEDULER.createOne,
       body,
       VERBS.POST,
@@ -201,12 +240,12 @@ const useScheduler = (key) => {
   }
 
   async function handleDelete(id) {
-    setState(prev => ({...prev, loading: true, error: null, success: false}));
-    const {success, errorMessage} = await zat(
+    setState(prev => ({ ...prev, loading: true, error: null, success: false }));
+    const { success, errorMessage } = await zat(
       SCHEDULER.removeOne,
       null,
       VERBS.DELETE,
-      {id: id},
+      { id: id },
     );
 
     if (success) {
@@ -225,12 +264,6 @@ const useScheduler = (key) => {
     }
   }
 
-  console.log("...............", key)
-
-  useEffect(() => {
-    handleMySchedules().then(() => {});
-  }, [key]);
-
   return {
     ...state,
     handleReset,
@@ -241,7 +274,8 @@ const useScheduler = (key) => {
     handleDayChange,
     handleDateRange,
     handleDelete,
+    handleMySchedulesByDates
   };
 };
 
-export {useScheduler};
+export { useScheduler };
