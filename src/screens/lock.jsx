@@ -72,16 +72,18 @@ const Keypad = () => {
       setPin(pin + num);
 
       if (passCode.length === 6) {
-        handleVerifyCode({ code: passCode, email: email }).then(async result => {
+        handleVerifyCode({ code: passCode, email: email }).then(result => {
           if (result) {
-            await login(result);
+            login(result).then(() => { });
             handleChatSignIn(email, '12345!').then(() => { });
-            navigator.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'bottom-tabs' }],
-              })
-            );
+            // navigator.dispatch(
+            //   CommonActions.reset({
+            //     index: 0,
+            //     routes: [{ name: 'bottom-tabs' }],
+            //   })
+            // );
+
+            navigator.navigate("bottom-tabs")
           }
         });
       }
@@ -122,7 +124,7 @@ const Keypad = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true, hidden: false }}>
+      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>

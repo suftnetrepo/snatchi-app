@@ -67,7 +67,7 @@ const useSecure = () => {
   const handleVerifyCode = async fields => {
     const fcm = await getStore('fcm');
     setState(pre => {
-      return {...pre, error: null, loading: false};
+      return {...pre, error: null, loading: true};
     });
     const {data, success, errorMessage} = await zat(
       ACCOUNT_HOST_ADDRESS.verify,
@@ -80,7 +80,9 @@ const useSecure = () => {
 
     if (success) {
       await storeJWT(data?.token);
-      
+      setState(pre => {
+        return {...pre, data: success, loading: false};
+      });
       return data?.user;
     } else {
       handleError(errorMessage);

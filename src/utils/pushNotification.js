@@ -1,7 +1,7 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { navigationRef } from '../navigation/NavigationRef';
-import { store, add, PROJECT_KEY } from './asyncStorage';
+import { store, add, SCHEDULE_KEY } from './asyncStorage';
 import { geofencingSingleton } from '../types/geofencing/';
 import { localNotificationService } from '../../Notification/LocalNotificationService';
 import { NotificationBus } from '../../scripts/notificationBus';
@@ -150,7 +150,19 @@ export const checkApplicationNotificationPermission = async () => {
     return false;
   }
 };
+const parseMaybeJson = (value) => {
+  if (!value) return null;
 
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value; // plain string
+    }
+  }
+
+  return value; // already an object/array
+};
 export function registerListenerWithFCM() {
   const unsubscribe = messaging().onMessage(async remoteMessage => {
     if (__DEV__) {
@@ -172,8 +184,12 @@ export function registerListenerWithFCM() {
       try {
         // 🔹 ADD_PROJECTS
         if (remoteMessage.data.addProjects) {
-          const projects = JSON.parse(remoteMessage.data.addProjects);
-          await geofencingSingleton.addProjects(projects);
+
+          const projects = parseMaybeJson(remoteMessage?.data?.addProjects);
+          console.log('Adding projects from push:', projects);
+          if (Array.isArray(projects)) {
+            await geofencingSingleton.addProjects(projects);
+          }
           NotificationBus.emit('new-notification', projects);
           if (__DEV__) console.log('✅ Projects added from push');
         }
@@ -207,8 +223,8 @@ export function registerListenerWithFCM() {
             endDate: screenParams.endDate,
             dateString: screenParams.startDate
           };
-          // await clear(PROJECT_KEY);
-          await add(PROJECT_KEY, body);
+      
+          await add(SCHEDULE_KEY, body);
           NotificationBus.emit('new-notification', body);
           console.log('Navigating to screen from geofence push:', remoteMessage.data.screen, body);
           // navigationRef.current?.navigate(remoteMessage.data.screen, params);

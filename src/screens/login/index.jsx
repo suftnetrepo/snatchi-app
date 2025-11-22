@@ -56,7 +56,7 @@ const Login = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true, hidden: true }}>
+        <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
           <StyledHeader.Full></StyledHeader.Full>
         </StyledHeader>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -92,11 +92,11 @@ const Login = () => {
             <StyledInput
               label={'Email address'}
               keyboardType="default"
-              placeholder="Enter your email address"
+              placeholder=""
               returnKeyType="next"
               maxLength={50}
               fontSize={theme.fontSize.normal}
-              borderColor={theme.colors.gray[300]}
+              borderColor={theme.colors.gray[400]}
               backgroundColor={theme.colors.gray[1]}
               borderRadius={32}
               paddingHorizontal={8}

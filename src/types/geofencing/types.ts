@@ -11,23 +11,36 @@ export interface GeofenceRegion {
 // 🔹 Full project-aware geofence
 export interface ProjectGeofence {
   projectId: string;
-  intergatorId: string; // id from Intergator system
-  id: string;             // site id
+  intergatorId: string;       // Integrator system ID
+  id: string;                 // Site ID
   siteName: string;
   latitude: number;
   longitude: number;
   radius: number;
-  startDate: string;      // ISO date, e.g. "2025-09-21"
-  endDate: string;        // ISO date, e.g. "2025-09-25"
-  startTime: string;      // "HH:mm"
-  endTime: string;        // "HH:mm"
-  activeDays?: number[];  // 1=Sun ... 6=Sat
+
+  // Active time window
+  startDate: string;          // ISO string (full date)
+  endDate: string;            // ISO string
+  startTime: string;          // "HH:mm"
+  endTime: string;            // "HH:mm"
+
+  activeDays?: number[];      // 1=Mon ... 7=Sun (your backend uses 1-7)
+
   userId: string;
   firstName: string;
   lastName: string;
+
   completeAddress: string;
-  status: 'ENTER' | 'EXIT';
+
+  /** Project status from backend (NOT geofence transition) */
+  status: string;
+
+  /** Optional fields from backend */
+  priority?: string;
+  description?: string;
+  action?: boolean;
 }
+
 
 // 🔹 State will track project geofences
 export interface GeofencingState {

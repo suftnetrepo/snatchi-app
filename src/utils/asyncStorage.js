@@ -9,44 +9,89 @@ export const store = async (key, value) => {
     const stringValue = JSON.stringify(value);
     await AsyncStorage.setItem(key, stringValue);
   } catch (e) {
+    if( __DEV__)
     console.error(`Error storing data for key "${key}":`, e);
   }
 };
 
-export const getStore = async key => {
+export const getStore = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);
-    return value ? JSON.parse(value) : null;
+    if (!value) {
+      if( __DEV__)
+      console.log("⚪ No stored value found. Returning null.");
+      return null;
+    }
+
+    let parsed = null;
+    try {
+      parsed = JSON.parse(value);
+    } catch (err) {
+      if( __DEV__)
+      console.warn(`⚠️ JSON parse failed for key "${key}":`, err);
+      await AsyncStorage.removeItem(key);
+      return null;
+    }
+
+    if (typeof parsed === "string") {
+      try {
+        const nestedParsed = JSON.parse(parsed);
+        parsed = nestedParsed;
+      } catch (nestedErr) {
+        if( __DEV__)
+        console.warn("⚠️ Nested JSON.parse failed:", nestedErr);
+      }
+    } else {
+      if( __DEV__)
+      console.log("🟦 Parsed value is not a string, no nested parse needed.");
+    }
+
+    return parsed;
+
   } catch (e) {
-    console.error(`Error retrieving data for key "${key}":`, e);
+    console.error(`🔴 Error retrieving data for key "${key}":`, e);
     return null;
   }
 };
 
 export const add = async (key, notification) => {
+
   try {
-    const {set} = useUtil();
-    /// clear(key);
+    const { set } = useUtil();
     const notifications = await getAll(key);
 
-    // Flatten notification if it's an array (e.g. [object])
-    const flattenedNotification = Array.isArray(notification)
-      ? notification[0]
-      : notification;
+    // 1️⃣ Flatten array input
+    const item = Array.isArray(notification) ? notification[0] : notification;
 
+    // 2️⃣ Prevent adding objects without an id
+    if (!item.id) {
+      if( __DEV__)
+      console.warn(`❌ Attempted to store item without ID in key ${key}`, item);
+      return null;
+    }
+
+    // 3️⃣ Deduplicate by ID
+    const filtered = notifications.filter(n => n.id !== item.id);
+
+    // 4️⃣ Preserve incoming fields and only add missing defaults
     const newNotification = {
-      ...flattenedNotification,
-      read: false,
-      createdAt: Date.now(),
+      ...item,
+      read: item.read ?? false,
+      createdAt: item.createdAt ?? Date.now(),
     };
 
-    notifications.push(newNotification);
-    await store(key, notifications);
+    // 5️⃣ Save
+    const updated = [...filtered, newNotification];
+    await store(key, updated);
+
+    // 6️⃣ Update badge counters
     const unReadCount = await getUnreadCount(key);
     set(key, unReadCount);
     return newNotification;
+
   } catch (e) {
-    console.error('Error adding notification:', e);
+    if( __DEV__)
+    console.error("🔴 Error adding notification:", e);
     return null;
   }
 };
@@ -55,11 +100,10 @@ export const getAll = async key => {
   try {
     const notifications = await getStore(key);
 
-    console.log(`Notifications for key "${key}":`, notifications);
-
     // Ensure we always return an array
     if (!Array.isArray(notifications)) {
       if (notifications) {
+        if( __DEV__)  
         console.warn(`Non-array data found for key "${key}", resetting to []`);
       }
       return [];
@@ -67,6 +111,7 @@ export const getAll = async key => {
 
     return notifications;
   } catch (e) {
+    if( __DEV__)
     console.error('Error getting all notifications:', e);
     return [];
   }
@@ -81,6 +126,7 @@ export const getByDate = async key => {
       return dateB - dateA;
     });
   } catch (e) {
+    if( __DEV__)
     console.error('Error getting notifications by date:', e);
     return [];
   }
@@ -91,6 +137,7 @@ export const getReadCount = async key => {
     const notifications = await getAll(key);
     return notifications.filter(n => n.read === true).length;
   } catch (e) {
+    if( __DEV__)
     console.error('Error getting read count:', e);
     return 0;
   }
@@ -101,6 +148,7 @@ export const getUnreadCount = async key => {
     const notifications = await getAll(key);
     return notifications.filter(n => n.read === false).length;
   } catch (e) {
+    if( __DEV__)
     console.error('Error getting unread count:', e);
     return 0;
   }
@@ -119,6 +167,7 @@ export const getReads = async (key, sortByDate = true) => {
 
     return readNotifications;
   } catch (e) {
+    if( __DEV__)
     console.error('Error getting read notifications:', e);
     return [];
   }
@@ -137,6 +186,7 @@ export const getUnread = async (key, sortByDate = true) => {
 
     return unreadNotifications;
   } catch (e) {
+    if( __DEV__)
     console.error('Error getting unread notifications:', e);
     return [];
   }
@@ -156,13 +206,14 @@ export const markAsRead = async (key, id) => {
     notifications[index].read = true;
     notifications[index].readAt = Date.now();
 
-    console.warn(`Notification with ID "${id}" found`, notifications);
     await store(key, notifications);
     const unReadCount = await getUnreadCount(key);
-    console.log('Updated unread count after marking as read:', unReadCount);
+
+    
     set(key, unReadCount === 1 ? 0 : unReadCount);
     return true;
   } catch (e) {
+    if( __DEV__)
     console.error('Error marking notification as read:', e);
     return false;
   }
@@ -176,6 +227,7 @@ export const deleteOne = async (key, id) => {
     const filter = notifications.filter(n => n.id !== id);
 
     if (filter?.length === notifications.length) {
+      if( __DEV__)
       console.warn(`Notification with ID "${id}" not found`);
       return false;
     }
@@ -185,6 +237,7 @@ export const deleteOne = async (key, id) => {
     set(key, unReadCount);
     return true;
   } catch (e) {
+    if( __DEV__)
     console.error('Error deleting notification:', e);
     return false;
   }
@@ -197,6 +250,7 @@ export const clear = async key => {
     set(key, 0);
     return true;
   } catch (e) {
+    if( __DEV__)
     console.error('Error clearing all notifications:', e);
     return false;
   }

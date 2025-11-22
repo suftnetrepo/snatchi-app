@@ -74,7 +74,7 @@ export default function Start({ navigation }) {
     return (
         <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
             <StyledHeader
-                statusProps={{ translucent: true, hidden: true }}>
+                statusProps={{ translucent: true }}>
             </StyledHeader>
             <Box flex={1} bg="#F5F6FA">
                 <StyledBackgroundImage
