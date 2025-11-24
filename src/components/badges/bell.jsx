@@ -2,44 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { Pressable, Box, Badge, Text } from '@gluestack-ui/themed';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
-import { useUtil } from '../../store';
 import { useFocus } from '../../hooks/useFocus';
-import { PROJECT_KEY } from '../../utils/asyncStorage';
+import { getStore, PROJECT_KEY } from '../../utils/asyncStorage';
 import { NotificationBus } from '../../../scripts/notificationBus';
-import { AppState } from 'react-native';
 
 export const Bell = ({ onPress }) => {
   const { key } = useFocus();
   const [count, setCount] = useState(0);
-  const { get } = useUtil();
 
   const loadCount = async () => {
-    const unreadCount = await get(PROJECT_KEY);
-    setCount(unreadCount || 0);
+    const notifications = await getStore(PROJECT_KEY);
+    if (Array.isArray(notifications)) {
+      setCount(notifications?.length || 0);
+    }
   };
 
-  // 👉 ONE AND ONLY useEffect
   useEffect(() => {
-    // Load existing count (startup, login, first mount)
     loadCount();
 
-    // Listen for new push notifications
     const sub = NotificationBus.on('new-notification', () => {
       loadCount();
     });
 
-    const appStateSub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') {
-        loadCount();   // refresh when returning from background
-      }
-    });
-
     return () => {
       sub.remove();
-      appStateSub.remove();
     };
-  }, [key]); // also refreshes when screen gains focus
-
+  }, [key]); 
 
   return (
     <Pressable onPress={onPress}>

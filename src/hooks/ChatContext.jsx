@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getStore, store } from '../utils/asyncStorage';
+import { store } from '../utils/asyncStorage';
 
 export const ChatContext = createContext();
 
@@ -14,48 +14,41 @@ export const ChatContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (!auth) {
-      console.error('Firebase Auth is not initialized.');
+      console.error("Firebase Auth not initialized");
       return;
     }
 
-    const fetchStoredUser = async () => {
-      try {
-        const storedUser = await getStore('chatUser');
-        if (storedUser && storedUser !== 'undefined') {
-          setState((prevState) => ({
-            ...prevState,
-            currentChatUser: JSON.parse(storedUser),
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching stored user:', error);
-      }
-    };
-
-    fetchStoredUser();
-
-    const unsubscribeAuthListener = onAuthStateChanged(auth, async (user) => {
-
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
-          setState((prevState) => ({
-            ...prevState,
-            currentChatUser: user,
+          const cleanUser = {
+            uid: user.uid,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            providerData: user.providerData
+          };
+
+          setState((prev) => ({
+            ...prev,
+            currentChatUser: cleanUser,
           }));
-          await store('chatUser', JSON.stringify(user));
+
+          await store("chatUser", JSON.stringify(cleanUser));
         } else {
-          setState((prevState) => ({
-            ...prevState,
+          setState((prev) => ({
+            ...prev,
             currentChatUser: null,
           }));
-          await store('chatUser', null);
+
+          await store("chatUser", "null");
         }
       } catch (error) {
-        console.error('Error handling auth state change:', error);
+        console.error("Auth listener error:", error);
       }
     });
 
-    return () => unsubscribeAuthListener();
+    return () => unsubscribe();
+
   }, []);
 
   const changeChatRoom = (chatRoom) => {

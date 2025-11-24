@@ -37,52 +37,52 @@ export const useProjectGeofencing = ({
   };
 };
 
-export const useGeofenceEvents = (
-  onEnter?: (event: GeofenceEvent) => void,
-  onExit?: (event: GeofenceEvent) => void,
-  onDwell?: (event: GeofenceEvent) => void,
-) => {
-  const [eventStats, setEventStats] = useState({
-    totalEvents: 0,
-    enterEvents: 0,
-    exitEvents: 0,
-    dwellEvents: 0,
-    eventsToday: 0,
-    lastEvent: null as GeofenceEvent | null,
-  });
+// export const useGeofenceEvents = (
+//   onEnter?: (event: GeofenceEvent) => void,
+//   onExit?: (event: GeofenceEvent) => void,
+//   onDwell?: (event: GeofenceEvent) => void,
+// ) => {
+//   const [eventStats, setEventStats] = useState({
+//     totalEvents: 0,
+//     enterEvents: 0,
+//     exitEvents: 0,
+//     dwellEvents: 0,
+//     eventsToday: 0,
+//     lastEvent: null as GeofenceEvent | null,
+//   });
 
-  useEffect(() => {
-    const unsubscribe = geofencingSingleton.addEventListener((event: GeofenceEvent) => {
-      setEventStats(prev => {
-        const isToday = new Date(event.timestamp).toDateString() === new Date().toDateString();
-        return {
-          totalEvents: prev.totalEvents + 1,
-          enterEvents: event.transition === 'ENTER' ? prev.enterEvents + 1 : prev.enterEvents,
-          exitEvents: event.transition === 'EXIT' ? prev.exitEvents + 1 : prev.exitEvents,
-          dwellEvents: event.transition === 'DWELL' ? prev.dwellEvents + 1 : prev.dwellEvents,
-          eventsToday: isToday ? prev.eventsToday + 1 : prev.eventsToday,
-          lastEvent: event,
-        };
-      });
+//   useEffect(() => {
+//     const unsubscribe = geofencingSingleton.addEventListener((event: GeofenceEvent) => {
+//       setEventStats(prev => {
+//         const isToday = new Date(event.timestamp).toDateString() === new Date().toDateString();
+//         return {
+//           totalEvents: prev.totalEvents + 1,
+//           enterEvents: event.transition === 'ENTER' ? prev.enterEvents + 1 : prev.enterEvents,
+//           exitEvents: event.transition === 'EXIT' ? prev.exitEvents + 1 : prev.exitEvents,
+//           dwellEvents: event.transition === 'DWELL' ? prev.dwellEvents + 1 : prev.dwellEvents,
+//           eventsToday: isToday ? prev.eventsToday + 1 : prev.eventsToday,
+//           lastEvent: event,
+//         };
+//       });
 
-      switch (event.transition) {
-        case 'ENTER':
-          onEnter?.(event);
-          break;
-        case 'EXIT':
-          onExit?.(event);
-          break;
-        case 'DWELL':
-          onDwell?.(event);
-          break;
-      }
-    });
+//       switch (event.transition) {
+//         case 'ENTER':
+//           onEnter?.(event);
+//           break;
+//         case 'EXIT':
+//           onExit?.(event);
+//           break;
+//         case 'DWELL':
+//           onDwell?.(event);
+//           break;
+//       }
+//     });
 
-    return () => unsubscribe();
-  }, [onEnter, onExit, onDwell]);
+//     return () => unsubscribe();
+//   }, [onEnter, onExit, onDwell]);
 
-  return { eventStats };
-};
+//   return { eventStats };
+// };
 
 export const useProjectState = () => {
   const [state, setState] = useState<GeofencingState>({

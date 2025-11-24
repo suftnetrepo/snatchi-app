@@ -255,3 +255,14 @@ export const clear = async key => {
     return false;
   }
 };
+
+
+export const removeStore = async (key) => {
+  try {
+    await AsyncStorage.removeItem(key);
+    return true;
+  } catch (e) {
+    if (__DEV__) console.error(`Error removing key ${key}:`, e);
+    return false;
+  }
+};

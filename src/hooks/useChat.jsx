@@ -74,6 +74,7 @@ const useUserChat = () => {
         email,
         password,
       );
+      
       await store('chatUser', JSON.stringify(userCredential.user));
       setState(pre => {
         return {...pre, user: userCredential.user, loading: false};

@@ -14,6 +14,11 @@ import type {
   GeofenceEventBase,
 } from './types';
 import { add, store, clear, getStore, PROJECT_KEY } from '../../utils/asyncStorage';
+import { toModel } from '../../utils/help';
+import { zat } from '../../utils/zap';
+import { FENCE, VERBS } from '../../../config';
+import { localNotificationService } from '../../../Notification/LocalNotificationService';
+import { Vibration } from 'react-native';
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
@@ -106,20 +111,35 @@ class GeofencingSingleton {
   private isWithinProjectWindow(project: ProjectGeofence): boolean {
     const now = new Date();
 
-    const start = new Date(project.startDate);
-    const end = new Date(project.endDate);
-    if (now < start || now > end) return false;
+    // DATE RANGE — compare only yyyy-mm-dd (avoid timezone shift)
+    const today = now.toISOString().split("T")[0];
+    const startDay = project.startDate.split("T")[0];
+    const endDay = project.endDate.split("T")[0];
 
+    if (today < startDay || today > endDay) {
+      return false;
+    }
+
+    // TIME RANGE
     const [sh, sm] = project.startTime.split(":").map(Number);
     const [eh, em] = project.endTime.split(":").map(Number);
+
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const startMinutes = sh * 60 + sm;
     const endMinutes = eh * 60 + em;
 
-    if (nowMinutes < startMinutes || nowMinutes > endMinutes) return false;
+    if (nowMinutes < startMinutes || nowMinutes > endMinutes) {
+      return false;
+    }
+
+    // ACTIVE DAYS FIX → Map JS Sunday 0 → 7
+    const jsDay = now.getDay();    // 0–6
+    const localDay = jsDay === 0 ? 7 : jsDay;
 
     if (project.activeDays?.length) {
-      if (!project.activeDays.includes(now.getDay())) return false;
+      if (!project.activeDays.includes(localDay)) {
+        return false;
+      }
     }
 
     return true;
@@ -128,6 +148,83 @@ class GeofencingSingleton {
   // ===========================================================================
   // 📌 RNBG EVENT HANDLERS (Source of truth)
   // ===========================================================================
+
+  private async saveFenceEvent(event: GeofenceEvent) {
+    console.log("==============================================");
+    console.log("📥 saveFenceEvent() TRIGGERED with event:", event);
+
+    try {
+      console.log("🔄 Converting event to model...");
+      const model = toModel(event);
+      console.log("📦 Mapped Model:", model);
+
+      // 🔔 Trigger vibration & notification for BOTH ENTER & EXIT
+      console.log(`🔍 Transition type detected: ${event.transition}`);
+
+      if (event.transition === "ENTER" || event.transition === "EXIT") {
+        console.log("📳 Preparing to vibrate device...");
+        Vibration.vibrate(300);
+        console.log("✅ Device vibrated (300ms)");
+
+        console.log("🛠 Preparing notification title/message...");
+        const title =
+          event.transition === "ENTER"
+            ? "Entered Geofence"
+            : "Exited Geofence";
+
+        const message =
+          event.transition === "ENTER"
+            ? `You entered ${model.siteName}`
+            : `You exited ${model.siteName}`;
+
+        console.log("📨 Notification details:", { title, message });
+
+        console.log("📡 Setting notification channel...");
+        localNotificationService.defaultChannel();
+
+        console.log("🚀 Showing local notification...");
+        localNotificationService.showNotification(
+          Date.now() % 100000, // Unique ID
+          title,
+          message,
+          { eventType: event.transition },
+          { playSound: true }
+        );
+
+        console.log("✅ Local notification sent");
+      } else {
+        console.log("⚠️ No vibration/notification triggered (transition not enter/exit)");
+      }
+
+      console.log("💾 Saving geofence event to backend API...");
+      const response = await this.handleSave(model);
+
+      console.log(
+        `🟢 SUCCESS: ${event.transition} event saved to DB. Response:`,
+        response
+      );
+
+    } catch (err) {
+      console.error(`🔴 ERROR in saveFenceEvent for ${event.transition}:`, err);
+    }
+
+    console.log("==============================================");
+  }
+  private async handleSave(body: any) {
+    console.log("📨 handleSave() called with payload:", body);
+
+    try {
+      console.log("🌍 Sending API request to FENCE.addOne...");
+      const { success } = await zat(FENCE.addOne, body, VERBS.POST);
+
+      console.log("🟢 API success:", success);
+      return success;
+
+    } catch (error) {
+      console.error("🔴 API SAVE ERROR:", error);
+    }
+  }
+
 
   private setupEventListeners() {
     this.geofenceSubscription?.remove();
@@ -154,21 +251,31 @@ class GeofencingSingleton {
           timestamp: new Date().toISOString(),
         };
 
-        // Avoid ENTRY loops
-        if (transition === "ENTER" && this.currentlyInside.has(identifier)) {
-          return;
-        }
-        if (transition === "EXIT" && !this.currentlyInside.has(identifier)) {
-          return;
-        }
+       console.log("📡 RNBG RAW GEOFENCE EVENT:", event);
+          console.log("📡 Extracted identifier/action/location:", { identifier, action, location });
+          console.log("🔄 Resolved transition:", transition);
+          console.log("📍 Generated base model:", base);
 
-        // Keep local state in sync
-        if (transition === "ENTER") this.currentlyInside.add(identifier);
-        if (transition === "EXIT") this.currentlyInside.delete(identifier);
+        //   if (transition === "ENTER" && this.currentlyInside.has(identifier)) {
+        //     console.log("⛔ BLOCKED: Duplicate ENTER");
+        //     return;
+        //   }
+        //   if (transition === "EXIT" && !this.currentlyInside.has(identifier)) {
+        //     console.log("⛔ BLOCKED: EXIT without being inside");
+        //     return;
+        // }
 
+        // if (transition === "ENTER") this.currentlyInside.add(identifier);
+        // if (transition === "EXIT") this.currentlyInside.delete(identifier);
+
+        console.log("📥 Fetching project enrichment data...");
         const enriched = await this.enrichEvent(base);
+        console.log("🟢 ENRICHED EVENT READY:", enriched);
 
-        console.log("📍 CLEAN GEOFENCE EVENT:", enriched);
+        console.log("💾 Calling saveFenceEvent()...");
+        this.saveFenceEvent(enriched);
+
+        // Notify UI if needed
         this.eventListeners.forEach((cb) => cb(enriched));
       }
     );
@@ -389,10 +496,10 @@ class GeofencingSingleton {
         if (distance <= p.radius) {
 
           // Prevent repeated ENTER
-          // if (this.currentlyInside.has(id)) {
-          //   console.log(`⛔ Skipping duplicate ENTER for ${id}`);
-          //   continue;
-          // }
+          if (this.currentlyInside.has(id)) {
+            console.log(`⛔ Skipping duplicate ENTER for ${id}`);
+            continue;
+          }
 
           this.currentlyInside.add(id);
 

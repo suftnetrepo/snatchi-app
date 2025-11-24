@@ -5,67 +5,70 @@ import AppProvider from './src/hooks/appContext';
 import { fcmStart } from './src/utils/pushNotification';
 import { toModel } from './src/utils/help';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
+import { Vibration } from 'react-native';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
 import { useProjectGeofencing, useGeofenceEvents } from './src/hooks/useGeofencing';
 import { useFence } from './src/hooks/useFence';
-import { clear } from './src/utils/asyncStorage';
-import { NotificationBus } from './scripts/notificationBus';
+import { localNotificationService } from './Notification/LocalNotificationService';
+import { removeStore } from './src/utils/asyncStorage';
 
 function App() {
-  // clear().catch(); // For testing purposes only. Remove in production.
+   removeStore("chatUser").catch(()=> {})
   const { handleSave } = useFence();
-  const {} = useProjectGeofencing({
+  const { isInitializing, isInitialized } = useProjectGeofencing({
     enableBackgroundSync: true,
     backgroundFetchInterval: 15,
     autoRetry: true
   });
 
-  const { eventStats } = useGeofenceEvents(
-    (event) => {
-      console.log('🏠 User ENTERED:......', toModel(event));
-      if (__DEV__) {
-        NotificationBus.emit('GEOFENCE_EVENT', {
-          type: 'ENTER',
-          event
-        });
-        console.log('Geofence saved:', event);
-      }
+  // const { eventStats } = useGeofenceEvents(
+  //   (event) => {
+  //     const model = toModel(event);
 
-      // handleSave(toModel(event)).then((res) => {
-      //   if (__DEV__) console.log('Geofence saved:', res);
-      // }).catch((err) => {
-      //   if (__DEV__) console.error('Error saving geofence:', err);
-      // });
-    },
-    (event) => {
-      if (__DEV__) {
-        NotificationBus.emit('GEOFENCE_EVENT', {
-          type: 'EXIT',
-          event
-        });
-        console.log('Geofence saved:', event);
-      }
-      // handleSave(toModel(event)).then((res) => {
-      //   if (__DEV__) console.log('Geofence saved:', res);
-      // }).catch((err) => {
-      //   if (__DEV__) console.error('Error saving geofence:', err);
-      // });
-    },
-    (event) => {
-      if (__DEV__) {
-        NotificationBus.emit('GEOFENCE_EVENT', {
-          type: 'DWELL',
-          event
-        });
-        console.log('⏰ User DWELLING in:', event); }
-        // Your dwell logic here
-      },
-      (event) => {
-        console.log('📍 Any geofence event:', event);
-        // Handle all events in one place if preferred
-      }
-  );
+  //     // 📳 Vibrate once (300ms)
+  //     Vibration.vibrate(300);
+
+  //     localNotificationService.defaultChannel();
+  //     localNotificationService.showNotification(
+  //       Date.now() % 100000,
+  //       "Entered Geofence",
+  //       `${model.siteName}`,
+  //       { test: true },
+  //       { playSound: true }
+  //     );
+
+  //     // 💾 Save to database (your existing API)
+  //     handleSave(model)
+  //       .then((res) => console.log("ENTER saved:", res))
+  //       .catch((err) => console.error("Save error:", err));
+  //   },
+  //   (event) => {
+  //     const model = toModel(event);
+
+  //     // 📳 Vibrate once (300ms)
+  //     Vibration.vibrate(300);
+
+  //     localNotificationService.defaultChannel();
+  //     localNotificationService.showNotification(
+  //       Date.now() % 100000,
+  //       "Exited Geofence",
+  //       `${model.siteName}`,
+  //       { test: true },
+  //       { playSound: true }
+  //     );
+
+  //     // 💾 Save to database (your existing API)
+  //     handleSave(model)
+  //       .then((res) => console.log("ENTER saved:", res))
+  //       .catch((err) => console.error("Save error:", err));
+
+  //   },
+  //   (event) => {
+  //     console.log('📍 Any geofence event:', event);
+  //     // Handle all events in one place if preferred
+  //   }
+  // );
 
   useEffect(() => {
     const initFcm = async () => {

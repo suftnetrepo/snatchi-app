@@ -1,10 +1,12 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { navigationRef } from '../navigation/NavigationRef';
-import { store, add, SCHEDULE_KEY } from './asyncStorage';
+import { store, getStore, add, SCHEDULE_KEY } from './asyncStorage';
 import { geofencingSingleton } from '../types/geofencing/';
 import { localNotificationService } from '../../Notification/LocalNotificationService';
 import { NotificationBus } from '../../scripts/notificationBus';
+import { zat } from './zap';
+import { VERBS, USER_HOST_ADDRESS } from '../../config';
 
 export const fcmStart = async () => {
   try {
@@ -20,12 +22,13 @@ export const fcmStart = async () => {
     // 2️⃣ Register the device for remote messages (required for iOS)
     await messaging().registerDeviceForRemoteMessages();
 
-    // 3️⃣ Request Firebase token
     const token = await messaging().getToken();
-    if (__DEV__) console.log('getFcmToken -->', token);
 
-    // 4️⃣ Save the token for later use
-    await store('fcm', token);
+    const storedToken = await getStore('fcm');
+    if (token && token !== storedToken) {
+      await store('fcm', token);
+      await syncToken(token);
+    }
 
     // 5️⃣ Register background/foreground listeners
     await registerListenerWithFCM();
@@ -33,11 +36,30 @@ export const fcmStart = async () => {
     // 6️⃣ Link notifications to navigation handling
     setupNotificationNavigation(navigationRef);
 
-
     return token;
   } catch (error) {
     console.log('getFcmToken Device Token error', error);
     return null;
+  }
+};
+
+const syncToken = async (token) => {
+  try {
+    const user = await getStore('user');
+    if (token && user) {
+      await zat(
+        USER_HOST_ADDRESS.updateFcm,
+        token,
+        VERBS.PUT,
+        { id: user.id } 
+      ).catch((error) => { 
+        if (__DEV__)
+          console.error('getFcmToken Device Token error', error);
+      });
+    }
+  } catch (error) {
+    if (__DEV__)
+      console.error('getFcmToken Device Token error', error);
   }
 };
 
@@ -223,7 +245,7 @@ export function registerListenerWithFCM() {
             endDate: screenParams.endDate,
             dateString: screenParams.startDate
           };
-      
+
           await add(SCHEDULE_KEY, body);
           NotificationBus.emit('new-notification', body);
           console.log('Navigating to screen from geofence push:', remoteMessage.data.screen, body);

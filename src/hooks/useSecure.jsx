@@ -3,7 +3,7 @@ import {ACCOUNT_HOST_ADDRESS, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {forgotValidator} from '../validator/loginValidator';
 import {storeJWT, getJWT} from '../store/secure';
-import {getStore} from '../utils/asyncStorage';
+import {getStore, store} from '../utils/asyncStorage';
 
 const useSecure = () => {
   const [state, setState] = useState({
@@ -79,7 +79,9 @@ const useSecure = () => {
     );
 
     if (success) {
-      await storeJWT(data?.token);
+      storeJWT(data?.token).catch(()=> {})
+      console.log("mmmmmhhhhhhhhhhhssssss", data)
+      store('user', data?.user?.user_id).catch(()=> {})
       setState(pre => {
         return {...pre, data: success, loading: false};
       });

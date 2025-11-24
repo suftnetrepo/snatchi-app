@@ -1,7 +1,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { HStack, Spinner } from "@gluestack-ui/themed";
+import {
+  YStack,
+  XStack,
+  StyledHeader,
+  StyledSafeAreaView,
+  StyledSpacer,
+  StyledText,
+  StyledCycle,
+  StyledSpinner
+} from 'fluent-styles';
 import Login from '../screens/login';
 import Keypad from '../screens/lock';
 import task from '../screens/task';
@@ -21,6 +30,8 @@ import TaskDetails from '../screens/task/task-details';
 import { getStore } from '../utils/asyncStorage';
 import Profile from '../screens/profile';
 
+import { StyledIndicator } from '../components/indicator';
+
 const Stack = createStackNavigator();
 function Navigator() {
   const [granted, setGranted] = useState(false);
@@ -36,10 +47,7 @@ function Navigator() {
 
   if (granted === false) {
     return (
-      //  <HStack flex={1} space="md" justifyContent="center" alignItems="center">
-      //        <Spinner color={"$gray200"} size={100} mt="$4" />
-      // </HStack>
-      <></>
+      <StyledIndicator />
     );
   }
 

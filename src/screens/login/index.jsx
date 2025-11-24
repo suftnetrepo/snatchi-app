@@ -85,7 +85,7 @@ const Login = () => {
                 color={theme.colors.gray[500]}
                 textAlign="center"
                 fontSize={theme.fontSize.normal}>
-                Please enter your account email to receive an access code.
+                Enter your account email to receive your access code.
               </StyledText>
             </YStack>
             <StyledSpacer marginVertical={16} />

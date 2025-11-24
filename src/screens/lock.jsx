@@ -19,6 +19,7 @@ import { useSecure } from '../hooks/useSecure';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { useAppContext } from '../hooks/appContext';
 import { useUserChat } from '../hooks/useChat';
+import { store } from '../utils/asyncStorage';
 
 const Keypad = () => {
   const route = useRoute();
@@ -73,9 +74,11 @@ const Keypad = () => {
 
       if (passCode.length === 6) {
         handleVerifyCode({ code: passCode, email: email }).then(result => {
+          console.log("ddcc...............", result)
           if (result) {
             login(result).then(() => { });
             handleChatSignIn(email, '12345!').then(() => { });
+           
             // navigator.dispatch(
             //   CommonActions.reset({
             //     index: 0,
@@ -145,7 +148,7 @@ const Keypad = () => {
             color={theme.colors.gray[400]}
             textAlign="center"
             fontSize={theme.fontSize.normal}>
-            Enter the 6-digit OTP sent to your registered email address.
+            Enter your access code sent to.
           </StyledText>
           <StyledText
             paddingVertical={2}

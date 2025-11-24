@@ -2,8 +2,8 @@
 
 // STAGING
 const HOST_ADDRESS = "https://snatchi-web.onrender.com/";
-// const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
-const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
+const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
+// const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
 
 // END POINTS
 
@@ -37,6 +37,7 @@ export const TASK_COMMENTS = {
 
 export const USER_HOST_ADDRESS = {
   updateOne: `${HOST_API_ADDRESS}user`,
+  updateFcm: `${HOST_API_ADDRESS}user/fcm`,
   changePassword: `${HOST_API_ADDRESS}user`,
   removeOne: `${HOST_API_ADDRESS}user/`,
   getById: `${HOST_API_ADDRESS}user/`,

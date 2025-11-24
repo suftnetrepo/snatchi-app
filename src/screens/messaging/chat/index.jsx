@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -8,23 +8,23 @@ import {
   StyledText,
   StyledCycle,
 } from 'fluent-styles';
-import {theme} from '../../../utils/theme';
-import {fontStyles} from '../../../utils/fontStyles';
-import {useNavigation} from '@react-navigation/native';
+import { theme } from '../../../utils/theme';
+import { fontStyles } from '../../../utils/fontStyles';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useChatContext, ChatContextProvider} from '../../../hooks/ChatContext';
-import {GiftedChat, Send, Bubble} from 'react-native-gifted-chat';
+import { useChatContext, ChatContextProvider } from '../../../hooks/ChatContext';
+import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useChatMessage} from '../../../hooks/useChat';
-import {StyledMIcon} from '../../../components/icon';
-import {Pressable, Platform} from 'react-native';
+import { useChatMessage } from '../../../hooks/useChat';
+import { StyledMIcon } from '../../../components/icon';
+import { Pressable, Platform } from 'react-native';
 import { Cycle } from '../../../components/gluestack/cycle';
 
-const MyChat = ({route}) => {
+const MyChat = ({ route }) => {
   const navigator = useNavigation();
-  const {messages, room_id, handleFetchMessages, handleSend} = useChatMessage();
-  const {currentChatUser} = useChatContext();
-  const {room} = route.params;
+  const { messages, room_id, handleFetchMessages, handleSend } = useChatMessage();
+  const { currentChatUser } = useChatContext();
+  const { room } = route.params;
 
   useEffect(() => {
     room && handleFetchMessages(room?.id);
@@ -35,7 +35,7 @@ const MyChat = ({route}) => {
       <Bubble
         {...props}
         wrapperStyle={{
-          left: {backgroundColor: theme.colors.gray[200]},
+          left: { backgroundColor: theme.colors.gray[200] },
           right: {
             backgroundColor: theme.colors.cyan[500],
           },
@@ -49,8 +49,8 @@ const MyChat = ({route}) => {
           },
         }}
         containerStyle={{
-          right: {alignItems: 'flex-end', width: '100%'},
-          left: {alignItems: 'flex-start', width: '100%'},
+          right: { alignItems: 'flex-end', width: '100%' },
+          left: { alignItems: 'flex-start', width: '100%' },
         }}
       />
     );
@@ -66,7 +66,7 @@ const MyChat = ({route}) => {
         <>
           <Icon
             name="send-circle"
-            style={{marginBottom: 5, marginRight: 5}}
+            style={{ marginBottom: 5, marginRight: 5 }}
             size={40}
             color={theme.colors.cyan[500]}
           />
@@ -83,12 +83,12 @@ const MyChat = ({route}) => {
       alignItems="center"
       backgroundColor={theme.colors.gray[50]}>
       <Pressable onPress={() => navigator.goBack()}>
-      <StyledMIcon
-            name="arrow-back"
-            size={30}
-            color={theme.colors.gray[800]}
-            onPress={() => navigator.goBack()}
-          />
+        <StyledMIcon
+          name="arrow-back"
+          size={30}
+          color={theme.colors.gray[800]}
+          onPress={() => navigator.goBack()}
+        />
       </Pressable>
       <StyledSpacer marginHorizontal={2} />
       <Cycle
@@ -118,7 +118,7 @@ const MyChat = ({route}) => {
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
         color={theme.colors.gray[600]}
-        paddingHorizontal ={4}
+        paddingHorizontal={4}
         fontSize={theme.fontSize.small}>
         {room?.name}
       </StyledText>
@@ -129,37 +129,37 @@ const MyChat = ({route}) => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-      skipAndroid={Platform.OS === 'android' ? false : true}
+        skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
-        statusProps={{translucent: true}}>
+        statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
       </StyledHeader>
 
-    <YStack flex={1} backgroundColor={theme.colors.gray[100]} >
- <GiftedChat
-        messages={[...messages].reverse()}
-        onSend={newMessages =>
-          handleSend(room_id, currentChatUser?.uid, newMessages)
-        }
-        user={{
-          _id: currentChatUser?.uid,
-          name: currentChatUser?.displayName || 'User',
-        }}
-        renderBubble={renderBubble}
-        alwaysShowSend
-        renderSend={renderSend}
-        scrollToBottom
-        scrollToBottomComponent={scrollToBottomComponent}
-      />
-    </YStack>
-     
+      <YStack flex={1} backgroundColor={theme.colors.gray[100]} >
+        <GiftedChat
+          messages={[...messages].reverse()}
+          onSend={newMessages =>
+            handleSend(room_id, currentChatUser?.uid, newMessages)
+          }
+          user={{
+            _id: currentChatUser?.uid,
+            name: currentChatUser?.displayName || 'User',
+          }}
+          renderBubble={renderBubble}
+          alwaysShowSend
+          renderSend={renderSend}
+          scrollToBottom
+          scrollToBottomComponent={scrollToBottomComponent}
+        />
+      </YStack>
+
     </StyledSafeAreaView>
   );
 };
 
-const Chat = ({route}) => {
+const Chat = ({ route }) => {
   return (
     <ChatContextProvider>
       <MyChat route={route} />
