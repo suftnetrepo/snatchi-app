@@ -74,7 +74,6 @@ const Keypad = () => {
 
       if (passCode.length === 6) {
         handleVerifyCode({ code: passCode, email: email }).then(result => {
-          console.log("ddcc...............", result)
           if (result) {
             login(result).then(() => { });
             handleChatSignIn(email, '12345!').then(() => { });

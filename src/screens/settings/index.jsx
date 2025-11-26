@@ -32,11 +32,11 @@ const Settings = () => {
         <StyledCycle
           height={48}
           width={48}
-          borderColor={theme.colors.gray[200]}>
+          borderColor={theme.colors.gray[400]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
@@ -55,6 +55,7 @@ const Settings = () => {
           borderRadius={16}
           marginHorizontal={8}
           marginBottom={4}
+          zIndex={10}
           backgroundColor={theme.colors.gray[1]}
           justifyContent="flex-start"
           alignItems="center"
@@ -75,6 +76,9 @@ const Settings = () => {
             size={32}
             name="chevron-right"
             color={theme.colors.gray[600]}
+            onPress={
+              ()=>screen && navigator.navigate(screen)
+            }
           />
         </XStack>
       </Pressable>
@@ -137,7 +141,7 @@ const Settings = () => {
       <StyledScrollView>
         <YStack
           flex={1}
-          marginHorizontal={16}
+          marginHorizontal={8}
           paddingBottom={8}
           backgroundColor={theme.colors.gray[100]}
           borderRadius={16}>

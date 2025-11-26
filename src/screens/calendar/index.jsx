@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   YStack,
   XStack,
@@ -14,7 +14,6 @@ import {
   StyledMultiInput,
 } from 'fluent-styles';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Box, VStack, Text, Button, HStack, useToast, Spinner } from "@gluestack-ui/themed";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { fontStyles, theme } from '../../utils/theme';
@@ -52,6 +51,7 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 
 const CalendarListScreen = () => {
   const { key } = useFocus();
+  const calendarRef = useRef();
   const route = useRoute();
   const params = route.params;
   const {
@@ -75,12 +75,6 @@ const CalendarListScreen = () => {
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [errorMessages, setErrorMessages] = useState({});
   const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    if (params?.day && params?.id) {
-      onDayPress(params.day);
-    }
-  }, [params?.day, params?.id]);
 
   const onDayPress = day => {
     const result = handleDayChange(day?.dateString?.trim());
@@ -208,10 +202,10 @@ const CalendarListScreen = () => {
         }}
         height={48}
         width={48}
-        borderColor={theme.colors.gray[200]}>
+        borderColor={theme.colors.gray[400]}>
         <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
       </StyledCycle>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
@@ -254,6 +248,7 @@ const CalendarListScreen = () => {
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[200]}>
         <CalendarList
+          ref={calendarRef}
           markingType="period"
           markedDates={mergedMarkedDates}
           pastScrollRange={6}
@@ -267,9 +262,9 @@ const CalendarListScreen = () => {
             textMonthFontSize: 16,
             textDayHeaderFontSize: 13,
           }}
-          onVisibleMonthsChange={async(months) => {
+          onVisibleMonthsChange={async (months) => {
             if (!months || months.length === 0) return;
-            await handleMySchedulesByDates(months);
+                 await handleMySchedulesByDates(months);
           }}
         />
         <BottomSheet
@@ -307,7 +302,7 @@ const CalendarListScreen = () => {
                   color={theme.colors.gray[600]}
                   paddingVertical={4}
                   paddingHorizontal={4}
-                  fontSize={theme.fontSize.micro}>
+                  fontSize={theme.fontSize.normal}>
                   Please fill out the form below to decline a scheduled task or
                   to block out the days you're unavailable on your calendar.
                 </StyledText>
@@ -395,6 +390,8 @@ const CalendarListScreen = () => {
             <YStack
               marginTop={8}
               justifyContent="flex-start"
+              position="relative"
+              zIndex={10} 
               alignItems="flex-start">
               <StyledSelect
                 borderRadius={8}
@@ -415,11 +412,13 @@ const CalendarListScreen = () => {
             <XStack
               marginTop={16}
               gap={8}
+              zIndex={1}
+              position="relative"
               justifyContent="flex-start"
               alignItems="center">
               <StyledButton
                 flex={1}
-                borderRadius={8}
+                borderRadius={32}
                 backgroundColor={theme.colors.cyan[500]}
                 borderColor={theme.colors.cyan[500]}
                 onPress={() => handleSubmit()}>
@@ -437,7 +436,7 @@ const CalendarListScreen = () => {
               {fields.status === 'Lock' && (
                 <StyledButton
                   flex={1}
-                  borderRadius={8}
+                  borderRadius={32}
                   borderWidth={1}
                   backgroundColor={theme.colors.red[400]}
                   borderColor={theme.colors.red[200]}
@@ -457,11 +456,13 @@ const CalendarListScreen = () => {
 
               <StyledButton
                 flex={1}
-                borderRadius={8}
+                borderRadius={32}
                 borderWidth={1}
                 backgroundColor={theme.colors.gray[200]}
                 borderColor={theme.colors.gray[200]}
-                onPress={() => reset()}>
+                onPress={() => {
+                   reset()
+                }}>
                 <StyledText
                   fontFamily={fontStyles.Roboto_Regular}
                   color={theme.colors.gray[800]}

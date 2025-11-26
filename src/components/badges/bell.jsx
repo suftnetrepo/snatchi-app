@@ -3,7 +3,7 @@ import { Pressable, Box, Badge, Text } from '@gluestack-ui/themed';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { useFocus } from '../../hooks/useFocus';
-import { getStore, PROJECT_KEY } from '../../utils/asyncStorage';
+import { getUnReadCount } from '../../utils/asyncStorage';
 import { NotificationBus } from '../../../scripts/notificationBus';
 
 export const Bell = ({ onPress }) => {
@@ -11,10 +11,8 @@ export const Bell = ({ onPress }) => {
   const [count, setCount] = useState(0);
 
   const loadCount = async () => {
-    const notifications = await getStore(PROJECT_KEY);
-    if (Array.isArray(notifications)) {
-      setCount(notifications?.length || 0);
-    }
+    const count = await getUnReadCount();
+     setCount(count);
   };
 
   useEffect(() => {
@@ -34,7 +32,7 @@ export const Bell = ({ onPress }) => {
       <Box position="relative">
         <Icon
           name="notifications-none"
-          size={40}
+          size={48}
           color={theme.colors.gray[800]}
         />
 

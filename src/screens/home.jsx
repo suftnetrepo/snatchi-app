@@ -71,12 +71,12 @@ const Home = ({ route }) => {
           </StyledText>
         </YStack>
         <StyledSpacer flex={1} />
-        <StyledSpacer marginHorizontal={4} />
+        <StyledSpacer marginHorizontal={8} />
         <XStack>
           <Bell
             onPress={() => { navigate.navigate('notify'); }}
           />
-          <StyledSpacer marginHorizontal={2} />
+          <StyledSpacer marginHorizontal={8} />
           <Pressable
             onPress={() => {
               navigate.dispatch(
@@ -89,8 +89,8 @@ const Home = ({ route }) => {
             <StyledCycle
               paddingHorizontal={10}
               borderWidth={1}
-              width={46}
-              height={46}
+              width={48}
+              height={48}
               borderColor={theme.colors.gray[300]}>
               <StyledMIcon
                 size={24}

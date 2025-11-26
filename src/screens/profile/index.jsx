@@ -54,6 +54,8 @@ const Profile = () => {
     user && handleEdit(user);
   }, [user]);
 
+  console.log(".................user", user)
+
   const onHandleImageSelect = async response => {
     if (response.assets[0].uri) {
       setImageUrl(response.assets[0].uri);
@@ -75,11 +77,13 @@ const Profile = () => {
 
     const formData = new FormData();
 
-    formData.append('file', {
-      uri: file?.uri,
-      type: file?.type,
-      name: file?.fileName,
-    });
+    if (file) {
+      formData.append('file', {
+        uri: file?.uri,
+        type: file?.type,
+        name: file?.fileName,
+      });
+    }
 
     formData.append('first_name', fields.first_name);
     formData.append('last_name', fields.last_name);
@@ -108,11 +112,11 @@ const Profile = () => {
         <StyledCycle
           height={48}
           width={48}
-          borderColor={theme.colors.gray[200]}>
+          borderColor={theme.colors.gray[400]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
@@ -121,7 +125,7 @@ const Profile = () => {
         My Profile
       </StyledText>
       <StyledSpacer flex={1} />
-      <Pressable onPress={()=> navigator.navigate('user-documents')}>
+      <Pressable onPress={() => navigator.navigate('user-documents')}>
         <StyledCycle
           height={48}
           width={48}
@@ -140,7 +144,7 @@ const Profile = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-    skipAndroid={Platform.OS === 'android' ? false : true}
+        skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
         statusProps={{ translucent: true }}>
         <StyledHeader.Full>
@@ -156,7 +160,7 @@ const Profile = () => {
           borderColor={theme.colors.gray[100]}
           height={120}
           width={120}
-          imageUrl={imageUrl}>
+          imageUrl={fields.secure_url ? fields.secure_url : imageUrl}>
           <XStack absolute right={-74} bottom={-74}>
             <Icon
               size={48}

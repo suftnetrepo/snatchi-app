@@ -1,9 +1,13 @@
 const schedulerValidator = {
   rules: {
     title: [
-      {pattern: /^.+$/, message: 'Title is required'},
-      {pattern: /^.{0,250}$/, message: 'Title must not exceed 100 characters'},
+      {pattern: /^.+$/, message: 'title is required'},
+      {pattern: /^.{0,250}$/, message: 'title must not exceed 100 characters'},
     ],
+     status :[{
+        pattern: /^.+$/,
+        message: 'status is required',
+      }],
   },
   reset: () => {
     return {
@@ -24,4 +28,4 @@ const schedulerValidator = {
   },
 };
 
-export {schedulerValidator};
+export { schedulerValidator};

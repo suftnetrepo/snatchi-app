@@ -50,10 +50,10 @@ const Invoices = () => {
         }}
         height={48}
         width={48}
-        borderColor={theme.colors.gray[200]}>
+        borderColor={theme.colors.gray[400]}>
         <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
       </StyledCycle>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
@@ -137,12 +137,12 @@ const Invoices = () => {
                 <StyledCycle
                   height={48}
                   width={48}
-                  borderColor={theme.colors.red[200]}
-                  backgroundColor={theme.colors.red[200]}>
+                  borderColor={theme.colors.gray[400]}
+                  backgroundColor={theme.colors.gray[1]}>
                   <Icon
                     name="share"
                     size={25}
-                    color={theme.colors.red[400]}
+                    color={theme.colors.gray[800]}
                     onPress={() => shareInvoice(invoice)}
                   />
                 </StyledCycle>
@@ -157,12 +157,12 @@ const Invoices = () => {
                   height={48}
                   width={48}
                   marginHorizontal={8}
-                  backgroundColor={theme.colors.orange[200]}
-                  borderColor={theme.colors.orange[200]}>
+                  backgroundColor={theme.colors.gray[1]}
+                  borderColor={theme.colors.gray[400]}>
                   <StyledMIcon
                     size={16}
                     name={'create'}
-                    color={theme.colors.orange[600]}
+                    color={theme.colors.gray[800]}
                     onPress={() =>
                       navigator.navigate('new-invoice', {
                         invoice: invoice,
@@ -174,8 +174,8 @@ const Invoices = () => {
               <StyledCycle
                 height={48}
                 width={48}
-                backgroundColor={theme.colors.gray[200]}
-                borderColor={theme.colors.gray[200]}>
+                backgroundColor={theme.colors.gray[1]}
+                borderColor={theme.colors.gray[400]}>
                 <StyledMIcon
                   size={32}
                   name={
@@ -183,7 +183,7 @@ const Invoices = () => {
                       ? 'arrow-drop-down'
                       : 'arrow-drop-up'
                   }
-                  color={theme.colors.gray[600]}
+                  color={theme.colors.gray[800]}
                   pointerEvents="box-none"
                   onPress={() =>
                     selected === invoice._id

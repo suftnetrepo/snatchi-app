@@ -233,6 +233,7 @@ export function registerListenerWithFCM() {
           const screenParams = JSON.parse(remoteMessage.data.screenParams);
           const scheduleId = screenParams.scheduleId;
           console.log('Handling calendar push for scheduleId:', scheduleId);
+          console.log("------------------------23",screenParams )
 
           const body = {
             id: scheduleId,

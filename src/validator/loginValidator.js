@@ -130,7 +130,9 @@ const loginValidator = {
       last_name: '',
       email: '',
       mobile: '',
-      fcm: ''
+      fcm: '',
+      secure_url :'',
+      role : ''
     }
   };
   

@@ -41,13 +41,13 @@ const MyMessaging = () => {
           mb={8}
           cursor="default"
           marginHorizontal={8}
-          borderRadius={8}
+          borderRadius={16}
           borderWidth={1}
-          borderColor="$gray100"
-          bgColor="$gray100"
+          borderColor="$gray300"
+          bgColor="$gray1"
           flex={1}
-          paddingHorizontal={4}
-          paddingVertical={4}
+          paddingHorizontal={8}
+          paddingVertical={8}
           justifyContent="flex-start"
           alignItems="center">
           <Cycle
@@ -76,7 +76,7 @@ const MyMessaging = () => {
           <VStack justifyContent="start" alignItems="start">
             <Text
               paddingHorizontal={8}
-              fontSize={'$sm'}
+              fontSize={'$md'}
               color="$gray800"
               fontWeight={'$medium'}
               fontFamily="$crimson.bold">
@@ -84,8 +84,8 @@ const MyMessaging = () => {
             </Text>
             <Text
               paddingHorizontal={8}
-              fontSize={'$xs'}
-              color="$gray400"
+              fontSize={'$md'}
+              color="$gray600"
               fontWeight={'$normal'}
               fontFamily="$crimson.regular">
               {room?.lastMessage}
@@ -95,18 +95,18 @@ const MyMessaging = () => {
 
           <Spacer flex={1} />
           <VStack justifyContent="center" alignItems="center">
-            <Text color="$gray400" paddingHorizontal={8} size={'xs'}>
+            <Text color="$gray600" paddingHorizontal={8} size={'xs'}>
               {formatMessageTimestamp(room?.lastMessageTimestamp)}
             </Text>
             {unreadCount > 0 && (
               <Cycle
-                width={20}
-                height={20}
+                width={30}
+                height={30}
                 borderColor={
-                  theme.colors.orange[400]
+                  theme.colors.orange[500]
                 }
                 bgColor={
-                  theme.colors.orange[400]
+                  theme.colors.orange[500]
                 }>
                 <Text color="$gray100" size={'xs'}>
                   {unreadCount}
@@ -130,11 +130,11 @@ const MyMessaging = () => {
         <StyledCycle
           height={48}
           width={48}
-          borderColor={theme.colors.gray[200]}>
+          borderColor={theme.colors.gray[400]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}

@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useUtil} from '../store/';
 
 export const SCHEDULE_KEY = 'schedules';
 export const PROJECT_KEY = 'persisted_projects';
@@ -9,8 +8,8 @@ export const store = async (key, value) => {
     const stringValue = JSON.stringify(value);
     await AsyncStorage.setItem(key, stringValue);
   } catch (e) {
-    if( __DEV__)
-    console.error(`Error storing data for key "${key}":`, e);
+    if (__DEV__)
+      console.error(`Error storing data for key "${key}":`, e);
   }
 };
 
@@ -18,8 +17,8 @@ export const getStore = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (!value) {
-      if( __DEV__)
-      console.log("⚪ No stored value found. Returning null.");
+      if (__DEV__)
+        console.log("⚪ No stored value found. Returning null.");
       return null;
     }
 
@@ -27,8 +26,8 @@ export const getStore = async (key) => {
     try {
       parsed = JSON.parse(value);
     } catch (err) {
-      if( __DEV__)
-      console.warn(`⚠️ JSON parse failed for key "${key}":`, err);
+      if (__DEV__)
+        console.warn(`⚠️ JSON parse failed for key "${key}":`, err);
       await AsyncStorage.removeItem(key);
       return null;
     }
@@ -38,12 +37,12 @@ export const getStore = async (key) => {
         const nestedParsed = JSON.parse(parsed);
         parsed = nestedParsed;
       } catch (nestedErr) {
-        if( __DEV__)
-        console.warn("⚠️ Nested JSON.parse failed:", nestedErr);
+        if (__DEV__)
+          console.warn("⚠️ Nested JSON.parse failed:", nestedErr);
       }
     } else {
-      if( __DEV__)
-      console.log("🟦 Parsed value is not a string, no nested parse needed.");
+      if (__DEV__)
+        console.log("🟦 Parsed value is not a string, no nested parse needed.");
     }
 
     return parsed;
@@ -57,18 +56,11 @@ export const getStore = async (key) => {
 export const add = async (key, notification) => {
 
   try {
-    const { set } = useUtil();
+
     const notifications = await getAll(key);
 
     // 1️⃣ Flatten array input
-    const item = Array.isArray(notification) ? notification[0] : notification;
-
-    // 2️⃣ Prevent adding objects without an id
-    if (!item.id) {
-      if( __DEV__)
-      console.warn(`❌ Attempted to store item without ID in key ${key}`, item);
-      return null;
-    }
+    const item =  notification;
 
     // 3️⃣ Deduplicate by ID
     const filtered = notifications.filter(n => n.id !== item.id);
@@ -80,18 +72,22 @@ export const add = async (key, notification) => {
       createdAt: item.createdAt ?? Date.now(),
     };
 
+
+    console.log(".......................", newNotification)
+
     // 5️⃣ Save
     const updated = [...filtered, newNotification];
+    console.log("ssdddddddddddddddd", updated)
     await store(key, updated);
 
     // 6️⃣ Update badge counters
-    const unReadCount = await getUnreadCount(key);
-    set(key, unReadCount);
+    // const unReadCount = await getUnreadCount(key);
+    // set(key, unReadCount);
     return newNotification;
 
   } catch (e) {
-    if( __DEV__)
-    console.error("🔴 Error adding notification:", e);
+    if (__DEV__)
+      console.error("🔴 Error adding notification:", e);
     return null;
   }
 };
@@ -103,16 +99,16 @@ export const getAll = async key => {
     // Ensure we always return an array
     if (!Array.isArray(notifications)) {
       if (notifications) {
-        if( __DEV__)  
-        console.warn(`Non-array data found for key "${key}", resetting to []`);
+        if (__DEV__)
+          console.warn(`Non-array data found for key "${key}", resetting to []`);
       }
       return [];
     }
 
     return notifications;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error getting all notifications:', e);
+    if (__DEV__)
+      console.error('Error getting all notifications:', e);
     return [];
   }
 };
@@ -126,8 +122,8 @@ export const getByDate = async key => {
       return dateB - dateA;
     });
   } catch (e) {
-    if( __DEV__)
-    console.error('Error getting notifications by date:', e);
+    if (__DEV__)
+      console.error('Error getting notifications by date:', e);
     return [];
   }
 };
@@ -137,8 +133,8 @@ export const getReadCount = async key => {
     const notifications = await getAll(key);
     return notifications.filter(n => n.read === true).length;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error getting read count:', e);
+    if (__DEV__)
+      console.error('Error getting read count:', e);
     return 0;
   }
 };
@@ -148,8 +144,8 @@ export const getUnreadCount = async key => {
     const notifications = await getAll(key);
     return notifications.filter(n => n.read === false).length;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error getting unread count:', e);
+    if (__DEV__)
+      console.error('Error getting unread count:', e);
     return 0;
   }
 };
@@ -167,8 +163,8 @@ export const getReads = async (key, sortByDate = true) => {
 
     return readNotifications;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error getting read notifications:', e);
+    if (__DEV__)
+      console.error('Error getting read notifications:', e);
     return [];
   }
 };
@@ -186,15 +182,15 @@ export const getUnread = async (key, sortByDate = true) => {
 
     return unreadNotifications;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error getting unread notifications:', e);
+    if (__DEV__)
+      console.error('Error getting unread notifications:', e);
     return [];
   }
 };
 
 export const markAsRead = async (key, id) => {
   try {
-    const {set} = useUtil();
+
     const notifications = await getAll(key);
     const index = notifications.findIndex(n => n.id === id);
 
@@ -207,51 +203,41 @@ export const markAsRead = async (key, id) => {
     notifications[index].readAt = Date.now();
 
     await store(key, notifications);
-    const unReadCount = await getUnreadCount(key);
-
-    
-    set(key, unReadCount === 1 ? 0 : unReadCount);
     return true;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error marking notification as read:', e);
+    if (__DEV__)
+      console.error('Error marking notification as read:', e);
     return false;
   }
 };
 
 export const deleteOne = async (key, id) => {
   try {
-    const {set} = useUtil();
-
     const notifications = await getAll(key);
     const filter = notifications.filter(n => n.id !== id);
 
     if (filter?.length === notifications.length) {
-      if( __DEV__)
-      console.warn(`Notification with ID "${id}" not found`);
+      if (__DEV__)
+        console.warn(`Notification with ID "${id}" not found`);
       return false;
     }
 
     await store(key, filter);
-    const unReadCount = await getUnreadCount(key);
-    set(key, unReadCount);
     return true;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error deleting notification:', e);
+    if (__DEV__)
+      console.error('Error deleting notification:', e);
     return false;
   }
 };
 
 export const clear = async key => {
   try {
-        const {set} = useUtil();
     await store(key, []);
-    set(key, 0);
     return true;
   } catch (e) {
-    if( __DEV__)
-    console.error('Error clearing all notifications:', e);
+    if (__DEV__)
+      console.error('Error clearing all notifications:', e);
     return false;
   }
 };
@@ -264,5 +250,22 @@ export const removeStore = async (key) => {
   } catch (e) {
     if (__DEV__) console.error(`Error removing key ${key}:`, e);
     return false;
+  }
+};
+
+export const getUnReadCount = async () => {
+  try {
+    const scheduleUnread = (await getUnread(SCHEDULE_KEY)) || [];
+    const projectUnread = (await getUnread(PROJECT_KEY)) || [];
+
+    // Sum unread counts
+    const total = scheduleUnread.length + projectUnread.length;
+
+    return total;
+  } catch (e) {
+    if (__DEV__) {
+      console.error(`Error retrieving unread counts:`, e);
+    }
+    return 0;
   }
 };

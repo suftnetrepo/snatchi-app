@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {
   YStack,
   XStack,
@@ -6,25 +6,14 @@ import {
   StyledSafeAreaView,
   StyledSpacer,
   StyledText,
-  StyledSpinner,
-  StyledButton,
-  StyledOkDialog,
-  StyledInput,
   StyledCycle,
   StyledImage,
-  StyledScrollView,
-  StyledConfirmDialog,
-  StyledSeparator,
 } from 'fluent-styles';
-import {theme} from '../../utils/theme';
-import {fontStyles} from '../../utils/fontStyles';
-import {useUser} from '../../hooks/useUser';
-import {useNavigation} from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useAppContext} from '../../hooks/appContext';
-import {validate} from '../../validator';
-import {StyledMIcon} from '../../components/icon';
-import {Linking} from 'react-native';
+import { theme } from '../../utils/theme';
+import { fontStyles } from '../../utils/fontStyles';
+import { useNavigation } from '@react-navigation/native';
+import { StyledMIcon } from '../../components/icon';
+import { Linking } from 'react-native';
 
 const HelpCenter = () => {
   const navigator = useNavigation();
@@ -39,14 +28,17 @@ const HelpCenter = () => {
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader skipAndroid={true} marginHorizontal={8} statusProps={{translucent: true}}>
+      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true}
+        marginHorizontal={8}
+        statusProps={{ translucent: true }}>
         <StyledHeader.Header
           backgroundColor={theme.colors.gray[1]}
+
           onPress={() => navigator.goBack()}
           title="Help Center"
           icon
           cycleProps={{
-            borderColor: theme.colors.gray[300],
+            borderColor: theme.colors.gray[400],
             marginRight: 8,
           }}
         />

@@ -77,9 +77,9 @@ const ProjectCard = ({ data }) => {
                       <StyledCycle
                         paddingHorizontal={10}
                         borderWidth={1}
-                        width={46}
-                        height={46}
-                        borderColor={theme.colors.gray[300]}>
+                        width={48}
+                        height={48}
+                        borderColor={theme.colors.gray[400]}>
                         <MaterialIcons
                           size={18}
                           name="assignment"
@@ -92,13 +92,13 @@ const ProjectCard = ({ data }) => {
                           }}
                         />
                       </StyledCycle>
-                      <StyledSpacer marginHorizontal={4} />
+                      <StyledSpacer marginHorizontal={6} />
                       <StyledCycle
                         paddingHorizontal={10}
                         borderWidth={1}
-                        width={46}
-                        height={46}
-                        borderColor={theme.colors.gray[300]}>
+                        width={48}
+                        height={48}
+                        borderColor={theme.colors.gray[400]}>
                         <StyledMIcon
                           size={24}
                           name="chevron-right"

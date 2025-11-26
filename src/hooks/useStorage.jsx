@@ -76,15 +76,10 @@ const useStorage = (key) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const data = await getByDate(key);
-      console.log('Fetched data..................:', data);
-      const count = await getUnreadCount(key);
-      console.log('Unread count..................:', count);
 
-      // Synchronously update state with the fetched values
       setState((prevState) => ({
         ...prevState,
         data: data || [],
-        unReadCount: typeof count === 'number' ? count : 0,
         loading: false,
       }));
     } catch (err) {

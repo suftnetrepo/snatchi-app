@@ -1,40 +1,30 @@
-import React, { useState, useRef, useMemo } from 'react';
-import { ScrollView, Animated } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { ScrollView } from 'react-native';
 import {
   Box,
-  Text,
   VStack,
   HStack,
   Pressable,
-  Divider,
 } from '@gluestack-ui/themed';
 import {
+  XStack,
+  StyledSafeAreaView,
   StyledCycle,
-  StyledSpacer,
   StyledText,
   StyledHeader,
-  StyledSafeAreaView,
+  StyledSpacer,
+  StyledButton,
+  YStack
 } from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
-import { useStorage, PROJECT_KEY } from '../../hooks/useStorage';
 import { theme, fontStyles } from '../../utils/theme';
-import { getRelativeTimeString, truncate, formatShortDate } from '../../utils/help';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { ProjectDetail } from './projectDetails';
+import ProjectNotification from './project';
+import CalendarNotification from './calendar';
 
 export default function Notify() {
   const navigator = useNavigation();
-  const [selected, setSelected] = useState(null);
-  const bottomSheetRef = useRef(null);
-  const snapPoints = useMemo(() => ['50%', '90%'], []);
-  const { handleMarkAsRead, data, handleDelete } =
-    useStorage(PROJECT_KEY);
-
-  const onhandleDelete = id => {
-    handleDelete(PROJECT_KEY, id);
-  };
+  const [tab, setTab] = useState('project');
 
   const RenderHeader = () => (
     <HStack
@@ -43,15 +33,17 @@ export default function Notify() {
       justifyContent="flex-start"
       alignItems="center"
       backgroundColor={theme.colors.gray[50]}>
-      <Pressable onPress={() => navigator.goBack()}>
+      <Pressable onPress={() => {
+        navigator.navigate("bottom-tabs")
+      }}>
         <StyledCycle
           height={48}
           width={48}
-          borderColor={theme.colors.gray[200]}>
+          borderColor={theme.colors.gray[400]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={8} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
@@ -62,32 +54,6 @@ export default function Notify() {
       <StyledSpacer flex={1} />
     </HStack>
   );
-
-  // Swipeable delete action
-  const renderRightActions = (progress, dragX, onPress) => {
-    const scale = dragX.interpolate({
-      inputRange: [-80, 0],
-      outputRange: [1, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <Pressable onPress={onPress}>
-        <Animated.View
-          style={{
-            transform: [{ scale }],
-            backgroundColor: theme.colors.red[500],
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 80,
-            height: '100%',
-            borderRadius: 8,
-          }}>
-          <Icon name="delete" size={22} color="#fff" />
-        </Animated.View>
-      </Pressable>
-    );
-  };
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
@@ -101,90 +67,98 @@ export default function Notify() {
       </StyledHeader>
 
       <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
-        <Box p="$4">
-          <VStack space="lg">
-            {data?.map((body, index) => (
-              <Swipeable
-                key={index}
-                renderRightActions={(progress, dragX) =>
-                  renderRightActions(progress, dragX, () => {
-                    onhandleDelete(body.id);
-                  })
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          marginHorizontal={8}
+          paddingHorizontal={8}
+          borderRadius={35}
+          borderColor={theme.colors.gray[100]}
+          backgroundColor={theme.colors.gray[100]}
+          paddingVertical={8}>
+          <StyledButton
+            borderRadius={35}
+            flex={1}
+            borderColor={
+              tab === 'project'
+                ? theme.colors.gray[800]
+                : theme.colors.gray[1]
+            }
+            backgroundColor={
+              tab === 'project'
+                ? theme.colors.gray[800]
+                : theme.colors.gray[1]
+            }
+            onPress={() => {
+              setTab('project');
+            }}>
+            <XStack
+              paddingHorizontal={12}
+              paddingVertical={1}
+              justifyContent="flex-start"
+              alignItems="center">
+              <StyledText
+                paddingVertical={8}
+                paddingHorizontal={16}
+                fontFamily={fontStyles.Roboto_Regular}
+                color={
+                  tab === 'project'
+                    ? theme.colors.gray[1]
+                    : theme.colors.gray[800]
                 }>
-                <Box bg="$white" borderRadius="$md">
-                  <HStack space="md" alignItems="flex-start">
-                    <VStack flex={1}>
-                      <HStack justifyContent="flex-start" alignItems="center">
-                        <Text
-                          flex={6}
-                          fontWeight="$bold"
-                          fontSize="$md"
-                          color="$black">
-                          {body.siteName}
-                        </Text>
-                        <Pressable
-                          marginLeft={8}
-                          flex={1}
-                          onPress={() => {
-                            if (body.action === true) {
-                              setSelected(body);
-                              handleMarkAsRead(PROJECT_KEY, body.id);
-                              bottomSheetRef.current?.snapToIndex(1);
-                            } else {
-                              navigator.navigate(body.screen, {
-                                id: body.id,
-                                day :{
-                                  dateString : formatShortDate(body.startDate)
-                                }
-                              })
-                            }
-                          }}>
-                          <StyledCycle
-                            height={40}
-                            width={40}
-                            borderWidth={1}
-                            backgroundColor={theme.colors.gray[50]}
-                            borderColor={theme.colors.gray[200]}>
-                            <Icon
-                              name="chevron-right"
-                              size={20}
-                              color={theme.colors.gray[600]}
-                            />
-                          </StyledCycle>
-                        </Pressable>
-                      </HStack>
-                      <Text color="$coolGray600" mb={'$1'} fontSize="$sm">
-                        {truncate(body.description, 100) ||
-                          'No description provided'}
-                      </Text>
-                      <Text color="$coolGray800" fontSize="$xs">
-                        {getRelativeTimeString(body.createdAt)}
-                      </Text>
-                    </VStack>
-                  </HStack>
-                </Box>
-                <Divider mt={'$8'} />
-              </Swipeable>
-            ))}
-          </VStack>
-        </Box>
+                Projects
+              </StyledText>
+            </XStack>
+          </StyledButton>
+          <StyledSpacer marginHorizontal={8} />
+          <StyledButton
+            flex={1}
+            borderRadius={35}
+            borderColor={
+              tab === 'calender'
+                ? theme.colors.gray[800]
+                : theme.colors.gray[1]
+            }
+            backgroundColor={
+              tab === 'calender'
+                ? theme.colors.gray[800]
+                : theme.colors.gray[1]
+            }
+            onPress={() => {
+              setTab('calender');
+            }}>
+            <XStack
+              paddingHorizontal={12}
+              paddingVertical={1}
+              justifyContent="flex-start"
+              alignItems="center">
+              <StyledText
+                paddingVertical={8}
+                paddingHorizontal={16}
+                fontFamily={fontStyles.Roboto_Regular}
+                color={
+                  tab === 'calender'
+                    ? theme.colors.gray[1]
+                    : theme.colors.gray[800]
+                }>
+                Calender
+              </StyledText>
+            </XStack>
+          </StyledButton>
+        </XStack>
+        <YStack flex={1} backgroundColor={theme.colors.gray[100]}>
+          {
+            tab === "calender" && (
+              <CalendarNotification />
+            )
+          }
+          {
+            tab === "project" && (
+              <ProjectNotification />
+            )
+          }
+        </YStack>
       </ScrollView>
-
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose={false}
-        keyboardBehavior="interactive"
-        keyboardBlurBehavior="restore">
-        <ProjectDetail
-          project={selected}
-          handleClose={() => {
-            bottomSheetRef.current?.close();
-            setSelected(null);
-          }}
-        />
-      </BottomSheet>
     </StyledSafeAreaView>
   );
 }

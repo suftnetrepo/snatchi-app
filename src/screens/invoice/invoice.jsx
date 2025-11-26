@@ -13,7 +13,6 @@ import {
   StyledInput,
   StyledMultiInput,
   StyledOkDialog,
-  StyledCheckBox,
   StyledButton,
   validate,
   StyledSpinner,
@@ -174,10 +173,10 @@ const Invoice = () => {
         }}
         height={48}
         width={48}
-        borderColor={theme.colors.gray[200]}>
+        borderColor={theme.colors.gray[400]}>
         <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
       </StyledCycle>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.medium}

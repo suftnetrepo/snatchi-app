@@ -15,14 +15,14 @@ const ChatRoomScrollView = ({onPress}) => {
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <XStack flex={1} paddingHorizontal={6} paddingVertical={6}>
+      <XStack flex={1} paddingHorizontal={8} paddingVertical={6}>
         {['All', 'direct', 'group'].map((room, index) => {
           return (
             <Fragment key={index}>
               <StyledButton
                 key={index}
-                borderColor={theme.colors.teal[500]}
-                backgroundColor={theme.colors.green[50]}
+                borderColor={theme.colors.gray[500]}
+                backgroundColor={theme.colors.gray[1]}
                 onPress={() => handleSelect(room)}>
                 <XStack
                   paddingHorizontal={10}
@@ -35,16 +35,16 @@ const ChatRoomScrollView = ({onPress}) => {
                       <FontAwesome
                         name="check-circle"
                         size={24}
-                        color={theme.colors.green[500]}
+                        color={theme.colors.gray[800]}
                       />
-                      <StyledSpacer marginHorizontal={1} />
+                      <StyledSpacer marginHorizontal={3} />
                     </>
                   )}
                   <StyledText
                     fontFamily={fontStyles.Roboto_Regular}
                     fontWeight={theme.fontWeight.medium}
-                    fontSize={theme.fontSize.small}
-                    color={theme.colors.green[800]}>
+                    fontSize={theme.fontSize.normal}
+                    color={theme.colors.gray[800]}>
                     {capitalizeFirstLetter(room)}
                   </StyledText>
                 </XStack>

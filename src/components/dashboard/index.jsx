@@ -205,7 +205,7 @@ const Dashboard = ({ user_id }) => {
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
               fontSize={theme.fontSize.medium}
-              color={theme.colors.gray[400]}>
+              color={theme.colors.gray[500]}>
               My Recent Projects ({myProject?.length})
             </StyledText>
           }
@@ -214,7 +214,7 @@ const Dashboard = ({ user_id }) => {
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
               fontSize={theme.fontSize.medium}
-              color={theme.colors.gray[300]}>
+              color={theme.colors.gray[500]}>
               View All
             </StyledText>
           </Pressable>}

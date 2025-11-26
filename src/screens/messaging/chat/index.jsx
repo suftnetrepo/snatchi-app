@@ -68,7 +68,7 @@ const MyChat = ({ route }) => {
             name="send-circle"
             style={{ marginBottom: 5, marginRight: 5 }}
             size={40}
-            color={theme.colors.cyan[500]}
+            color={theme.colors.gray[800]}
           />
         </>
       </Send>
@@ -137,7 +137,7 @@ const MyChat = ({ route }) => {
         </StyledHeader.Full>
       </StyledHeader>
 
-      <YStack flex={1} backgroundColor={theme.colors.gray[100]} >
+      <YStack flex={1} marginBottom={8} backgroundColor={theme.colors.gray[100]} >
         <GiftedChat
           messages={[...messages].reverse()}
           onSend={newMessages =>

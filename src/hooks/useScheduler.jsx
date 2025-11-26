@@ -72,6 +72,19 @@ const useScheduler = (key) => {
     }));
   };
 
+  const handlNotifyChange = body => {
+    setState(prevState => ({
+      ...prevState,
+      fields: {
+        ...prevState.fields,
+        ...body,
+        title: body.siteName,
+        startDate: ymd(body.startDate),
+        endDate: ymd(body.endDate),
+      },
+    }));
+  };
+
   const handleDayChange = day => {
     const result = state.data[day];
     const schedule = state.rawData.find(j => j._id === result?.id);
@@ -121,6 +134,29 @@ const useScheduler = (key) => {
     });
   }, []);
 
+   async function handleNotifySave(body) {
+    setState(prev => ({ ...prev, loading: true, error: null, success: false }));
+    const { success, errorMessage } = await zat(
+      SCHEDULER.createOne,
+      body,
+      VERBS.POST,
+    );
+
+    if (success) {
+      setState(prev => {
+        return {
+          ...prev,
+          success: true,
+          loading: false,
+        };
+      });
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the schedule.');
+      return false;
+    }
+  }
+
   async function handleMySchedules() {
     setState(prev => ({ ...prev, loading: true }));
     const { success, data, errorMessage } = await zat(
@@ -152,11 +188,11 @@ const useScheduler = (key) => {
       (a, b) => new Date(a.dateString) - new Date(b.dateString)
     );
 
-    const first = sorted[0];            
-    const last = sorted[sorted.length - 1]; 
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
 
     const startDate = `${first.year}-${String(first.month).padStart(2, '0')}-01`;
-    const endDate = new Date(last.year, last.month, 0) 
+    const endDate = new Date(last.year, last.month, 0)
       .toISOString()
       .slice(0, 10);
 
@@ -274,7 +310,9 @@ const useScheduler = (key) => {
     handleDayChange,
     handleDateRange,
     handleDelete,
-    handleMySchedulesByDates
+    handleMySchedulesByDates,
+    handlNotifyChange,
+    handleNotifySave
   };
 };
 
