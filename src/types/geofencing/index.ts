@@ -2,9 +2,12 @@ import BackgroundGeolocation, {
   Geofence as RNBGGeofence,
   GeofenceEvent as RNBGGeofenceEvent,
   Subscription,
+  Config,
+  State,
   Location,
   ProviderChangeEvent,
   MotionChangeEvent,
+  LocationFilterPolicy,
 } from 'react-native-background-geolocation';
 import type {
   GeofenceEvent,
@@ -13,7 +16,13 @@ import type {
   GeofencingState,
   GeofenceEventBase,
 } from './types';
-import { add, store, clear, getStore, PROJECT_KEY } from '../../utils/asyncStorage';
+import {
+  add,
+  store,
+  clear,
+  getStore,
+  PROJECT_KEY,
+} from '../../utils/asyncStorage';
 import { toModel } from '../../utils/help';
 import { zat } from '../../utils/zap';
 import { FENCE, VERBS } from '../../../config';
@@ -46,7 +55,7 @@ class GeofencingSingleton {
   private currentlyInside = new Set<string>();
 
   private constructor() {
-    console.log("🚀 Clean GeofencingSingleton created");
+    console.log('🚀 Clean GeofencingSingleton created');
   }
 
   static getInstance(): GeofencingSingleton {
@@ -62,8 +71,8 @@ class GeofencingSingleton {
       console.log('📍 Permission status:', status);
 
       return (
-        status === BackgroundGeolocation.AUTHORIZATION_STATUS_ALWAYS ||
-        status === BackgroundGeolocation.AUTHORIZATION_STATUS_WHEN_IN_USE
+        status === BackgroundGeolocation.AuthorizationStatus.Always ||
+        status === BackgroundGeolocation.AuthorizationStatus.WhenInUse
       );
     } catch (error) {
       console.error('❌ RequestPermissions failed:', error);
@@ -74,11 +83,6 @@ class GeofencingSingleton {
   // ===========================================================================
   // 📌 Helpers
   // ===========================================================================
-
-  private updateState(patch: Partial<GeofencingState>) {
-    this.state = { ...this.state, ...patch };
-    this.stateListeners.forEach((cb) => cb(this.state));
-  }
 
   addStateListener(listener: (state: GeofencingState) => void): () => void {
     this.stateListeners.add(listener);
@@ -112,17 +116,17 @@ class GeofencingSingleton {
     const now = new Date();
 
     // DATE RANGE — compare only yyyy-mm-dd (avoid timezone shift)
-    const today = now.toISOString().split("T")[0];
-    const startDay = project.startDate.split("T")[0];
-    const endDay = project.endDate.split("T")[0];
+    const today = now.toISOString().split('T')[0];
+    const startDay = project.startDate.split('T')[0];
+    const endDay = project.endDate.split('T')[0];
 
     if (today < startDay || today > endDay) {
       return false;
     }
 
     // TIME RANGE
-    const [sh, sm] = project.startTime.split(":").map(Number);
-    const [eh, em] = project.endTime.split(":").map(Number);
+    const [sh, sm] = project.startTime.split(':').map(Number);
+    const [eh, em] = project.endTime.split(':').map(Number);
 
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const startMinutes = sh * 60 + sm;
@@ -133,7 +137,7 @@ class GeofencingSingleton {
     }
 
     // ACTIVE DAYS FIX → Map JS Sunday 0 → 7
-    const jsDay = now.getDay();    // 0–6
+    const jsDay = now.getDay(); // 0–6
     const localDay = jsDay === 0 ? 7 : jsDay;
 
     if (project.activeDays?.length) {
@@ -150,81 +154,78 @@ class GeofencingSingleton {
   // ===========================================================================
 
   private async saveFenceEvent(event: GeofenceEvent) {
-    console.log("==============================================");
-    console.log("📥 saveFenceEvent() TRIGGERED with event:", event);
+    console.log('==============================================');
+    console.log('📥 saveFenceEvent() TRIGGERED with event:', event);
 
     try {
-      console.log("🔄 Converting event to model...");
+      console.log('🔄 Converting event to model...');
       const model = toModel(event);
-      console.log("📦 Mapped Model:", model);
+      console.log('📦 Mapped Model:', model);
 
       // 🔔 Trigger vibration & notification for BOTH ENTER & EXIT
       console.log(`🔍 Transition type detected: ${event.transition}`);
 
-      if (event.transition === "ENTER" || event.transition === "EXIT") {
-        console.log("📳 Preparing to vibrate device...");
+      if (event.transition === 'ENTER' || event.transition === 'EXIT') {
+        console.log('📳 Preparing to vibrate device...');
         Vibration.vibrate(300);
-        console.log("✅ Device vibrated (300ms)");
+        console.log('✅ Device vibrated (300ms)');
 
-        console.log("🛠 Preparing notification title/message...");
+        console.log('🛠 Preparing notification title/message...');
         const title =
-          event.transition === "ENTER"
-            ? "Entered Geofence"
-            : "Exited Geofence";
+          event.transition === 'ENTER' ? 'Entered Geofence' : 'Exited Geofence';
 
         const message =
-          event.transition === "ENTER"
+          event.transition === 'ENTER'
             ? `You entered ${model.siteName}`
             : `You exited ${model.siteName}`;
 
-        console.log("📨 Notification details:", { title, message });
+        console.log('📨 Notification details:', { title, message });
 
-        console.log("📡 Setting notification channel...");
+        console.log('📡 Setting notification channel...');
         localNotificationService.defaultChannel();
 
-        console.log("🚀 Showing local notification...");
+        console.log('🚀 Showing local notification...');
         localNotificationService.showNotification(
           Date.now() % 100000, // Unique ID
           title,
           message,
           { eventType: event.transition },
-          { playSound: true }
+          { playSound: true },
         );
 
-        console.log("✅ Local notification sent");
+        console.log('✅ Local notification sent');
       } else {
-        console.log("⚠️ No vibration/notification triggered (transition not enter/exit)");
+        console.log(
+          '⚠️ No vibration/notification triggered (transition not enter/exit)',
+        );
       }
 
-      console.log("💾 Saving geofence event to backend API...");
+      console.log('💾 Saving geofence event to backend API...');
       const response = await this.handleSave(model);
 
       console.log(
         `🟢 SUCCESS: ${event.transition} event saved to DB. Response:`,
-        response
+        response,
       );
-
     } catch (err) {
       console.error(`🔴 ERROR in saveFenceEvent for ${event.transition}:`, err);
     }
 
-    console.log("==============================================");
+    console.log('==============================================');
   }
   private async handleSave(body: any) {
-    console.log("📨 handleSave() called with payload:", body);
+    console.log('📨 handleSave() called with payload:', body);
 
     try {
-      console.log("🌍 Sending API request to FENCE.addOne...");
+      console.log('🌍 Sending API request to FENCE.addOne...');
       const { success } = await zat(FENCE.addOne, body, VERBS.POST);
 
-      console.log("🟢 API success:", success);
+      console.log('🟢 API success:', success);
       return success;
-
     } catch (error) {
-      console.error("🔴 API SAVE ERROR:", error);
+      console.error('🔴 API SAVE ERROR:', error);
     }
   }
-
 
   private setupEventListeners() {
     this.geofenceSubscription?.remove();
@@ -239,9 +240,9 @@ class GeofencingSingleton {
       async (event: RNBGGeofenceEvent) => {
         const { identifier, action, location } = event;
 
-        let transition: GeofenceTransition = "ENTER";
-        if (action === "EXIT") transition = "EXIT";
-        if (action === "DWELL") transition = "DWELL";
+        let transition: GeofenceTransition = 'ENTER';
+        if (action === 'EXIT') transition = 'EXIT';
+        if (action === 'DWELL') transition = 'DWELL';
 
         const base: GeofenceEventBase = {
           id: identifier,
@@ -251,10 +252,14 @@ class GeofencingSingleton {
           timestamp: new Date().toISOString(),
         };
 
-       console.log("📡 RNBG RAW GEOFENCE EVENT:", event);
-          console.log("📡 Extracted identifier/action/location:", { identifier, action, location });
-          console.log("🔄 Resolved transition:", transition);
-          console.log("📍 Generated base model:", base);
+        console.log('📡 RNBG RAW GEOFENCE EVENT:', event);
+        console.log('📡 Extracted identifier/action/location:', {
+          identifier,
+          action,
+          location,
+        });
+        console.log('🔄 Resolved transition:', transition);
+        console.log('📍 Generated base model:', base);
 
         //   if (transition === "ENTER" && this.currentlyInside.has(identifier)) {
         //     console.log("⛔ BLOCKED: Duplicate ENTER");
@@ -268,40 +273,38 @@ class GeofencingSingleton {
         // if (transition === "ENTER") this.currentlyInside.add(identifier);
         // if (transition === "EXIT") this.currentlyInside.delete(identifier);
 
-        console.log("📥 Fetching project enrichment data...");
+        console.log('📥 Fetching project enrichment data...');
         const enriched = await this.enrichEvent(base);
-        console.log("🟢 ENRICHED EVENT READY:", enriched);
+        console.log('🟢 ENRICHED EVENT READY:', enriched);
 
-        console.log("💾 Calling saveFenceEvent()...");
+        console.log('💾 Calling saveFenceEvent()...');
         this.saveFenceEvent(enriched);
 
         // Notify UI if needed
-        this.eventListeners.forEach((cb) => cb(enriched));
-      }
+        // this.eventListeners.forEach(cb => cb(enriched));
+      },
     );
 
     /**
      * Only for debugging/movement - NOT used for manual geofencing anymore
      */
     this.locationSubscription = BackgroundGeolocation.onLocation(
-      (loc) => console.log("🛰️ Location update:", loc.coords),
-      (err) => console.log("❌ Location error:", err)
+      loc => console.log('🛰️ Location update:', loc.coords),
+      err => console.log('❌ Location error:', err),
     );
 
     this.providerSubscription = BackgroundGeolocation.onProviderChange(
-      (provider) => console.log("⚙️ Provider changed:", provider)
+      provider => console.log('⚙️ Provider changed:', provider),
     );
 
-    this.motionSubscription = BackgroundGeolocation.onMotionChange((ev) =>
-      console.log("🚶 Motion:", ev.isMoving ? "MOVING" : "STATIONARY")
+    this.motionSubscription = BackgroundGeolocation.onMotionChange(ev =>
+      console.log('🚶 Motion:', ev.isMoving ? 'MOVING' : 'STATIONARY'),
     );
   }
 
   private async enrichEvent(base: GeofenceEventBase): Promise<GeofenceEvent> {
     const projects = await this.loadProjects();
-    const project = projects.find(
-      (p) => p.projectId === base.id
-    );
+    const project = projects.find(p => p.projectId === base.id);
 
     return { ...base, ...(project ?? {}) };
   }
@@ -311,33 +314,120 @@ class GeofencingSingleton {
   // ===========================================================================
 
   async initialize(debug = true) {
-    if (this.state.isInitialized) return;
-
-    this.updateState({ isLoading: true, error: null });
+    console.log('[ready] BackgroundGeolocation is configured and ready to use started');
 
     try {
-      await BackgroundGeolocation.ready({
-        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-        distanceFilter: 50,
-        stopOnTerminate: false,
-        startOnBoot: true,
-        debug,
-        geofenceModeHighAccuracy: true,
-        geofenceProximityRadius: 1000,
-        geofenceInitialTriggerEntry: true,
-        logLevel: debug
-          ? BackgroundGeolocation.LOG_LEVEL_VERBOSE
-          : BackgroundGeolocation.LOG_LEVEL_ERROR,
-      });
 
-      this.setupEventListeners();
-      await this.restoreProjects();
-      await BackgroundGeolocation.start();
+      const schedule = await this.restoreProjects();
 
-      this.updateState({ isInitialized: true, isLoading: false });
+      const config: Config = {
+        geolocation: {
+
+          // High-precision GPS
+          desiredAccuracy: BackgroundGeolocation.DesiredAccuracy.High,
+
+          // Move at least 50m before recording next location
+          distanceFilter: 50,
+
+          // Consider stationary after 5 minutes with no motion
+          stopTimeout: 5,
+
+          // Automatically stop tracking after 120 minutes of continuous operation
+          stopAfterElapsedMinutes: 120,
+
+          // iOS: Show blue bar / pill when active in background
+          showsBackgroundLocationIndicator: true,
+
+          // Noise-reduction / denoising filter
+          filter: {
+            maxImpliedSpeed: 60,
+            odometerAccuracyThreshold: 20,
+            trackingAccuracyThreshold: 100,
+          },
+
+          // Geofencing behavior
+          geofenceProximityRadius: 1000,
+          geofenceInitialTriggerEntry: true,
+          geofenceModeHighAccuracy: true,
+
+          // Permissions / alerts (iOS)
+          locationAuthorizationRequest: 'Always',
+          disableLocationAuthorizationAlert: false,
+          locationAuthorizationAlert: {
+            titleWhenNotEnabled: "Location Required for Geofencing",
+            message:
+              "Snatchi needs location access to detect geofence entry and exit events. Please enable location permissions for full functionality.",
+            cancelButton: "Cancel",
+            settingsButton: "Settings"
+          },
+        },
+        http: {
+          autoSync: true,
+        },
+        app: {
+          stopOnTerminate: false,
+          startOnBoot: true,
+          enableHeadless: true,
+          backgroundPermissionRationale: {
+            title:
+              'Allow Snatchi to access your location for geofencing, even when closed.',
+            message:
+              'Snatchi uses your location to detect when you enter or exit geofenced areas, even when the app is not open.',
+            positiveAction: 'Change to "{backgroundPermissionOptionLabel}"',
+            negativeAction: 'Cancel',
+          },
+
+          notification: {
+            title: 'Geofencing Active',
+            text: 'Monitoring geofence regions',
+            smallIcon: 'mipmap/ic_launcher',
+          },
+          schedule,
+          scheduleUseAlarmManager: true,
+        },
+        logger: {
+          debug: true,
+          logLevel: BackgroundGeolocation.LogLevel.Verbose,
+        },
+      }
+      // Apply the configuration.
+      BackgroundGeolocation.ready(config).then(async (state) => {
+        this.setupEventListeners();
+
+        // const schedule = await this.restoreProjects();
+
+        // Apply schedule only if we have active projects
+        console.log("🟩 Applied schedule:", schedule);
+        await BackgroundGeolocation.setConfig({
+          app: {
+            schedule,
+            scheduleUseAlarmManager: true
+          }
+        });
+        console.log("🚀 Scheduler started.");
+
+        // Start scheduler
+        // await BackgroundGeolocation.startSchedule();
+
+        if (!state.enabled) {
+          await BackgroundGeolocation.startGeofences();
+          console.log("🚀 Geofences started.");
+        }
+        // Check if we're already inside (manual ENTER)
+
+        await this.initialInsideCheck();
+
+        return true
+      }).catch((error) => {
+        if(__DEV__)
+        console.error("🚀 Error starting Geofences.", error);
+      })
+
+      console.log('[ready] BackgroundGeolocation is configured and ready to use started');
+      // this.updateState({ isInitialized: true, isLoading: false });
     } catch (err) {
-      console.log("❌ Init failed:", err);
-      this.updateState({ error: String(err), isLoading: false });
+      console.log('❌ Init failed:', err);
+      // this.updateState({ error: String(err), isLoading: false });
     }
   }
 
@@ -348,27 +438,31 @@ class GeofencingSingleton {
   async addProjects(projects: ProjectGeofence[]) {
     const existing = await this.loadProjects();
     const filtered = existing.filter(
-      (p) => !projects.some((np) => np.projectId === p.projectId)
+      p => !projects.some(np => np.projectId === p.projectId),
     );
 
     const updated = [...filtered, ...projects];
     await this.saveProjects(updated);
-    await this.restoreProjects();
+    const schedule = await this.restoreProjects();
 
-    this.updateState({ geofences: updated });
+    BackgroundGeolocation.setConfig({
+      app: {
+        schedule
+      }
+    });
   }
 
   async removeProjects(ids: string[]) {
     const existing = await this.loadProjects();
 
     for (const id of ids) {
-      const project = existing.find((p) => p.projectId === id);
+      const project = existing.find(p => p.projectId === id);
       if (project) {
         this.currentlyInside.delete(project.projectId);
       }
     }
 
-    const updated = existing.filter((p) => !ids.includes(p.projectId));
+    const updated = existing.filter(p => !ids.includes(p.projectId));
     await this.saveProjects(updated);
     await this.restoreProjects();
   }
@@ -379,128 +473,139 @@ class GeofencingSingleton {
     await BackgroundGeolocation.removeGeofences();
     await BackgroundGeolocation.stopSchedule();
     await BackgroundGeolocation.stop();
-    this.updateState({ geofences: [] });
+    // this.updateState({ geofences: [] });
   }
 
   async restoreProjects() {
     try {
       const projects = await this.loadProjects();
 
-      // Filter down to strictly active projects
+      // Filter down to active-on-calendar projects
       const activeProjects = projects.filter(p =>
         this.isWithinProjectWindow(p)
       );
 
       console.log("🟦 All projects:", projects.length);
-      console.log("🟩 Active projects (monitored):", activeProjects.length);
+      console.log("🟩 Active:", activeProjects.length);
 
-      // If NO active projects
+      // Remove all geofences if no active project
       if (activeProjects.length === 0) {
         await BackgroundGeolocation.removeGeofences();
-        await BackgroundGeolocation.stopSchedule();
         this.currentlyInside.clear();
-        this.updateState({ geofences: [] });
-        return;
+        return [];
       }
 
-      // Load which geofences are currently installed
+      // Get existing geofences
       const existing = await BackgroundGeolocation.getGeofences();
       const existingIds = new Set(existing.map(g => g.identifier));
-      const validIds = new Set(activeProjects.map(p => p.projectId));
+      const activeIds = new Set(activeProjects.map(p => p.projectId));
 
-      // Remove geofences that are no longer active
-      for (const g of existing) {
-        if (!validIds.has(g.identifier)) {
-          await BackgroundGeolocation.removeGeofence(g.identifier);
-          this.currentlyInside.delete(g.identifier);
-        }
-      }
-
-      // Add new active geofences
+      // Add missing
       for (const p of activeProjects) {
-        const id = p.projectId;
-        if (!existingIds.has(id)) {
+        if (!existingIds.has(p.projectId)) {
           await BackgroundGeolocation.addGeofence({
-            identifier: id,
+            identifier: p.projectId,
             latitude: p.latitude,
             longitude: p.longitude,
             radius: p.radius,
             notifyOnEntry: true,
             notifyOnExit: true,
-            notifyOnDwell: false,
+            notifyOnDwell: false
           });
         }
       }
 
-      // Build schedule from active projects
+      // Remove stale
+      for (const g of existing) {
+        if (!activeIds.has(g.identifier)) {
+          await BackgroundGeolocation.removeGeofence(g.identifier);
+          this.currentlyInside.delete(g.identifier);
+        }
+      }
+
+      // Build RNBG cron schedule
       const schedule = activeProjects.map(p => {
-        const days = p.activeDays?.length
-          ? p.activeDays.join(",")
-          : "1-7";
-        return `${days} ${p.startTime}-${p.endTime}`;
+        const days = p.activeDays?.length ? p.activeDays.join(",") : "1-7";
+        return `${days} ${p.startTime}-${p.endTime} geofence`;
       });
 
-      await BackgroundGeolocation.setConfig({ schedule });
-      await BackgroundGeolocation.startSchedule();
+      console.log("🟦 Generated Schedule:", schedule);
 
-      // Update UI state
-      this.updateState({ geofences: activeProjects });
-
-      // Perform initial inside check for *only active* geofences
-      this.initialInsideCheck();
-
+      return schedule;
     } catch (err) {
       console.log("❌ restoreProjects failed:", err);
-      this.updateState({ error: String(err) });
+      return [];
     }
   }
-
 
   // ===========================================================================
   // 📌 Initial check only (prevents infinite ENTER loops)
   // ===========================================================================
 
   private async initialInsideCheck() {
-    try {
-      const allProjects = await this.loadProjects();
-      if (!allProjects.length) return;
+    console.log("🔵 initialInsideCheck() STARTED");
 
-      // STRICT MODE: Only check active window projects
-      const projects = allProjects.filter(p =>
-        this.isWithinProjectWindow(p)
-      );
+    try {
+      console.log("🔹 Loading ALL projects...");
+      const allProjects = await this.loadProjects();
+      console.log("🔹 Loaded projects:", allProjects);
+
+      if (!allProjects.length) {
+        console.log("⚪ No stored projects. EXIT.");
+        return;
+      }
+
+      console.log("🔹 Filtering ACTIVE WINDOW projects...");
+      const projects = allProjects.filter(p => {
+        const result = this.isWithinProjectWindow(p);
+        console.log(`   ⏰ WindowCheck for ${p.projectId}: ${result}`);
+        return result;
+      });
+      console.log("🔹 After filter, active window projects:", projects);
 
       if (!projects.length) {
         console.log("⛔ No active projects right now — skipping inside check");
         return;
       }
 
+      console.log("📍 Getting current device position...");
       const loc = await BackgroundGeolocation.getCurrentPosition({
         samples: 1,
         desiredAccuracy: 40,
         persist: false,
       });
+      console.log("📍 Device location result:", loc);
 
       const { latitude, longitude } = loc.coords;
+      console.log(`📍 Device coords -> lat: ${latitude}, lon: ${longitude}`);
+
+      console.log(`🔍 Checking ${projects.length} project(s) for INSIDE...`);
 
       for (const p of projects) {
         const id = p.projectId;
+        console.log(`\n🟦 Checking project ${id}`);
+        console.log(`   🗺️ Fence coords -> lat: ${p.latitude}, lon: ${p.longitude}, radius: ${p.radius}`);
 
         const distance = this.getDistance(
           latitude,
           longitude,
           p.latitude,
-          p.longitude
+          p.longitude,
         );
 
+        console.log(`   📏 Distance to fence: ${distance} meters`);
+
         if (distance <= p.radius) {
+          console.log(`   ✅ INSIDE radius for ${id}`);
 
           // Prevent repeated ENTER
+          console.log(`   🔍 Checking if ${id} already inside...`);
           if (this.currentlyInside.has(id)) {
-            console.log(`⛔ Skipping duplicate ENTER for ${id}`);
+            console.log(`   ⛔ Skipping duplicate ENTER for ${id}`);
             continue;
           }
 
+          console.log(`   ➕ Adding ${id} to currentlyInside`);
           this.currentlyInside.add(id);
 
           const {
@@ -510,25 +615,35 @@ class GeofencingSingleton {
             ...safeProject
           } = p;
 
+          console.log("   📦 Building ENTER event payload...");
           const evt: GeofenceEvent = {
             id,
-            transition: "ENTER",
+            transition: 'ENTER',
             latitude,
             longitude,
             timestamp: new Date().toISOString(),
             ...safeProject,
           };
 
-          console.log("🎯 Initial manual ENTER:", evt);
-          this.eventListeners.forEach(cb => cb(evt));
+          console.log("🎯 Initial manual ENTER event:", evt);
+          console.log("📡 Broadcasting ENTER event to listeners...");
+
+          this.eventListeners.forEach(cb => {
+            console.log("   🔔 Calling event listener callback...");
+            cb(evt);
+          });
+
+        } else {
+          console.log(`   ❌ OUTSIDE radius for ${id}, no ENTER.`);
         }
       }
+
+      console.log("🔵 initialInsideCheck() COMPLETED");
 
     } catch (err) {
       console.log("⚠️ initialInsideCheck failed:", err);
     }
   }
-
 
   private getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     const R = 6371000;
@@ -569,6 +684,5 @@ class GeofencingSingleton {
     return Array.from(this.currentlyInside);
   }
 }
-
 
 export const geofencingSingleton = GeofencingSingleton.getInstance();

@@ -6,10 +6,12 @@ interface Actions {
   logout: () => Promise<void>;
   updateCurrentUser: (user: any) => void;
   updateSelectedDate : (selectedDate : any) => void;
+  updateChangeStatus:(status : boolean) => void
 }
 
 interface State {
   user: any | null;
+  status : boolean;
   selectedDate : any | null;
 }
 
@@ -23,6 +25,7 @@ export const AppContext = React.createContext<(Actions & State) | undefined>(
 
 const initialState: State = {
   user: null,
+  status : false,
   selectedDate : null
 };
 
@@ -52,6 +55,12 @@ const AppProvider = ({children}: AppProviderProps) => {
       setState(prevState => ({
         ...prevState,
         selectedDate: date,
+      }));
+    },
+     updateChangeStatus: status => {
+      setState(prevState => ({
+        ...prevState,
+        status,
       }));
     },
 

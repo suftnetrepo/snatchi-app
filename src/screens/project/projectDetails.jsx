@@ -14,6 +14,7 @@ import {
     StyledButton,
     StyledSpinner,
     StyledOkDialog,
+    StyledDialog
 } from 'fluent-styles';
 import {
     Box,
@@ -35,22 +36,23 @@ import {
     getPriorityColor,
     FileIcon,
 } from '../../utils/help';
-import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Pressable, Platform, Linking, Dimensions } from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useProject } from '../../hooks/useProject';
 import { ContactCard } from '../../components/projectCard/contact';
+import ImageViewerWithZoom from '../../components/imageViewer';
 
 export const ProjectDetails = () => {
     const { width } = Dimensions.get('window');
     const navigator = useNavigation();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(null);
     const route = useRoute();
     const { id } = route.params;
     const { data, error, loading, fetchOneProject } = useProject();
     const themeProgress = getStatusTheme(data?.status);
-
-    console.log('Project Details Data:', data);
 
     useEffect(() => {
         fetchOneProject(id);
@@ -131,7 +133,7 @@ export const ProjectDetails = () => {
                 <StyledCycle
                     height={48}
                     width={48}
-                    borderColor={theme.colors.gray[200]}>
+                    borderColor={theme.colors.gray[400]}>
                     <MaterialIcons
                         name="arrow-back"
                         size={15}
@@ -304,13 +306,13 @@ export const ProjectDetails = () => {
                                     key={index}
                                     style={{ width: width - 32 }}
                                     onPress={() => {
-                                        // setModalVisible(true);
-                                        // setSelectedImageIndex(index);
+                                        setModalVisible(true);
+                                        setSelectedImageIndex(index);
                                     }}>
                                     <StyledCard
                                         borderRadius={16}
                                         marginHorizontal={8}
-                                        borderColor={theme.colors.gray[200]}
+                                        borderColor={theme.colors.gray[400]}
                                         backgroundColor={theme.colors.gray[1]}
                                         borderWidth={1}>
                                         <XStack
@@ -341,8 +343,8 @@ export const ProjectDetails = () => {
                                                     size={12}
                                                     color={theme.colors.gray[600]}
                                                     onPress={() => {
-                                                        // setModalVisible(true);
-                                                        // setSelectedImageIndex(index);
+                                                        setModalVisible(true);
+                                                        setSelectedImageIndex(index);
                                                     }}
                                                 />
                                             </StyledCycle>
@@ -583,16 +585,23 @@ export const ProjectDetails = () => {
                     description="Please try again later"
                     visible={true}
                     onOk={() => {
-                        navigator.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'bottom-tabs' }],
-                            })
-                        );
+                        navigator.canGoBack() && navigator.goBack()
                     }}
                 />
             )}
             {loading && <StyledSpinner />}
+            {modalVisible && (
+                <StyledDialog visible>
+                    <ImageViewerWithZoom
+                        images={data?.attachments?.map(item => ({
+                            url: item.secure_url,
+                            description: item.document_name,
+                        }))}
+                        selectedIndex={selectedImageIndex}
+                        onClose={() => setModalVisible(false)}
+                    />
+                </StyledDialog>
+            )}
         </StyledSafeAreaView>
     );
 };

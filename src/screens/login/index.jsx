@@ -53,7 +53,6 @@ const Login = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
@@ -85,7 +84,7 @@ const Login = () => {
                 color={theme.colors.gray[500]}
                 textAlign="center"
                 fontSize={theme.fontSize.normal}>
-                Enter your account email to receive your access code.
+                Enter your account email to receive an access code.
               </StyledText>
             </YStack>
             <StyledSpacer marginVertical={16} />
@@ -96,7 +95,7 @@ const Login = () => {
               returnKeyType="next"
               maxLength={50}
               fontSize={theme.fontSize.normal}
-              borderColor={theme.colors.gray[400]}
+              borderColor={theme.colors.gray[200]}
               backgroundColor={theme.colors.gray[1]}
               borderRadius={32}
               paddingHorizontal={8}
@@ -120,7 +119,7 @@ const Login = () => {
                 Sign in
               </StyledText>
             </StyledButton>
-            <StyledSpacer marginVertical={4} />
+          
           </YStack>
         </ScrollView>
         {error && (

@@ -4,7 +4,7 @@ import {zat} from '../utils/zap';
 import {invoiceValidator} from '../validator/invoiceValidator';
 import {INVOICES} from '../../assets/data/invoice';
 
-const useInvoice = (flag = false) => {
+const useInvoice = (flag=false) => {
   const [state, setState] = useState({
     data: INVOICES | [],
     loading: false,
@@ -120,11 +120,12 @@ const useInvoice = (flag = false) => {
       return true;
     } else {
       handleError(errorMessage || 'Failed to fetch the invoice.');
-      return false;
+   
     }
   }
 
   const handleAddInvoice = async body => {
+       setState(prev => ({...prev, loading: true, error: null}));
     const {success, errorMessage} = await zat(INVOICE.addOne, body, VERBS.POST);
 
     if (success) {
@@ -163,6 +164,7 @@ const useInvoice = (flag = false) => {
   }
 
   const handleDelete = async invoice_id => {
+       setState(prev => ({...prev, loading: true, error: null}));
     const {success, errorMessage} = await zat(
       INVOICE.removeOne,
       null,
@@ -186,7 +188,7 @@ const useInvoice = (flag = false) => {
   };
 
   useEffect(() => {
-    flag && handleFetchInvoices();
+     flag && handleFetchInvoices();
   }, [flag]);
 
   return {
@@ -200,6 +202,7 @@ const useInvoice = (flag = false) => {
     handleAddItem,
     handleDeleteItem,
     handleEditItem,
+    handleFetchInvoices
   };
 };
 

@@ -1,4 +1,16 @@
 {
   "name": "snatchi",
-  "displayName": "snatchi"
+  "displayName": "snatchi",
+  "expo": {
+    "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "snatchi-mobile",
+          "organization": "suftnetcom"
+        }
+      ]
+    ]
+  }
 }

@@ -23,7 +23,7 @@ export const ContactCard = ({ name, email, mobile, image, online = true }) => {
             shadowOpacity={0.05}
             shadowRadius={4}
             shadowOffset={{ width: 0, height: 1 }}
-            borderWidth={0.9} borderColor="$gray200"
+            borderWidth={0.9} borderColor="$gray300"
         >
             {/* Avatar */}
             <Box position="relative" mr="$2" >

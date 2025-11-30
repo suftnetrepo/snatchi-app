@@ -1,91 +1,46 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Navigator } from './src/navigation/AppNavigation';
 import AppProvider from './src/hooks/appContext';
 import { fcmStart } from './src/utils/pushNotification';
-import { toModel } from './src/utils/help';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
-import { Vibration } from 'react-native';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
-import { useProjectGeofencing, useGeofenceEvents } from './src/hooks/useGeofencing';
-import { useFence } from './src/hooks/useFence';
-import { localNotificationService } from './Notification/LocalNotificationService';
-import { removeStore } from './src/utils/asyncStorage';
+import { geofencingSingleton } from './src/types/geofencing';
+import { StyledIndicator } from './src/components/indicator';
+import { getStore } from './src/utils/asyncStorage';
 
 function App() {
-   removeStore("chatUser").catch(()=> {})
-  const { handleSave } = useFence();
-  const { isInitializing, isInitialized } = useProjectGeofencing({
-    enableBackgroundSync: true,
-    backgroundFetchInterval: 15,
-    autoRetry: true
-  });
-
-  // const { eventStats } = useGeofenceEvents(
-  //   (event) => {
-  //     const model = toModel(event);
-
-  //     // 📳 Vibrate once (300ms)
-  //     Vibration.vibrate(300);
-
-  //     localNotificationService.defaultChannel();
-  //     localNotificationService.showNotification(
-  //       Date.now() % 100000,
-  //       "Entered Geofence",
-  //       `${model.siteName}`,
-  //       { test: true },
-  //       { playSound: true }
-  //     );
-
-  //     // 💾 Save to database (your existing API)
-  //     handleSave(model)
-  //       .then((res) => console.log("ENTER saved:", res))
-  //       .catch((err) => console.error("Save error:", err));
-  //   },
-  //   (event) => {
-  //     const model = toModel(event);
-
-  //     // 📳 Vibrate once (300ms)
-  //     Vibration.vibrate(300);
-
-  //     localNotificationService.defaultChannel();
-  //     localNotificationService.showNotification(
-  //       Date.now() % 100000,
-  //       "Exited Geofence",
-  //       `${model.siteName}`,
-  //       { test: true },
-  //       { playSound: true }
-  //     );
-
-  //     // 💾 Save to database (your existing API)
-  //     handleSave(model)
-  //       .then((res) => console.log("ENTER saved:", res))
-  //       .catch((err) => console.error("Save error:", err));
-
-  //   },
-  //   (event) => {
-  //     console.log('📍 Any geofence event:', event);
-  //     // Handle all events in one place if preferred
-  //   }
-  // );
+  const [granted, setGranted] = useState(null); // Change to null for loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initFcm = async () => {
       try {
+        await geofencingSingleton.initialize();
         await fcmStart();
+        const status = await getStore('GeofencingGranted');
+        setGranted(status);
       } catch (error) {
-        if (__DEV__) console.error('Error with getFcmToken:', error);
+        if (__DEV__) console.error('Error with initialization:', error);
+        setGranted(false); // Set to false on error
+      } finally {
+        setIsLoading(false);
       }
     };
     initFcm();
   }, []);
 
+  // Show loading indicator while initializing
+  if (isLoading) {
+    return <StyledIndicator />;
+  }
+
   return (
     <AppProvider>
       <GluestackUIProvider config={glueStackConfigUi}>
         <NavigationContainer ref={navigationRef}>
-          <Navigator />
+          <Navigator granted={granted} />
         </NavigationContainer>
       </GluestackUIProvider>
     </AppProvider>

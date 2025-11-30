@@ -19,11 +19,9 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTaskDocument } from '../../hooks/useTaskDocument';
 import { ImagePickerModal } from '../../components/imagePickerModal';
 import { validate } from '../../validator';
-import TaskDropdown from '../../components/taskDropdown';
-import { Pressable, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { Pressable, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { jobPhotoCategories } from '../../utils/help';
 import { StyledDropdown } from '../../components/dropdown';
-
 
 const TaskDocument = () => {
   const route = useRoute();
@@ -44,8 +42,6 @@ const TaskDocument = () => {
   } = useTaskDocument(task_id, project_id);
   const [errorMessages, setErrorMessages] = useState({});
   const [file, setFile] = useState(null);
-
-  console.log('.............................success', success);
 
   const onHandleImageSelect = async response => {
     if (response.assets[0].uri) {
@@ -103,7 +99,7 @@ const TaskDocument = () => {
         <StyledCycle
           height={48}
           width={48}
-          borderColor={theme.colors.gray[200]}>
+          borderColor={theme.colors.gray[400]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>
@@ -119,8 +115,6 @@ const TaskDocument = () => {
       <StyledSpacer marginHorizontal={8} />
     </XStack>
   );
-
-
 
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>

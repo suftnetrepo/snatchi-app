@@ -70,6 +70,7 @@ const useTask = (id) => {
          copyData: data,
         loading: false,
       }));
+      return true
     } else {
       handleError(errorMessage || 'Failed to fetch the task.');
     }

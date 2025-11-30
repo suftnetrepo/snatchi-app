@@ -1,5 +1,5 @@
-import React, {Fragment} from 'react';
-import {useNavigation} from '@react-navigation/native';
+import React, { Fragment, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   YStack,
   XStack,
@@ -14,27 +14,37 @@ import {
   StyledSpinner,
   StyledOkDialog,
 } from 'fluent-styles';
-import {FlatList, Pressable, Platform} from 'react-native';
+import { FlatList, Pressable, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {fontStyles, theme} from '../../utils/theme';
-import InvoiceProvider, {useInvoiceContext} from '../../hooks/invoiceContext';
-import {StyledMIcon} from '../../components/icon';
+import { fontStyles, theme } from '../../utils/theme';
+import InvoiceProvider, { useInvoiceContext } from '../../hooks/invoiceContext';
+import { StyledMIcon } from '../../components/icon';
 import {
   formatCurrency,
   formatReadableDate,
   backgroundColorHelper,
   textColorHelper,
 } from '../../utils/help';
-import {useInvoice} from '../../hooks/useInvoice';
-import {Swipeable} from 'react-native-gesture-handler';
+import { useInvoice } from '../../hooks/useInvoice';
+import { Swipeable } from 'react-native-gesture-handler';
 import useInvoicePDF from '../../hooks/useInvoicePDF';
-import {useFocus} from '../../hooks/useFocus';
+import { useFocus } from '../../hooks/useFocus';
+import { useAppContext } from '../../hooks/appContext';
 
 const Invoices = () => {
-  const {key} = useFocus();
-  const {shareInvoice} = useInvoicePDF();
+  const { key } = useFocus();
+  const { status, updateChangeStatus } = useAppContext()
+  const { shareInvoice } = useInvoicePDF();
   const navigator = useNavigation();
-  const {data, loading, error, handleDelete} = useInvoice(key);
+  const { data, loading, error, handleDelete, handleFetchInvoices } = useInvoice(true);
+
+  useEffect(() => {
+    if (status) {
+      handleFetchInvoices().then(() => {
+        updateChangeStatus(false)
+      })
+    }
+  }, [status, key])
 
   const RenderHeader = () => (
     <XStack
@@ -95,8 +105,8 @@ const Invoices = () => {
     );
   };
 
-  const Render = ({invoice}) => {
-    const {selected, onValueChange} = useInvoiceContext();
+  const Render = ({ invoice }) => {
+    const { selected, onValueChange } = useInvoiceContext();
     return (
       <Swipeable renderRightActions={() => renderRightActions(invoice._id)}>
         <YStack marginBottom={8}>
@@ -425,9 +435,9 @@ const Invoices = () => {
   return (
     <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <StyledHeader
-     skipAndroid={Platform.OS === 'android' ? false : true}
+        skipAndroid={Platform.OS === 'android' ? false : true}
         marginHorizontal={8}
-        statusProps={{translucent: true}}>
+        statusProps={{ translucent: true }}>
         <StyledHeader.Full>
           <RenderHeader />
         </StyledHeader.Full>
@@ -442,7 +452,7 @@ const Invoices = () => {
             showsVerticalScrollIndicator={false}
             data={data}
             keyExtractor={item => item._id}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               return <Render invoice={item} key={item._id} />;
             }}
           />

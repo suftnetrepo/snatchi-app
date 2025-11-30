@@ -13,11 +13,11 @@ import {
   StyledOkDialog,
   StyledInput,
   StyledDialog,
+  StyledSpinner
 } from 'fluent-styles';
 import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
 import {
-  Linking,
   Pressable,
   ScrollView,
   Platform,
@@ -29,14 +29,14 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {
   backgroundColorHelper,
-  formatTimeFromDate,
   priorityBackgroundColorHelper,
   priorityTextColorHelper,
   textColorHelper,
   taskStatusArray,
   timeAgo,
   randomColor,
-  FileIcon
+  FileIcon,
+  formatDateTime
 } from '../../utils/help';
 import { StyledMIcon } from '../../components/icon';
 import TaskDropdown from '../../components/taskDropdown';
@@ -53,12 +53,12 @@ const { width } = Dimensions.get('window');
 const TaskDetails = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const { user } = useAppContext();
+  const { user, updateChangeStatus } = useAppContext();
   const [visible, setVisible] = useState(true);
   const route = useRoute();
   const navigator = useNavigation();
   const [errorMessages, setErrorMessages] = useState({});
-  const { handleEdit, handleReset, success, error } = useTask();
+  const { handleEdit, handleReset, success, error, loading } = useTask();
   const { task } = route.params;
   const {
     name,
@@ -117,6 +117,12 @@ const TaskDetails = () => {
     });
   };
 
+  const onhandleEdit=async(status, id)=> {
+     handleEdit({ status: status }, id).then(()=> {
+       updateChangeStatus(true)
+     })
+  }
+
   const RenderHeader = () => (
     <XStack
       paddingHorizontal={16}
@@ -128,11 +134,11 @@ const TaskDetails = () => {
         pressable
         pressableProps={{
           onPress: () =>
-            navigator.navigate("task")
+            navigator.goBack()
         }}
         height={48}
         width={48}
-        borderColor={theme.colors.gray[200]}>
+        borderColor={theme.colors.gray[400]}>
         <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
       </StyledCycle>
       <StyledSpacer marginHorizontal={2} />
@@ -275,19 +281,21 @@ const TaskDetails = () => {
                     paddingHorizontal={8}
                     fontFamily={fontStyles.Roboto_Regular}
                     fontWeight={theme.fontWeight.medium}
-                    fontSize={theme.fontSize.small}
+                    fontSize={theme.fontSize.normal}
                     backgroundColor={backgroundColorHelper(taskStatus)}
                     paddingVertical={4}
                     borderColor={backgroundColorHelper(taskStatus)}
                     color={textColorHelper(taskStatus)}>
                     {taskStatus}
                   </StyledBadge>
+                      <StyledSpacer marginVertical={16} />
                   <StyledMIcon
                     name="create"
-                    size={20}
+                    size={32}
                     color={theme.colors.gray[900]}
                     onPress={() => setVisible(false)}
                   />
+                      <StyledSpacer marginVertical={16} />
                 </>
               ) : (
                 <TaskDropdown
@@ -298,7 +306,7 @@ const TaskDetails = () => {
                   onSaveChanges={async value => {
                     setVisible(true);
                     setTaskStatus(value);
-                    await handleEdit({ status: value }, task._id);
+                    onhandleEdit(value, task._id);
                   }}></TaskDropdown>
               )}
 
@@ -306,7 +314,7 @@ const TaskDetails = () => {
                 paddingHorizontal={8}
                 fontFamily={fontStyles.Roboto_Regular}
                 fontWeight={theme.fontWeight.medium}
-                fontSize={theme.fontSize.small}
+                fontSize={theme.fontSize.normal}
                 backgroundColor={priorityBackgroundColorHelper(priority)}
                 paddingVertical={4}
                 borderColor={priorityBackgroundColorHelper(priority)}
@@ -314,7 +322,7 @@ const TaskDetails = () => {
                 {priority}
               </StyledBadge>
             </XStack>
-                  <StyledSpacer marginVertical={8} />
+            <StyledSpacer marginVertical={8} />
             <XStack
               paddingVertical={1}
               justifyContent="flex-start"
@@ -347,39 +355,56 @@ const TaskDetails = () => {
               gap={2}
               paddingVertical={4}
               borderRadius={32}>
-              <XStack justifyContent="flex-start" alignItems="center" gap={1}>
-                <StyledMIcon
-                  name="access-time"
-                  size={20}
-                  color={theme.colors.gray[900]}
-                />
+              <YStack>
                 <StyledText
-                  paddingHorizontal={4}
                   fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  fontSize={theme.fontSize.small}
+                  fontWeight={theme.fontWeight.bold}
+                  fontSize={theme.fontSize.normal}
                   color={theme.colors.gray[800]}>
-                  {formatTimeFromDate(startDate)}
+                  Start Date
                 </StyledText>
-              </XStack>
-
-              <XStack justifyContent="flex-start" alignItems="center" gap={1}>
-                <StyledMIcon
-                  name="access-time"
-                  size={20}
-                  color={theme.colors.gray[900]}
-                />
+                <XStack justifyContent="flex-start" alignItems="center">
+                  <Icon
+                    name="access-time"
+                    size={20}
+                    color={theme.colors.gray[900]}
+                  />
+                  <StyledText
+                    paddingHorizontal={4}
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    fontSize={theme.fontSize.medium}
+                    color={theme.colors.gray[800]}>
+                    {formatDateTime(startDate)}
+                  </StyledText>
+                </XStack>
+              </YStack>
+              <YStack>
                 <StyledText
-                  paddingHorizontal={4}
                   fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  fontSize={theme.fontSize.small}
+                  fontWeight={theme.fontWeight.bold}
+                  fontSize={theme.fontSize.normal}
                   color={theme.colors.gray[800]}>
-                  {formatTimeFromDate(endDate)}
+                  End Date
                 </StyledText>
-              </XStack>
+                <XStack justifyContent="flex-start" alignItems="center">
+                  <Icon
+                    name="access-time"
+                    size={20}
+                    color={theme.colors.gray[900]}
+                  />
+                  <StyledText
+                    paddingHorizontal={4}
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    fontSize={theme.fontSize.medium}
+                    color={theme.colors.gray[800]}>
+                    {formatDateTime(endDate)}
+                  </StyledText>
+                </XStack>
+              </YStack>
             </XStack>
-            
+
             <StyledSeparator
               left={
                 <StyledText
@@ -404,8 +429,8 @@ const TaskDetails = () => {
                     <StyledCard
                       borderRadius={16}
                       marginBottom={8}
-                      marginHorizontal={8}
-                      borderColor={theme.colors.gray[200]}
+                      marginHorizontal={5}
+                      borderColor={theme.colors.gray[400]}
                       backgroundColor={theme.colors.gray[1]}
                       borderWidth={1}>
                       <XStack
@@ -603,6 +628,7 @@ const TaskDetails = () => {
           />
         </StyledDialog>
       )}
+              {loading && <StyledSpinner />}
     </StyledSafeAreaView>
   );
 };

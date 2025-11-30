@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   YStack,
   XStack,
@@ -13,19 +13,19 @@ import {
   StyledInput,
   StyledMultiInput,
 } from 'fluent-styles';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { fontStyles, theme } from '../../utils/theme';
 import { CalendarList } from 'react-native-calendars';
 import moment from 'moment';
 import { useScheduler } from '../../hooks/useScheduler';
-import { StyledSelect } from '../../components/dropdown';
 import { statusOptions } from '../../utils/help';
 import { validate } from '../../validator/index';
 import { useAppContext } from '../../hooks/appContext';
 import { useFocus } from '../../hooks/useFocus';
-import { Platform } from 'react-native';
+import { Platform, ScrollView } from 'react-native';
+import StyledPickerSelect from '../../components/dropdown/StyledPickerSelect';
 
 const getUserSelectedRange = (start, end, color = '#3B82F6') => {
   const marked = {};
@@ -52,8 +52,6 @@ const getUserSelectedRange = (start, end, color = '#3B82F6') => {
 const CalendarListScreen = () => {
   const { key } = useFocus();
   const calendarRef = useRef();
-  const route = useRoute();
-  const params = route.params;
   const {
     data,
     handleChange,
@@ -74,7 +72,15 @@ const CalendarListScreen = () => {
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
   const [errorMessages, setErrorMessages] = useState({});
-  const [status, setStatus] = useState('');
+  const visible = false
+
+  useFocusEffect(
+    useCallback(() => {
+    navigator.setOptions({
+    tabBarStyle: { display: visible ? 'flex' : 'none' }
+  });
+    }, [visible]),
+  );
 
   const onDayPress = day => {
     const result = handleDayChange(day?.dateString?.trim());
@@ -152,7 +158,7 @@ const CalendarListScreen = () => {
 
     const body = {
       title: fields.title,
-      status: status,
+      status: fields.status,
       startDate: fields.startDate,
       endDate: fields.endDate || fields.startDate,
       description: fields.description,
@@ -177,7 +183,6 @@ const CalendarListScreen = () => {
   const reset = () => {
     bottomSheetRef.current?.close();
     handleReset();
-    setStatus(null);
   };
 
   const onDelete = async () => {
@@ -219,8 +224,8 @@ const CalendarListScreen = () => {
           height={48}
           width={48}
           borderWidth={0}
-          borderColor={theme.colors.pink[500]}
-          backgroundColor={theme.colors.pink[500]}>
+          borderColor={theme.colors.cyan[500]}
+          backgroundColor={theme.colors.cyan[500]}>
           <Icon
             name="add"
             size={25}
@@ -231,7 +236,6 @@ const CalendarListScreen = () => {
           />
         </StyledCycle>
       )}
-
       <StyledSpacer marginHorizontal={8} />
     </XStack>
   );
@@ -264,7 +268,7 @@ const CalendarListScreen = () => {
           }}
           onVisibleMonthsChange={async (months) => {
             if (!months || months.length === 0) return;
-                 await handleMySchedulesByDates(months);
+            await handleMySchedulesByDates(months);
           }}
         />
         <BottomSheet
@@ -274,74 +278,58 @@ const CalendarListScreen = () => {
           enablePanDownToClose={false}
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore">
-          <YStack
-            flex={1}
-            paddingHorizontal={16}
-            paddingVertical={16}
-            justifyContent="flex-start"
-            alignItems="flex-start"
-            borderRadius={16}
-            borderWidth={1}
-            borderColor={theme.colors.gray[200]}
-            backgroundColor={theme.colors.gray[1]}>
-            <XStack
-              width="100%"
-              justifyContent="space-between"
-              alignItems="center"
-              borderColor={theme.colors.gray[1]}
+          <ScrollView
+            style={{ flex: 1 }}
+          >
+            <YStack
+              flex={1}
+              paddingHorizontal={16}
+              paddingVertical={16}
+              justifyContent="flex-start"
+              alignItems="flex-start"
+              borderRadius={16}
+              borderWidth={1}
+              borderColor={theme.colors.gray[200]}
               backgroundColor={theme.colors.gray[1]}>
-              <YStack
-                flex={1}
-                justifyContent="flex-start"
-                alignItems="flex-start"
+              <XStack
+                width="100%"
+                justifyContent="space-between"
+                alignItems="center"
                 borderColor={theme.colors.gray[1]}
                 backgroundColor={theme.colors.gray[1]}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
+                <YStack
+                  flex={1}
+                  justifyContent="flex-start"
+                  alignItems="flex-start"
+                  borderColor={theme.colors.gray[1]}
+                  backgroundColor={theme.colors.gray[1]}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    color={theme.colors.gray[600]}
+                    paddingVertical={4}
+                    paddingHorizontal={4}
+                    fontSize={theme.fontSize.normal}>
+                    Please fill out the form below to decline a scheduled task or
+                    to block out the days you're unavailable on your calendar.
+                  </StyledText>
+                </YStack>
+                <Icon
+                  name="cancel"
+                  size={42}
                   color={theme.colors.gray[600]}
-                  paddingVertical={4}
-                  paddingHorizontal={4}
-                  fontSize={theme.fontSize.normal}>
-                  Please fill out the form below to decline a scheduled task or
-                  to block out the days you're unavailable on your calendar.
-                </StyledText>
-              </YStack>
-              <Icon
-                name="cancel"
-                size={42}
-                color={theme.colors.gray[600]}
-                onPress={() => {
-                  bottomSheetRef.current?.close();
-                  handleReset();
-                }}
-              />
-            </XStack>
-            <StyledSpacer marginVertical={8} />
-            <StyledInput
-              name="title"
-              key="title"
-              keyboardType="default"
-              placeholder="Enter a reason for blocking your availability"
-              returnKeyType="next"
-              maxLength={100}
-              fontSize={theme.fontSize.small}
-              borderColor={theme.colors.gray[400]}
-              backgroundColor={theme.colors.gray[1]}
-              borderRadius={8}
-              paddingHorizontal={16}
-              placeholderTextColor={theme.colors.gray[400]}
-              height={40}
-              value={fields.title}
-              onChangeText={text => handleChange('title', text)}
-              error={!!errorMessages?.title}
-              errorMessage={errorMessages?.title?.message}
-            />
-            <XStack gap={8} marginTop={8} justifyContent="space-between">
+                  onPress={() => {
+                    bottomSheetRef.current?.close();
+                    handleReset();
+                  }}
+                />
+              </XStack>
+              <StyledSpacer marginVertical={8} />
               <StyledInput
-                flex={1}
+                name="title"
+                key="title"
                 keyboardType="default"
-                placeholder="Selected start date"
+                placeholder="Enter a reason for blocking your availability"
                 returnKeyType="next"
                 maxLength={100}
                 fontSize={theme.fontSize.small}
@@ -351,13 +339,50 @@ const CalendarListScreen = () => {
                 paddingHorizontal={16}
                 placeholderTextColor={theme.colors.gray[400]}
                 height={40}
-                value={fields.startDate}
-                readOnly
+                value={fields.title}
+                onChangeText={text => handleChange('title', text)}
+                error={!!errorMessages?.title}
+                errorMessage={errorMessages?.title?.message}
               />
-              <StyledInput
-                flex={1}
+              <XStack gap={8} marginTop={8} justifyContent="space-between">
+                <StyledInput
+                  flex={1}
+                  keyboardType="default"
+                  placeholder="Selected start date"
+                  returnKeyType="next"
+                  maxLength={100}
+                  fontSize={theme.fontSize.small}
+                  borderColor={theme.colors.gray[400]}
+                  backgroundColor={theme.colors.gray[1]}
+                  borderRadius={8}
+                  paddingHorizontal={16}
+                  placeholderTextColor={theme.colors.gray[400]}
+                  height={40}
+                  value={fields.startDate}
+                  readOnly
+                />
+                <StyledInput
+                  flex={1}
+                  keyboardType="default"
+                  placeholder="Selected end date"
+                  returnKeyType="next"
+                  maxLength={100}
+                  fontSize={theme.fontSize.small}
+                  borderColor={theme.colors.gray[400]}
+                  backgroundColor={theme.colors.gray[1]}
+                  borderRadius={8}
+                  paddingHorizontal={16}
+                  placeholderTextColor={theme.colors.gray[400]}
+                  height={40}
+                  value={fields.endDate}
+                  readOnly
+                />
+              </XStack>
+              <StyledSpacer marginTop={8} />
+              <StyledMultiInput
+                height={100}
                 keyboardType="default"
-                placeholder="Selected end date"
+                placeholder="Enter additional details (optional)"
                 returnKeyType="next"
                 maxLength={100}
                 fontSize={theme.fontSize.small}
@@ -366,81 +391,40 @@ const CalendarListScreen = () => {
                 borderRadius={8}
                 paddingHorizontal={16}
                 placeholderTextColor={theme.colors.gray[400]}
-                height={40}
-                value={fields.endDate}
-                readOnly
+                onChangeText={text => handleChange('description', text)}
+                value={fields.description}
               />
-            </XStack>
-            <StyledSpacer marginTop={8} />
-            <StyledMultiInput
-              height={100}
-              keyboardType="default"
-              placeholder="Enter additional details (optional)"
-              returnKeyType="next"
-              maxLength={100}
-              fontSize={theme.fontSize.small}
-              borderColor={theme.colors.gray[400]}
-              backgroundColor={theme.colors.gray[1]}
-              borderRadius={8}
-              paddingHorizontal={16}
-              placeholderTextColor={theme.colors.gray[400]}
-              onChangeText={text => handleChange('description', text)}
-              value={fields.description}
-            />
-            <YStack
-              marginTop={8}
-              justifyContent="flex-start"
-              position="relative"
-              zIndex={10} 
-              alignItems="flex-start">
-              <StyledSelect
-                borderRadius={8}
-                borderColor={theme.colors.gray[400]}
-                height={30}
-                data={
-                  fields.status === 'Pending'
+              <YStack
+                marginTop={8}
+                justifyContent="flex-start"
+                position="relative"
+                zIndex={10}
+                alignItems="flex-start">
+                <StyledPickerSelect
+                  placeholder="Select status..."
+                  value={fields.status}
+                  items={fields.status === 'Pending'
                     ? statusOptions.pending
-                    : statusOptions.empty
-                }
-                item={status}
-                onChangeValue={setStatus}
-                error={!!errorMessages?.status}
-                errorMessage={errorMessages?.status?.message}
-                placeholder={'Select...'}
-                listMode="SCROLLVIEW"></StyledSelect>
-            </YStack>
-            <XStack
-              marginTop={16}
-              gap={8}
-              zIndex={1}
-              position="relative"
-              justifyContent="flex-start"
-              alignItems="center">
-              <StyledButton
-                flex={1}
-                borderRadius={32}
-                backgroundColor={theme.colors.cyan[500]}
-                borderColor={theme.colors.cyan[500]}
-                onPress={() => handleSubmit()}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  color={theme.colors.gray[1]}
-                  fontWeight={theme.fontWeight.normal}
-                  paddingVertical={8}
-                  paddingHorizontal={8}
-                  textAlign="center"
-                  fontSize={theme.fontSize.small}>
-                  SaveChanges
-                </StyledText>
-              </StyledButton>
-              {fields.status === 'Lock' && (
+                    : statusOptions.empty}
+                  onChange={text => handleChange('status', text)}
+                  theme={theme}
+                  error={!!errorMessages?.status}
+                  errorMessage={errorMessages?.status?.message}
+                />
+              </YStack>
+              <XStack
+                marginTop={16}
+                gap={8}
+                zIndex={1}
+                position="relative"
+                justifyContent="flex-start"
+                alignItems="center">
                 <StyledButton
                   flex={1}
                   borderRadius={32}
-                  borderWidth={1}
-                  backgroundColor={theme.colors.red[400]}
-                  borderColor={theme.colors.red[200]}
-                  onPress={() => onDelete()}>
+                  backgroundColor={theme.colors.cyan[500]}
+                  borderColor={theme.colors.cyan[500]}
+                  onPress={() => handleSubmit()}>
                   <StyledText
                     fontFamily={fontStyles.Roboto_Regular}
                     color={theme.colors.gray[1]}
@@ -449,33 +433,53 @@ const CalendarListScreen = () => {
                     paddingHorizontal={8}
                     textAlign="center"
                     fontSize={theme.fontSize.small}>
-                    Delete
+                    SaveChanges
                   </StyledText>
                 </StyledButton>
-              )}
+                {fields.status === 'Lock' && (
+                  <StyledButton
+                    flex={1}
+                    borderRadius={32}
+                    borderWidth={1}
+                    backgroundColor={theme.colors.red[400]}
+                    borderColor={theme.colors.red[200]}
+                    onPress={() => onDelete()}>
+                    <StyledText
+                      fontFamily={fontStyles.Roboto_Regular}
+                      color={theme.colors.gray[1]}
+                      fontWeight={theme.fontWeight.normal}
+                      paddingVertical={8}
+                      paddingHorizontal={8}
+                      textAlign="center"
+                      fontSize={theme.fontSize.small}>
+                      Delete
+                    </StyledText>
+                  </StyledButton>
+                )}
 
-              <StyledButton
-                flex={1}
-                borderRadius={32}
-                borderWidth={1}
-                backgroundColor={theme.colors.gray[200]}
-                borderColor={theme.colors.gray[200]}
-                onPress={() => {
-                   reset()
-                }}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  color={theme.colors.gray[800]}
-                  fontWeight={theme.fontWeight.normal}
-                  paddingVertical={8}
-                  paddingHorizontal={8}
-                  textAlign="center"
-                  fontSize={theme.fontSize.small}>
-                  Close
-                </StyledText>
-              </StyledButton>
-            </XStack>
-          </YStack>
+                <StyledButton
+                  flex={1}
+                  borderRadius={32}
+                  borderWidth={1}
+                  backgroundColor={theme.colors.gray[200]}
+                  borderColor={theme.colors.gray[200]}
+                  onPress={() => {
+                    reset()
+                  }}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    color={theme.colors.gray[800]}
+                    fontWeight={theme.fontWeight.normal}
+                    paddingVertical={8}
+                    paddingHorizontal={8}
+                    textAlign="center"
+                    fontSize={theme.fontSize.small}>
+                    Close
+                  </StyledText>
+                </StyledButton>
+              </XStack>
+            </YStack>
+          </ScrollView>
         </BottomSheet>
         <StyledSpacer marginBottom={56} />
       </YStack>
@@ -486,7 +490,7 @@ const CalendarListScreen = () => {
           description="Please try again later"
           visible={true}
           onOk={() => {
-            handleReset();
+            // handleReset();
           }}
         />
       )}

@@ -775,6 +775,14 @@ const FileIcon = ({ fileType }) => {
   return <FontAwesome name={icon} size={20} color={color} />;
 };
 
+const Status_data = [
+    'All',
+    'Pending',
+    'Progress',
+    'Completed',
+    'Cancelled',
+  ];
+
 function safetyGear(list) {
   return list?.map(item =>
     item
@@ -785,6 +793,7 @@ function safetyGear(list) {
 }
 
 export {
+  Status_data,
   safetyGear,
   FileIcon,
   limitHtmlTextByWord,

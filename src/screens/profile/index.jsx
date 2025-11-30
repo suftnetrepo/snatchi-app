@@ -54,8 +54,6 @@ const Profile = () => {
     user && handleEdit(user);
   }, [user]);
 
-  console.log(".................user", user)
-
   const onHandleImageSelect = async response => {
     if (response.assets[0].uri) {
       setImageUrl(response.assets[0].uri);

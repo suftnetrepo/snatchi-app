@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   YStack,
   XStack,
@@ -7,10 +7,8 @@ import {
   StyledSeparator,
   StyledCard,
   StyledBadge,
-  StyledSpinner,
-  StyledOkDialog,
 } from 'fluent-styles';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { Pressable, ScrollView } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { theme } from '../../utils/theme';
@@ -19,14 +17,10 @@ import {
   backgroundColorHelper,
   textColorHelper,
 } from '../../utils/help';
-import { useProject } from '../../hooks/useProject';
 import ProjectCard from '../../components/projectCard/recent';
 
-const Dashboard = ({ user_id }) => {
+const Dashboard = ({data, aggregateData }) => {
   const navigator = useNavigation();
-  const { data: myProject, aggregateData, error, loading } = useProject(user_id);
-
-  console.log('Dashboard Aggregate Data:', aggregateData);
 
   const getAggregate = (data, status) => {
     {
@@ -204,16 +198,16 @@ const Dashboard = ({ user_id }) => {
             <StyledText
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
-              fontSize={theme.fontSize.medium}
+              fontSize={theme.fontSize.normal}
               color={theme.colors.gray[500]}>
-              My Recent Projects ({myProject?.length})
+              My Recent Projects ({data?.length})
             </StyledText>
           }
           right={<Pressable onPress={() => navigator.navigate('project')}>
             <StyledText
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
-              fontSize={theme.fontSize.medium}
+              fontSize={theme.fontSize.normal}
               color={theme.colors.gray[500]}>
               View All
             </StyledText>
@@ -221,24 +215,9 @@ const Dashboard = ({ user_id }) => {
         />
 
         <YStack borderRadius={16} marginBottom={64} paddingVertical={8}>
-          <ProjectCard data={myProject} />
+          <ProjectCard data={data} />
         </YStack>
       </ScrollView>
-      {error && (
-        <StyledOkDialog
-          title={error}
-          description="Please try again later"
-          visible={true}
-          onOk={() => {
-            navigator.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'login' }],
-              }))
-          }}
-        />
-      )}
-      {loading && <StyledSpinner />}
     </YStack>
   );
 };

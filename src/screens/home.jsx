@@ -8,6 +8,8 @@ import {
   StyledHeader,
   StyledSpacer,
   StyledButton,
+  StyledSpinner,
+  StyledOkDialog
 } from 'fluent-styles';
 import { StyledMIcon } from '../components/icon';
 import { theme } from '../utils/theme';
@@ -22,14 +24,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
 import CalendarStrip from '../components/calender/calendarStrip';
+import { useProject } from "../hooks/useProject";
 
 const Home = ({ route }) => {
   const { setTabBarVisible } = route.params || {};
   const navigate = useNavigation();
-  const { user } = useAppContext();
+  const { user, status } = useAppContext();
   const { key } = useFocus();
   const [selected, setSelected] = useState('dashboard');
   const scrollViewRef = useRef(null);
+  const { data, error, aggregateData, loading } = useProject(user?.user_id, status);
 
   useFocusEffect(
     useCallback(() => {
@@ -211,14 +215,32 @@ const Home = ({ route }) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-start', paddingBottom: 100 }}>
             <CalendarStrip
-              user_id={user?.user_id}
+              data={data}
             />
           </ScrollView>
         )}
         {selected === 'dashboard' && (
-          <Dashboard user_id={user?.user_id} />
+          <Dashboard aggregateData={aggregateData} data={data} />
         )}
       </YStack>
+      {
+        loading && <StyledSpinner />
+      }
+      {error && (
+        <StyledOkDialog
+          title={error}
+          description="Please try again later"
+          visible={true}
+          onOk={() => {
+            navigate.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'login' }],
+              }),
+            );
+          }}
+        />
+      )}
     </StyledSafeAreaView>
   );
 };

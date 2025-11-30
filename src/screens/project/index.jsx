@@ -22,13 +22,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useProject } from '../../hooks/useProject';
 import ProjectCard from '../../components/projectCard/recent';
 import { useAppContext } from '../../hooks/appContext';
+import { Status_data } from '../../utils/help';
 
 const Project = () => {
     const { user } = useAppContext();
     const navigator = useNavigation();
     const { data, handleReset, filteMyProjects, fetchMyProjects, filterValue, error, loading } = useProject();
-
-    console.log('Project Data:', data);
 
     useEffect(() => {
         fetchMyProjects(user?.user_id);
@@ -49,7 +48,7 @@ const Project = () => {
                 }}
                 height={48}
                 width={48}
-                borderColor={theme.colors.gray[200]}>
+                borderColor={theme.colors.gray[400]}>
                 <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
             </StyledCycle>
             <StyledSpacer marginHorizontal={2} />
@@ -64,14 +63,6 @@ const Project = () => {
             <StyledSpacer marginHorizontal={8} />
         </XStack>
     )
-
-    const Status_data = [
-        'All',
-        'Pending',
-        'Progress',
-        'Completed',
-        'Cancelled',
-    ];
 
     const RenderStatus = () => {
         return (

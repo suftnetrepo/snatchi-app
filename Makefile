@@ -4,7 +4,7 @@
 APP_ID := com.suftnet.snatchi
 ANDROID_APP := android/app/build/outputs/apk
 IOS_PROJECT := ios
-DEVICE_ID :=
+DEVICE_ID :=R58TA0L5RPK
 
 # ============================================================
 #  ANDROID COMMANDS

@@ -19,12 +19,11 @@ import { useSecure } from '../hooks/useSecure';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { useAppContext } from '../hooks/appContext';
 import { useUserChat } from '../hooks/useChat';
-import { store } from '../utils/asyncStorage';
 
 const Keypad = () => {
   const route = useRoute();
   const navigator = useNavigation();
-  const { login } = useAppContext();
+  const { login, updateChangeStatus } = useAppContext();
   const { error, loading, handleVerifyCode, handleReset } = useSecure();
   const [pin, setPin] = useState('');
   const { email } = route.params;
@@ -76,16 +75,17 @@ const Keypad = () => {
         handleVerifyCode({ code: passCode, email: email }).then(result => {
           if (result) {
             login(result).then(() => { });
+            updateChangeStatus(true)
             handleChatSignIn(email, '12345!').then(() => { });
            
-            // navigator.dispatch(
-            //   CommonActions.reset({
-            //     index: 0,
-            //     routes: [{ name: 'bottom-tabs' }],
-            //   })
-            // );
+            navigator.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'bottom-tabs' }],
+              })
+            );
 
-            navigator.navigate("bottom-tabs")
+            // navigator.navigate("bottom-tabs")
           }
         });
       }
@@ -107,7 +107,7 @@ const Keypad = () => {
         <StyledCycle
           height={48}
           width={48}
-          borderColor={theme.colors.gray[200]}>
+          borderColor={theme.colors.gray[400]}>
           <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
         </StyledCycle>
       </Pressable>

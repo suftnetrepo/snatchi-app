@@ -17,41 +17,48 @@ export const getStore = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (!value) {
-      if (__DEV__)
-        console.log("⚪ No stored value found. Returning null.");
+      if (__DEV__) console.log("⚪ No stored value found. Returning null.");
       return null;
     }
 
-    let parsed = null;
+    let parsed;
     try {
       parsed = JSON.parse(value);
     } catch (err) {
-      if (__DEV__)
-        console.warn(`⚠️ JSON parse failed for key "${key}":`, err);
+      console.warn(`⚠️ Invalid stored JSON for key "${key}", clearing...`);
       await AsyncStorage.removeItem(key);
       return null;
     }
 
+    // Only attempt a nested JSON parse if it LOOKS like JSON.
     if (typeof parsed === "string") {
-      try {
-        const nestedParsed = JSON.parse(parsed);
-        parsed = nestedParsed;
-      } catch (nestedErr) {
-        if (__DEV__)
-          console.warn("⚠️ Nested JSON.parse failed:", nestedErr);
+      const trimmed = parsed.trim();
+
+      if (
+        trimmed.startsWith("{") ||
+        trimmed.startsWith("[") ||
+        trimmed.startsWith('"')
+      ) {
+        try {
+          parsed = JSON.parse(trimmed);
+        } catch {
+          console.warn(`⚠️ Nested JSON parse failed for key "${key}" (safe ignored)`);
+        }
       }
     } else {
-      if (__DEV__)
+      if (__DEV__) {
         console.log("🟦 Parsed value is not a string, no nested parse needed.");
+      }
     }
 
     return parsed;
 
   } catch (e) {
-    console.error(`🔴 Error retrieving data for key "${key}":`, e);
+    console.error(`🔴 getStore error for key "${key}":`, e);
     return null;
   }
 };
+
 
 export const add = async (key, notification) => {
 

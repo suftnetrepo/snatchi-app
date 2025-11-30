@@ -59,10 +59,10 @@ const UserDocuments = () => {
         }}
         height={48}
         width={48}
-        borderColor={theme.colors.gray[200]}>
+        borderColor={theme.colors.gray[400]}>
         <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
       </StyledCycle>
-      <StyledSpacer marginHorizontal={2} />
+      <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
         fontWeight={theme.fontWeight.normal}
@@ -112,7 +112,7 @@ const UserDocuments = () => {
             <StyledCycle
               height={48}
               width={48}
-              borderColor={theme.colors.gray[300]}
+              borderColor={theme.colors.gray[400]}
               backgroundColor={theme.colors.gray[1]}>
               <StyledMIcon
                 name="link"
@@ -122,11 +122,12 @@ const UserDocuments = () => {
               />
             </StyledCycle>
           </Pressable>
+            <StyledSpacer marginVertical={8} />
           <Pressable onPress={() => handleDelete(document._id)}>
             <StyledCycle
               height={48}
               width={48}
-              borderColor={theme.colors.gray[300]}
+              borderColor={theme.colors.gray[400]}
               backgroundColor={theme.colors.gray[1]}>
               <Icon name="delete" size={25} color={theme.colors.gray[600]} />
             </StyledCycle>

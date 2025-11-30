@@ -42,7 +42,8 @@
         <!-- TransistorSoft License -->
         <meta-data
             android:name="com.transistorsoft.locationmanager.license"
-            android:value="baf873c77534c6a9e53776515f01b34680f630448ab54bc91decfba90752a9d3" />
+            android:value="eyJhbGciOiJFZERTQSIsImtpZCI6ImVkMjU1MTktbWFpbi12MSIsImtpZCI6IjIwMjUtMTAifQ.eyJvcyI6ImFuZHJvaWQiLCJhcHBfaWQiOiJjb20uc3VmdG5ldC5zbmF0Y2hpIiwib3JkZXJfbnVtYmVyIjoxNDgyNiwicmVuZXdhbF91cmwiOiJodHRwczovL3Nob3AudHJhbnNpc3RvcnNvZnQuY29tL2NhcnQvMTY1MDc4NjE1MDU6MT9ub3RlPTk4OTMiLCJjdXN0b21lcl9pZCI6OTAwMCwicHJvZHVjdCI6InJlYWN0LW5hdGl2ZS1iYWNrZ3JvdW5kLWdlb2xvY2F0aW9uIiwia2V5X3ZlcnNpb24iOjEsImFsbG93ZWRfc3VmZml4ZXMiOlsiLmRldiIsIi5kZXZlbG9wbWVudCIsIi5zdGFnaW5nIiwiLnN0YWdlIiwiLnFhIiwiLnVhdCIsIi50ZXN0IiwiLmRlYnVnIl0sIm1heF9idWlsZF9zdGFtcCI6MjAyNjExMzAsImdyYWNlX2J1aWxkcyI6MCwiZW50aXRsZW1lbnRzIjpbImNvcmUiXSwiaWF0IjoxNzY0MTkzNjMzfQ.NeGJOuUiguWZpEsIb_zfqNYZuCbaxkzfmcN4qMO5LnNwId_RqUK2iA2FkGepwrZo6MNjjbJ0PUDrqVv01x9UCg"
+         />
 
         <meta-data
             android:name="com.dieam.reactnativepushnotification.notification_color"

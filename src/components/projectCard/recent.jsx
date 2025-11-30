@@ -23,7 +23,6 @@ import ProgressCircleSvg from '../../components/progressCircle';
 
 const ProjectCard = ({ data }) => {
   const navigator = useNavigation();
-  console.log('Dashboard Tasks:', data);
 
   return (
     <Box>
@@ -52,12 +51,13 @@ const ProjectCard = ({ data }) => {
                         color="$black"
                         numberOfLines={2}
                       >
-                        {item?.name?.split(' ')?.slice(0, 6)?.join(' ')} ...
+                        {item?.name}
                       </Text>
                       <HStack space="sm">
                         <Text fontSize="$sm" color="$gray600">{limitHtmlTextByWord(item.description)}</Text>
                       </HStack>
                     </VStack>
+                         <StyledSpacer marginHorizontal={3} />
                     <ProgressCircleSvg progress={item.progress} color={themeProgress.progress} size={64} />
                   </HStack>
 

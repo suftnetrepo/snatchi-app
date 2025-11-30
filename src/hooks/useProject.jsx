@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { zat } from '../utils/zap';
 import { PROJECT, VERBS } from '../../config';
 
-const useProject = (id) => {
+const useProject = (id, status= false) => {
   const [state, setState] = useState({
     data: [],
     loading: false,
@@ -102,7 +102,6 @@ const useProject = (id) => {
 
   }, [handleError]);
 
-
   const getMyProjectAggregates = useCallback(async (id) => {
     setState((prev) => ({ ...prev, loading: true }));
     const { success, data, errorMessage } = await zat(PROJECT.recent, null, VERBS.GET, {
@@ -144,11 +143,11 @@ const useProject = (id) => {
   }, [handleError]);
 
   useEffect(() => {
-    if (id) {
+    if (id && status) {
       fetchMyRecentProjects(id);
       getMyProjectAggregates(id);
     }
-  }, [id]);
+  }, [id, status]);
 
   return {
     ...state,

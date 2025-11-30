@@ -1,16 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import {
-  YStack,
-  XStack,
-  StyledHeader,
-  StyledSafeAreaView,
-  StyledSpacer,
-  StyledText,
-  StyledCycle,
-  StyledSpinner
-} from 'fluent-styles';
 import Login from '../screens/login';
 import Keypad from '../screens/lock';
 import task from '../screens/task';
@@ -27,29 +17,10 @@ import Notify from '../screens/notify';
 import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
-import { getStore } from '../utils/asyncStorage';
 import Profile from '../screens/profile';
 
-import { StyledIndicator } from '../components/indicator';
-
 const Stack = createStackNavigator();
-function Navigator() {
-  const [granted, setGranted] = useState(false);
-
-  useEffect(() => {
-    const fetchGeofencingStatus = async () => {
-      const status = await getStore('GeofencingGranted');
-      setGranted(status);
-    };
-
-    fetchGeofencingStatus();
-  }, []);
-
-  if (granted === false) {
-    return (
-      <StyledIndicator />
-    );
-  }
+function Navigator({granted}) {
 
   return (
     <Stack.Navigator initialRouteName={granted ? 'login' : 'start'}>

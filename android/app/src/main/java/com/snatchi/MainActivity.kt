@@ -1,11 +1,28 @@
 package com.suftnet.snatchi
 
+import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 class MainActivity : ReactActivity() {
+
+/**
+   * Prevent fragment restoration to fix ScreenFragment crash
+   * https://github.com/software-mansion/react-native-screens/issues/17
+   */
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(null)
+  }
+
+  /**
+   * Additional safeguard: Clear saved state to prevent fragment restoration
+   */
+  override fun onSaveInstanceState(outState: Bundle) {
+    outState.clear()
+    super.onSaveInstanceState(outState)
+  }
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule

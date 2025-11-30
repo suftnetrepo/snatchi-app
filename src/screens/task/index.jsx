@@ -1,4 +1,4 @@
-import React, { Fragment} from 'react';
+import React, { Fragment, useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -23,27 +23,32 @@ import {
   backgroundColorHelper,
   priorityBackgroundColorHelper,
   priorityTextColorHelper,
-  formatTimeFromDate,
   textColorHelper,
-  limitHtmlTextByWord
+  limitHtmlTextByWord,
+  formatDateTime,
+  Status_data
 } from '../../utils/help';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTask } from '../../hooks/useTask';
+import { useAppContext } from '../../hooks/appContext';
+import { useFocus } from '../../hooks/useFocus';
 
 const Task = () => {
+  const { key } = useFocus()
   const navigator = useNavigation();
+  const { status, updateChangeStatus } = useAppContext()
   const route = useRoute();
   const { id, from } = route.params;
-  const { data: taskData, error, loading, filteMyTasks, filterValue } = useTask(id);
+  const { data: taskData, error, loading, filteMyTasks, handleMyTasksById, filterValue } = useTask(id);
 
-  const Status_data = [
-    'All',
-    'Pending',
-    'Progress',
-    'Completed',
-    'Cancelled',
-  ];
+  useEffect(() => {
+    if (status) {
+      handleMyTasksById(id).then(() => {
+        updateChangeStatus(false)
+      })
+    }
+  }, [key, status, id])
 
   const RenderHeader = () => (
     <XStack
@@ -62,7 +67,7 @@ const Task = () => {
         }}
         height={48}
         width={48}
-        borderColor={theme.colors.gray[200]}>
+        borderColor={theme.colors.gray[400]}>
         <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
       </StyledCycle>
       <StyledSpacer marginHorizontal={2} />
@@ -87,8 +92,8 @@ const Task = () => {
         marginBottom={8}
         borderColor={theme.colors.gray[1]}
         backgroundColor={theme.colors.gray[1]}
-        paddingVertical={12}
-        paddingHorizontal={12}
+        paddingVertical={8}
+        paddingHorizontal={8}
         borderWidth={1}
         pressable={true}
         pressableProps={{
@@ -115,7 +120,7 @@ const Task = () => {
             color={theme.colors.gray[800]}>
             {limitHtmlTextByWord(description, 200)}
           </StyledText>
-          <StyledSpacer marginVertical={8} />
+          <StyledSpacer marginVertical={4} />
           <XStack justifyContent="flex-start" alignItems="center" gap={4}>
             <StyledBadge
               paddingHorizontal={8}
@@ -140,7 +145,62 @@ const Task = () => {
               {priority}
             </StyledBadge>
           </XStack>
+          <StyledSpacer marginVertical={4} />
           <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            gap={2}
+            paddingHorizontal={4}>
+            <YStack>
+              <StyledText
+                fontFamily={fontStyles.Roboto_Regular}
+                fontWeight={theme.fontWeight.bold}
+                fontSize={theme.fontSize.medium}
+                color={theme.colors.gray[800]}>
+                Start Date
+              </StyledText>
+              <XStack justifyContent="flex-start" alignItems="center">
+                <Icon
+                  name="access-time"
+                  size={20}
+                  color={theme.colors.gray[900]}
+                />
+                <StyledText
+                  paddingHorizontal={4}
+                  fontFamily={fontStyles.Roboto_Regular}
+                  fontWeight={theme.fontWeight.normal}
+                  fontSize={theme.fontSize.medium}
+                  color={theme.colors.gray[800]}>
+                  {formatDateTime(startDate)}
+                </StyledText>
+              </XStack>
+            </YStack>
+            <YStack>
+              <StyledText
+                fontFamily={fontStyles.Roboto_Regular}
+                fontWeight={theme.fontWeight.bold}
+                fontSize={theme.fontSize.medium}
+                color={theme.colors.gray[800]}>
+                End Date
+              </StyledText>
+              <XStack justifyContent="flex-start" alignItems="center">
+                <Icon
+                  name="access-time"
+                  size={20}
+                  color={theme.colors.gray[900]}
+                />
+                <StyledText
+                  paddingHorizontal={4}
+                  fontFamily={fontStyles.Roboto_Regular}
+                  fontWeight={theme.fontWeight.normal}
+                  fontSize={theme.fontSize.medium}
+                  color={theme.colors.gray[800]}>
+                  {formatDateTime(endDate)}
+                </StyledText>
+              </XStack>
+            </YStack>
+          </XStack>
+          {/* <XStack
             justifyContent="space-between"
             marginTop={2}
             alignItems="center">
@@ -191,17 +251,8 @@ const Task = () => {
               </XStack>
             </XStack>
 
-            <StyledCycle
-              height={48}
-              width={48}
-              borderColor={theme.colors.gray[200]}>
-              <Icon
-                name="chevron-right"
-                size={25}
-                color={theme.colors.gray[800]}
-              />
-            </StyledCycle>
-          </XStack>
+           
+          </XStack> */}
         </YStack>
       </StyledCard>
     );

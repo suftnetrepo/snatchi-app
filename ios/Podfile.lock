@@ -3068,7 +3068,7 @@ PODS:
     - React-Core
   - RNBackgroundFetch (4.2.8):
     - React-Core
-  - RNBackgroundGeolocation (4.19.0):
+  - RNBackgroundGeolocation (4.19.2):
     - CocoaLumberjack (~> 3.8.5)
     - React-Core
   - RNCAsyncStorage (1.24.0):
@@ -3349,6 +3349,29 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNSentry (7.7.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Sentry/HybridSDK (= 8.57.3)
+    - Yoga
   - RNShare (12.0.9):
     - DoubleConversion
     - glog
@@ -3413,6 +3436,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - Sentry/HybridSDK (8.57.3)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -3515,6 +3539,7 @@ DEPENDENCIES:
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -3547,6 +3572,7 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - RecaptchaInterop
+    - Sentry
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -3735,6 +3761,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSentry:
+    :path: "../node_modules/@sentry/react-native"
   RNShare:
     :path: "../node_modules/react-native-share"
   RNSVG:
@@ -3846,7 +3874,7 @@ SPEC CHECKSUMS:
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   rn-fetch-blob: 25612b6d6f6e980c6f17ed98ba2f58f5696a51ca
   RNBackgroundFetch: e44c9e85d7fb3122c37d8a806278f62c7682d7ea
-  RNBackgroundGeolocation: 7e969292ffe21f6d757c2efbbb9cf58acb554dbd
+  RNBackgroundGeolocation: 88e12142817290e7944717211eae65eeed86574b
   RNCAsyncStorage: 58688c66076453d4d5799057f8f236e099dc5690
   RNCPicker: 21ca53c5927e9a7ad03eb4712dc55395114ebcc8
   RNCPushNotificationIOS: 6c4ca3388c7434e4a662b92e4dfeeee858e6f440
@@ -3861,8 +3889,10 @@ SPEC CHECKSUMS:
   RNPermissions: e68f15af8a190ae4aac66ac58cfa965b0194c475
   RNReanimated: 5b55896edb30f24afe430635cb6aecd110eb4b50
   RNScreens: 06f586c4bdfda2191dd03ee80fceeccf6a7ac6fb
+  RNSentry: 02503fc5e796d72cf5c5945f7b91c6cda8aad1f3
   RNShare: dcef43a8864fcc114fd582edba7832a906fd318d
   RNSVG: c25b1978006ef9d0f200a4d2174617e59dcb9136
+  Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
 

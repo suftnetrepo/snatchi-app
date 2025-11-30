@@ -7,6 +7,7 @@ import Invoices from '../screens/invoice';
 import Settings from '../screens/settings';
 import Messaging from '../screens/messaging';
 import MyCalendar from '../screens/calendar';
+import { Platform } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 

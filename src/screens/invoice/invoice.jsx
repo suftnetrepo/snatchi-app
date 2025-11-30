@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   YStack,
@@ -22,20 +22,22 @@ import { fontStyles, theme } from '../../utils/theme';
 import { StyledMIcon } from '../../components/icon';
 import DatePicker from 'react-native-date-picker';
 import uuid from 'react-native-uuid';
-import { formatCurrency, dateConverter, statusOptions } from '../../utils/help';
+import { formatCurrency, dateConverter } from '../../utils/help';
 import { useInvoice } from '../../hooks/useInvoice';
 import { Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import {
   itemValidator,
   invoiceValidator,
 } from '../../validator/invoiceValidator';
-import BottomSheet from '../../components/bottomSheet';
 import { useUtil } from '../../store';
 import InvoiceSelector from '../../components/invoiceSelector';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { useAppContext } from '../../hooks/appContext';
 
 const Invoice = () => {
   const navigator = useNavigation();
   const route = useRoute();
+  const { updateChangeStatus } = useAppContext()
   const {
     fields,
     onChange,
@@ -47,18 +49,18 @@ const Invoice = () => {
     success,
     handleEditInvoice,
     loading,
-  } = useInvoice();
+  } = useInvoice(false);
   const [selectedIssueDate, setSelectedIssueDate] = useState(new Date());
   const [selecteDate, setSelectedDate] = useState(new Date());
   const [selecteUnit, setSelectedUnit] = useState('day');
   const [openIssueDate, setOpenIssueDate] = useState(false);
   const [openDate, setOpenDate] = useState(false);
   const [openPanel, setPanel] = useState(false);
-  const [onShow, setOnShow] = useState(false);
   const [itemFields, setItemFields] = useState(itemValidator.fields);
   const [errorMessages, setErrorMessages] = useState({});
   const [errorMainMessages, setErrorMainMessages] = useState({});
   const bottomSheetModalRef = useRef(null);
+  const snapPoints = useMemo(() => ['50%', '90%'], []);
   const { get } = useUtil();
   const params = route.params;
 
@@ -143,15 +145,14 @@ const Invoice = () => {
     });
 
     if (params?.invoice) {
-      handleEditInvoice(fields, params?.invoice?._id).then(result => {
-        result &&
-          navigator.reset({
-            index: 0,
-            routes: [{ name: 'bottom-tabs', params: { screen: 'invoice' } }],
-          });
+      handleEditInvoice(fields, params?.invoice?._id).then(() => {
+        updateChangeStatus(true)
+        navigator.canGoBack() && navigator.goBack()
       });
     } else {
-      handleAddInvoice(fields).then(result => { });
+      handleAddInvoice(fields).then(() => {
+        updateChangeStatus(true)
+      });
     }
   };
 
@@ -165,11 +166,9 @@ const Invoice = () => {
       <StyledCycle
         pressable
         pressableProps={{
-          onPress: () =>
-            navigator.reset({
-              index: 0,
-              routes: [{ name: 'bottom-tabs', params: { screen: 'invoice' } }],
-            }),
+          onPress: () => {
+            navigator.goBack()
+          }
         }}
         height={48}
         width={48}
@@ -193,7 +192,7 @@ const Invoice = () => {
   );
 
   const RenderOptions = () => {
-    const recentTasks = get('myRecentTasks');
+    const recentTasks = get('myRecentTasks') || []
 
     const options = [
       { label: 'Site Survey & Needs Analysis', icon: 'place' },
@@ -215,41 +214,50 @@ const Invoice = () => {
     return (
       <>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {[...recentTasks, ...options].map((item, index) => {
-            return (
-              <Pressable
-                key={index}
-                onPress={() => {
-                  handleChange('description', item.label);
-                  bottomSheetModalRef.current?.dismiss();
-                  setOnShow(false);
-                }}>
-                <XStack justifyContent="flex-start" alignItems="center">
-                  <StyledText
-                    paddingHorizontal={6}
-                    marginTop={4}
-                    marginBottom={4}
-                    fontWeight={
-                      fields.description === item.label
-                        ? theme.fontWeight.bold
-                        : theme.fontWeight.normal
-                    }
-                    fontSize={theme.fontSize.small}
-                    textAlign="left"
-                    readOnly
-                    color={theme.colors.gray[700]}>
-                    {item.label}
-                  </StyledText>
-                  <StyledSpacer flex={1} />
-                  <StyledMIcon
-                    size={16}
-                    name="chevron-right"
-                    color={theme.colors.gray[800]}
-                  />
-                </XStack>
-              </Pressable>
-            );
-          })}
+          <YStack
+            flex={1}
+            borderRadius={16}
+            marginTop={8}
+            paddingHorizontal={8}
+            paddingVertical={16}
+            marginHorizontal={8}
+            backgroundColor={theme.colors.gray[100]}>
+            {[...recentTasks, ...options].map((item, index) => {
+              return (
+                <Pressable
+                  key={index}
+                  onPress={() => {
+                    handleChange('description', item.label);
+                    bottomSheetModalRef.current?.close();
+                  }}>
+                  <XStack justifyContent="flex-start" alignItems="center">
+                    <StyledText
+                      paddingHorizontal={6}
+                      marginTop={4}
+                      marginBottom={4}
+                      fontWeight={
+                        fields.description === item.label
+                          ? theme.fontWeight.bold
+                          : theme.fontWeight.normal
+                      }
+                      fontSize={theme.fontSize.normal}
+                      textAlign="left"
+                      readOnly
+                      color={theme.colors.gray[700]}>
+                      {item.label}
+                    </StyledText>
+                    <StyledSpacer flex={1} />
+                    <StyledMIcon
+                      size={24}
+                      name="chevron-right"
+                      color={theme.colors.gray[800]}
+                    />
+                  </XStack>
+                </Pressable>
+              );
+            })}
+          </YStack>
+
           <StyledSpacer marginVertical={56} />
         </ScrollView>
       </>
@@ -262,7 +270,7 @@ const Invoice = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <StyledHeader  skipAndroid={Platform.OS === 'android' ? false : true} statusProps={{ translucent: true }}>
+        <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} statusProps={{ translucent: true }}>
           <StyledHeader.Full>
             <RenderHeader />
           </StyledHeader.Full>
@@ -327,32 +335,33 @@ const Invoice = () => {
                 }}
               />
             </XStack>
-            <XStack
-              justifyContent="flex-start"
-              alignItems="center"
-              borderRadius={8}
-              marginTop={4}
-              paddingHorizontal={8}
-              paddingVertical={8}
-              borderColor={theme.colors.gray[400]}
-              borderWidth={1}>
-              <StyledMIcon size={24} name="add" color={theme.colors.gray[600]} />
-              <StyledText
-                paddingHorizontal={2}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.small}
-                color={theme.colors.gray[800]}>
-                Add Item
-              </StyledText>
-              <StyledSpacer flex={1} />
-              <StyledMIcon
-                size={24}
-                name={openPanel ? 'arrow-drop-down' : 'arrow-drop-up'}
-                color={theme.colors.gray[600]}
-                pointerEvents="box-none"
-                onPress={() => setPanel(!openPanel)}
-              />
-            </XStack>
+            <Pressable onPress={() => setPanel(!openPanel)}>
+              <XStack
+                justifyContent="flex-start"
+                alignItems="center"
+                borderRadius={8}
+                marginTop={4}
+                paddingHorizontal={8}
+                paddingVertical={8}
+                borderColor={theme.colors.gray[400]}
+                borderWidth={1}>
+                <StyledMIcon size={24} name="add" color={theme.colors.gray[600]} />
+                <StyledText
+                  paddingHorizontal={2}
+                  fontWeight={theme.fontWeight.normal}
+                  fontSize={theme.fontSize.small}
+                  color={theme.colors.gray[800]}>
+                  Add Item
+                </StyledText>
+                <StyledSpacer flex={1} />
+                <StyledMIcon
+                  size={24}
+                  name={openPanel ? 'arrow-drop-down' : 'arrow-drop-up'}
+                  color={theme.colors.gray[600]}
+                  pointerEvents="box-none"
+                />
+              </XStack>
+            </Pressable>
             {openPanel && (
               <YStack
                 marginTop={8}
@@ -388,17 +397,17 @@ const Invoice = () => {
                     error={!!errorMessages?.description}
                     flex={1}
                   />
-                  <StyledSpacer marginHorizontal={2} />
+                  <StyledSpacer marginHorizontal={4} />
                   <StyledCycle
-                    height={32}
-                    width={32}
+                    height={48}
+                    width={48}
                     borderColor={theme.colors.cyan[500]}
                     backgroundColor={theme.colors.cyan[500]}>
                     <StyledMIcon
-                      size={16}
+                      size={24}
                       name="search"
                       color={theme.colors.gray[50]}
-                      onPress={() => setOnShow(true)}
+                      onPress={() => bottomSheetModalRef?.current?.snapToIndex(1)}
                     />
                   </StyledCycle>
                 </XStack>
@@ -881,11 +890,13 @@ const Invoice = () => {
         )}
         {loading && <StyledSpinner />}
         <BottomSheet
-          title="Select Task options"
-          onSetShow={setOnShow}
-          onShow={onShow}
-          bottomSheetModalRef={bottomSheetModalRef}
-          snapPoints={['35%', '50%', '80%']}>
+          ref={bottomSheetModalRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose={false}
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore"
+        >
           <RenderOptions />
         </BottomSheet>
       </KeyboardAvoidingView>

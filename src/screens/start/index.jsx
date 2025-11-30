@@ -41,7 +41,7 @@ export default function Start({ navigation }) {
 
         const initializeGeofencing = async () => {
             try {
-                await geofencingSingleton.initialize(true);
+                await geofencingSingleton.initialize(false);
             } catch (error) {
                 if(__DEV__)
                 console.error('❌ Geofencing initialization error:', error);
@@ -102,7 +102,7 @@ export default function Start({ navigation }) {
                                 fontSize="$lg"
                                 fontWeight="$bold"
                                 textAlign="center"
-                                color={theme.colors.gray[400]}
+                                color={theme.colors.gray[700]}
                             >
                                 Snatchi
                             </Text>

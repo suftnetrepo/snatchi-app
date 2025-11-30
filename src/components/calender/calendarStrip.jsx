@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   StyledCycle,
-  StyledSpinner,
-  StyledOkDialog,
 } from 'fluent-styles';
 import { CalendarList } from "react-native-calendars";
 import { Box, Text, VStack } from "@gluestack-ui/themed";
@@ -12,15 +10,13 @@ import { StyledMIcon } from "../../components/icon";
 import { useNavigation } from "@react-navigation/native";
 import { Dimensions } from "react-native";
 import { buildMarkedDates, projectsForDate, projectColor, marked } from "../../../scripts/projects";
-import { useProject } from "../../hooks/useProject";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-export default function CalendarStrip({ user_id }) {
+export default function CalendarStrip({ data }) {
   const navigator = useNavigation();
   const today = new Date().toISOString().split("T")[0];
   const [selected, setSelected] = useState(today);
-  const { data, error, loading } = useProject(user_id);
 
   const markedDates = useMemo(
     () => buildMarkedDates(data, selected),
@@ -32,16 +28,9 @@ export default function CalendarStrip({ user_id }) {
     [selected, data]
   );
 
-
   if (!marked[selected]) marked[selected] = {};
   marked[selected].selected = true;
   marked[selected].selectedColor = "#4DA6FF";
-
-  if (loading) {
-    return (
-      <StyledSpinner />
-    );
-  }
 
   return (
     <VStack flex={1} >
@@ -115,7 +104,7 @@ export default function CalendarStrip({ user_id }) {
                   borderWidth={1}
                   width={46}
                   height={46}
-                  borderColor={theme.colors.gray[200]}>
+                  borderColor={theme.colors.gray[400]}>
                   <StyledMIcon
                     size={24}
                     name="chevron-right"
@@ -130,16 +119,6 @@ export default function CalendarStrip({ user_id }) {
           </ScrollView>
         )}
       </VStack>
-      {error && (
-        <StyledOkDialog
-          title={error}
-          description="Please try again later"
-          visible={true}
-          onOk={() => {
-            navigator.goBack();
-          }}
-        />
-      )}
     
     </VStack>
   );
