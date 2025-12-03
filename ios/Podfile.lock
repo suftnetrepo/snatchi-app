@@ -1408,11 +1408,60 @@ PODS:
     - hermes-engine/Pre-built (= 0.77.0)
   - hermes-engine/Pre-built (0.77.0)
   - leveldb-library (1.22.6)
+  - MMKVCore (2.2.4)
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - NitroMmkv (4.0.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - MMKVCore (= 2.2.4)
+    - NitroModules
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - NitroModules (0.31.10):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - PromisesObjC (2.4.0)
   - RCT-Folly (2024.11.18.00):
     - boost
@@ -3066,11 +3115,10 @@ PODS:
   - RecaptchaInterop (100.0.0)
   - rn-fetch-blob (0.12.0):
     - React-Core
-  - RNBackgroundFetch (4.2.8):
-    - React-Core
-  - RNBackgroundGeolocation (4.19.2):
+  - RNBackgroundGeolocation (5.0.0-beta.1):
     - CocoaLumberjack (~> 3.8.5)
     - React-Core
+    - TSLocationManager (~> 4.0.0-beta.5)
   - RNCAsyncStorage (1.24.0):
     - DoubleConversion
     - glog
@@ -3438,6 +3486,9 @@ PODS:
     - Yoga
   - Sentry/HybridSDK (8.57.3)
   - SocketRocket (0.7.1)
+  - TSBackgroundFetch (4.0.5)
+  - TSLocationManager (4.0.0-beta.6):
+    - TSBackgroundFetch (~> 4.0)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -3453,6 +3504,8 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - GoogleUtilities
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - NitroMmkv (from `../node_modules/react-native-mmkv`)
+  - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -3523,7 +3576,6 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
-  - RNBackgroundFetch (from `../node_modules/react-native-background-fetch`)
   - RNBackgroundGeolocation (from `../node_modules/react-native-background-geolocation`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
@@ -3569,11 +3621,14 @@ SPEC REPOS:
     - gRPC-Core
     - GTMSessionFetcher
     - leveldb-library
+    - MMKVCore
     - nanopb
     - PromisesObjC
     - RecaptchaInterop
     - Sentry
     - SocketRocket
+    - TSBackgroundFetch
+    - TSLocationManager
 
 EXTERNAL SOURCES:
   boost:
@@ -3593,6 +3648,10 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-11-25-RNv0.77.0-d4f25d534ab744866448b36ca3bf3d97c08e638c
+  NitroMmkv:
+    :path: "../node_modules/react-native-mmkv"
+  NitroModules:
+    :path: "../node_modules/react-native-nitro-modules"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3729,8 +3788,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   rn-fetch-blob:
     :path: "../node_modules/rn-fetch-blob"
-  RNBackgroundFetch:
-    :path: "../node_modules/react-native-background-fetch"
   RNBackgroundGeolocation:
     :path: "../node_modules/react-native-background-geolocation"
   RNCAsyncStorage:
@@ -3802,7 +3859,10 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: fc75fc972958dceedee61cb662ae1da7a83a91cf
   hermes-engine: 1f783c3d53940aed0d2c84586f0b7a85ab7827ef
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
+  MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  NitroMmkv: 60923271fcea61af85416a680825c54696a1f54c
+  NitroModules: e48791e3fb7ba9552854e2568cf8c5e45f44543f
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: f5c19ebdb8804b53ed029123eb69914356192fc8
@@ -3873,8 +3933,7 @@ SPEC CHECKSUMS:
   ReactCommon: e686c5766f0ebe5293be5a3957b833645cdac8ad
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   rn-fetch-blob: 25612b6d6f6e980c6f17ed98ba2f58f5696a51ca
-  RNBackgroundFetch: e44c9e85d7fb3122c37d8a806278f62c7682d7ea
-  RNBackgroundGeolocation: 88e12142817290e7944717211eae65eeed86574b
+  RNBackgroundGeolocation: 36987c170effcd95eed728137b78ff49336455c8
   RNCAsyncStorage: 58688c66076453d4d5799057f8f236e099dc5690
   RNCPicker: 21ca53c5927e9a7ad03eb4712dc55395114ebcc8
   RNCPushNotificationIOS: 6c4ca3388c7434e4a662b92e4dfeeee858e6f440
@@ -3894,8 +3953,10 @@ SPEC CHECKSUMS:
   RNSVG: c25b1978006ef9d0f200a4d2174617e59dcb9136
   Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  TSBackgroundFetch: e91020924db32f27d0a43df7dec6f73f10743571
+  TSLocationManager: 66026e6297f19c2331d1c35854e50aff2636a334
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
 
-PODFILE CHECKSUM: 04d533c94bcc9cafea97490f8edc05c9cd3184aa
+PODFILE CHECKSUM: a61dff0694d096b8cbf7c2d10763daa556e24841
 
 COCOAPODS: 1.16.2

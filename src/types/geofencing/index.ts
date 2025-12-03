@@ -22,12 +22,14 @@ import {
   clear,
   getStore,
   PROJECT_KEY,
+  INIT_KEY,
+  GRANTED_KEY
 } from '../../utils/asyncStorage';
 import { toModel } from '../../utils/help';
 import { zat } from '../../utils/zap';
 import { FENCE, VERBS } from '../../../config';
 import { localNotificationService } from '../../../Notification/LocalNotificationService';
-import { Vibration } from 'react-native';
+import { Vibration, Platform } from 'react-native';
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
@@ -65,6 +67,49 @@ class GeofencingSingleton {
     return GeofencingSingleton.instance;
   }
 
+  /**
+   * Check if geofencing has been initialized before
+   */
+  async isInitialized(): Promise<boolean> {
+    try {
+      const initialized = await getStore(INIT_KEY);
+      return initialized === true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+  * Check stored permission status
+  */
+  async getStoredPermissionStatus(): Promise<boolean | null> {
+    try {
+      return await getStore(GRANTED_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Mark geofencing as initialized
+   */
+  private async markAsInitialized(granted: boolean) {
+    await store(INIT_KEY, true);
+    await store(GRANTED_KEY, granted);
+  }
+
+  /**
+    * Reset initialization (for debugging or after uninstall simulation)
+    */
+  async resetInitialization() {
+    console.log('🔄 [RESET] Resetting geofencing initialization');
+    await store(INIT_KEY, false);
+    await store(GRANTED_KEY, false);
+    await this.clearAllProjects();
+    this.state.isInitialized = false;
+    console.log('✅ [RESET] Complete');
+  }
+
   async requestPermissions(): Promise<boolean> {
     try {
       const status = await BackgroundGeolocation.requestPermission();
@@ -80,6 +125,15 @@ class GeofencingSingleton {
     }
   }
 
+  async getStates(): Promise<any> {
+    try {
+      const state = await BackgroundGeolocation.getState();
+      return state;
+    } catch (error) {
+      console.error('❌ BackgroundGeolocation.getState() failed:', error);
+      return false;
+    }
+  }
   // ===========================================================================
   // 📌 Helpers
   // ===========================================================================
@@ -313,14 +367,54 @@ class GeofencingSingleton {
   // 📌 Initialization
   // ===========================================================================
 
-  async initialize(debug = true) {
+  async initialize() {
     console.log('[ready] BackgroundGeolocation is configured and ready to use started');
 
     try {
+      // Step 1: Check if already initialized
+      const alreadyInitialized = await this.isInitialized();
+
+      if (alreadyInitialized) {
+        console.log('✅ [INIT] Already initialized previously');
+
+        // Get stored permission status
+        const storedGranted = await this.getStoredPermissionStatus();
+        console.log('📦 [INIT] Stored permission status:', storedGranted);
+
+        if (storedGranted) {
+          // Permission was granted, ensure service is running
+          const state = await BackgroundGeolocation.getState();
+          console.log('📊 [INIT] BG State:', { enabled: state.enabled });
+
+          if (!state.enabled) {
+            console.log('🔄 [INIT] Service stopped, restarting...');
+            await BackgroundGeolocation.startGeofences();
+            await this.restoreProjects();
+          } else {
+            console.log('✅ [INIT] Service already running');
+          }
+          return true;
+        } else {
+          console.log('⚠️ [INIT] Permission was denied previously');
+          return false;
+        }
+      }
+
+      // Step 2: First time initialization - request permissions
+      console.log('🆕 [INIT] First time initialization');
+      const hasPermission = await this.requestPermissions();
+      console.log('📍 [INIT] Permission request result:', hasPermission);
+
+      if (!hasPermission) {
+        console.log('❌ [INIT] Permission denied');
+        await this.markAsInitialized(false);
+        return false;
+      }
 
       const schedule = await this.restoreProjects();
 
       const config: Config = {
+        reset: true,
         geolocation: {
 
           // High-precision GPS
@@ -349,17 +443,16 @@ class GeofencingSingleton {
           geofenceProximityRadius: 1000,
           geofenceInitialTriggerEntry: true,
           geofenceModeHighAccuracy: true,
-
-          // Permissions / alerts (iOS)
-          locationAuthorizationRequest: 'Always',
+          locationAuthorizationRequest: "Always",
           disableLocationAuthorizationAlert: false,
           locationAuthorizationAlert: {
             titleWhenNotEnabled: "Location Required for Geofencing",
-            message:
-              "Snatchi needs location access to detect geofence entry and exit events. Please enable location permissions for full functionality.",
+            titleWhenOff: "Location Services Off",
+            instructions: "Tap 'Settings' and enable 'Always Allow' for Snatchi.",
             cancelButton: "Cancel",
             settingsButton: "Settings"
           },
+
         },
         http: {
           autoSync: true,
@@ -368,20 +461,6 @@ class GeofencingSingleton {
           stopOnTerminate: false,
           startOnBoot: true,
           enableHeadless: true,
-          backgroundPermissionRationale: {
-            title:
-              'Allow Snatchi to access your location for geofencing, even when closed.',
-            message:
-              'Snatchi uses your location to detect when you enter or exit geofenced areas, even when the app is not open.',
-            positiveAction: 'Change to "{backgroundPermissionOptionLabel}"',
-            negativeAction: 'Cancel',
-          },
-
-          notification: {
-            title: 'Geofencing Active',
-            text: 'Monitoring geofence regions',
-            smallIcon: 'mipmap/ic_launcher',
-          },
           schedule,
           scheduleUseAlarmManager: true,
         },
@@ -389,45 +468,30 @@ class GeofencingSingleton {
           debug: true,
           logLevel: BackgroundGeolocation.LogLevel.Verbose,
         },
+
       }
-      // Apply the configuration.
-      BackgroundGeolocation.ready(config).then(async (state) => {
-        this.setupEventListeners();
 
-        // const schedule = await this.restoreProjects();
+      // Step 4: Ready and start
+      const state = await BackgroundGeolocation.ready(config);
+      console.log('✅ [INIT] BackgroundGeolocation ready:', state);
 
-        // Apply schedule only if we have active projects
-        console.log("🟩 Applied schedule:", schedule);
-        await BackgroundGeolocation.setConfig({
-          app: {
-            schedule,
-            scheduleUseAlarmManager: true
-          }
-        });
-        console.log("🚀 Scheduler started.");
+      // Step 5: Setup event listeners
+      this.setupEventListeners();
 
-        // Start scheduler
-        // await BackgroundGeolocation.startSchedule();
-
-        if (!state.enabled) {
-          await BackgroundGeolocation.startGeofences();
-          console.log("🚀 Geofences started.");
-        }
-        // Check if we're already inside (manual ENTER)
-
-        await this.initialInsideCheck();
-
-        return true
-      }).catch((error) => {
-        if(__DEV__)
-        console.error("🚀 Error starting Geofences.", error);
-      })
+      if (!state.enabled) {
+        await BackgroundGeolocation.startGeofences();
+        console.log("🚀 Geofences started.");
+      }
+      await this.markAsInitialized(true);
+      await this.initialInsideCheck();
 
       console.log('[ready] BackgroundGeolocation is configured and ready to use started');
-      // this.updateState({ isInitialized: true, isLoading: false });
+      return true;
     } catch (err) {
       console.log('❌ Init failed:', err);
-      // this.updateState({ error: String(err), isLoading: false });
+      // Still mark as initialized but with denied status to prevent retry loops
+      await this.markAsInitialized(false);
+      return false;
     }
   }
 

@@ -18,6 +18,7 @@ import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
 import Profile from '../screens/profile';
+import {GeofencingDebug} from '../screens/geofence/debugGeofence';
 
 const Stack = createStackNavigator();
 function Navigator({granted}) {
@@ -76,6 +77,13 @@ function Navigator({granted}) {
       <Stack.Screen
         name="GeofenceTestApp"
         component={GeofenceTestApp}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="GeofencingDebug"
+        component={GeofencingDebug}
         options={{
           headerShown: false,
         }}

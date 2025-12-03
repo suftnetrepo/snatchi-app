@@ -8,30 +8,38 @@ import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
 import { geofencingSingleton } from './src/types/geofencing';
 import { StyledIndicator } from './src/components/indicator';
-import { getStore } from './src/utils/asyncStorage';
 
 function App() {
-  const [granted, setGranted] = useState(null); // Change to null for loading state
+  const [granted, setGranted] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const initFcm = async () => {
+ useEffect(() => {
+    const init = async () => {
       try {
-        await geofencingSingleton.initialize();
-        await fcmStart();
-        const status = await getStore('GeofencingGranted');
-        setGranted(status);
+        console.log('🎬 [APP] Starting app initialization');
+
+        // Initialize geofencing (only runs full setup once per app lifetime)
+        const geofenceGranted = await geofencingSingleton.initialize();
+        console.log('📍 [APP] Geofencing permission:', geofenceGranted);
+        setGranted(geofenceGranted);
+
+        // Initialize FCM
+        const fcmToken = await fcmStart();
+        console.log('🔔 [APP] FCM token:', fcmToken ? 'received' : 'none');
+
+        console.log('✅ [APP] Initialization complete');
       } catch (error) {
-        if (__DEV__) console.error('Error with initialization:', error);
-        setGranted(false); // Set to false on error
+        console.error('❌ [APP] Initialization error:', error);
+        setGranted(false);
       } finally {
         setIsLoading(false);
       }
     };
-    initFcm();
-  }, []);
 
-  // Show loading indicator while initializing
+    init();
+  }, []); 
+
+
   if (isLoading) {
     return <StyledIndicator />;
   }

@@ -89,7 +89,7 @@ const Task = () => {
     return (
       <StyledCard
         borderRadius={16}
-        marginBottom={8}
+        marginVertical={8}
         borderColor={theme.colors.gray[1]}
         backgroundColor={theme.colors.gray[1]}
         paddingVertical={8}
@@ -200,59 +200,6 @@ const Task = () => {
               </XStack>
             </YStack>
           </XStack>
-          {/* <XStack
-            justifyContent="space-between"
-            marginTop={2}
-            alignItems="center">
-            <XStack
-              justifyContent="space-between"
-              alignItems="center"
-              gap={2}
-              marginHorizontal={3}
-              paddingVertical={4}
-              borderRadius={32}>
-              <XStack justifyContent="flex-start" alignItems="center" gap={1}>
-                <Icon
-                  name="access-time"
-                  size={20}
-                  color={theme.colors.gray[900]}
-                />
-                <StyledText
-                  paddingHorizontal={4}
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  fontSize={theme.fontSize.small}
-                  color={theme.colors.gray[800]}>
-                  {formatTimeFromDate(startDate)}
-                </StyledText>
-              </XStack>
-              <StyledText
-                paddingHorizontal={2}
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.normal}
-                color={theme.colors.gray[800]}>
-                -
-              </StyledText>
-              <XStack justifyContent="flex-start" alignItems="center" gap={1}>
-                <Icon
-                  name="access-time"
-                  size={20}
-                  color={theme.colors.gray[900]}
-                />
-                <StyledText
-                  paddingHorizontal={4}
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  fontSize={theme.fontSize.small}
-                  color={theme.colors.gray[800]}>
-                  {formatTimeFromDate(endDate)}
-                </StyledText>
-              </XStack>
-            </XStack>
-
-           
-          </XStack> */}
         </YStack>
       </StyledCard>
     );
@@ -316,7 +263,7 @@ const Task = () => {
       </StyledHeader>
       <YStack flex={1} backgroundColor={theme.colors.gray[100]} paddingHorizontal={16} paddingVertical={16}>
         <RenderStatus />
-        <StyledSpacer marginVertical={6} />
+        <StyledSpacer marginVertical={4} />
         <ScrollView showsVerticalScrollIndicator={false}>
           {taskData?.map((item, index) => (
             <RenderCard key={index} item={item} />

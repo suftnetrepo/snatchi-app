@@ -1,12 +1,17 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createMMKV } from 'react-native-mmkv';
+
+// Initialize MMKV storage
+const storage = createMMKV();
 
 export const SCHEDULE_KEY = 'schedules';
 export const PROJECT_KEY = 'persisted_projects';
+export const INIT_KEY = 'GeofencingInitialized';
+export const GRANTED_KEY = 'GeofencingGranted';
 
 export const store = async (key, value) => {
   try {
     const stringValue = JSON.stringify(value);
-    await AsyncStorage.setItem(key, stringValue);
+    storage.set(key, stringValue);
   } catch (e) {
     if (__DEV__)
       console.error(`Error storing data for key "${key}":`, e);
@@ -15,7 +20,7 @@ export const store = async (key, value) => {
 
 export const getStore = async (key) => {
   try {
-    const value = await AsyncStorage.getItem(key);
+    const value = storage.getString(key);
     if (!value) {
       if (__DEV__) console.log("⚪ No stored value found. Returning null.");
       return null;
@@ -26,7 +31,7 @@ export const getStore = async (key) => {
       parsed = JSON.parse(value);
     } catch (err) {
       console.warn(`⚠️ Invalid stored JSON for key "${key}", clearing...`);
-      await AsyncStorage.removeItem(key);
+      storage.remove(key);
       return null;
     }
 
@@ -59,15 +64,12 @@ export const getStore = async (key) => {
   }
 };
 
-
 export const add = async (key, notification) => {
-
   try {
-
     const notifications = await getAll(key);
 
     // 1️⃣ Flatten array input
-    const item =  notification;
+    const item = notification;
 
     // 3️⃣ Deduplicate by ID
     const filtered = notifications.filter(n => n.id !== item.id);
@@ -78,7 +80,6 @@ export const add = async (key, notification) => {
       read: item.read ?? false,
       createdAt: item.createdAt ?? Date.now(),
     };
-
 
     console.log(".......................", newNotification)
 
@@ -197,7 +198,6 @@ export const getUnread = async (key, sortByDate = true) => {
 
 export const markAsRead = async (key, id) => {
   try {
-
     const notifications = await getAll(key);
     const index = notifications.findIndex(n => n.id === id);
 
@@ -249,10 +249,9 @@ export const clear = async key => {
   }
 };
 
-
 export const removeStore = async (key) => {
   try {
-    await AsyncStorage.removeItem(key);
+    storage.remove(key);
     return true;
   } catch (e) {
     if (__DEV__) console.error(`Error removing key ${key}:`, e);

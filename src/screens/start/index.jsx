@@ -9,12 +9,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CommonActions } from '@react-navigation/native';
 import { geofencingSingleton } from '../../types/geofencing';
 import { theme } from "../../utils/theme";
-import { store } from "../../utils/asyncStorage";
+import { store, getStore } from "../../utils/asyncStorage";
 
 export default function Start({ navigation }) {
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
-    const toast = useToast();
 
     const login = () => {
         navigation.dispatch(
@@ -33,37 +32,37 @@ export default function Start({ navigation }) {
             try {
                 return await geofencingSingleton.requestPermissions();
             } catch (error) {
-                if(__DEV__)
-                console.error('❌ Permission request error:', error);
+                if (__DEV__)
+                    console.error('❌ Permission request error:', error);
                 throw new Error(GENERIC_ERROR_MESSAGE);
             }
         };
 
-        const initializeGeofencing = async () => {
+        const initialize = async () => {
             try {
                 await geofencingSingleton.initialize(false);
             } catch (error) {
-                if(__DEV__)
-                console.error('❌ Geofencing initialization error:', error);
+                if (__DEV__)
+                    console.error('❌ Geofencing initialization error:', error);
                 throw new Error(GENERIC_ERROR_MESSAGE);
             }
         };
 
         try {
             setLoading(true);
-            const granted = await requestLocationPermission();
-            console.log('Location permission granted:', granted);
-            if (granted) {
-                await initializeGeofencing();
-                await store('GeofencingGranted', true);
-            } else {
-                toast.show({ description: LOCATION_DENIED_MESSAGE });
+            const state = await geofencingSingleton.getStates();
+            if(state?.enabled) {
+                 await store('GeofencingGranted', true);
+                 handleSkip()
+            }else {
+                 await initialize()
             }
+
         } catch (error) {
-            toast.show({ description: error.message });
+            if(__DEV__)
+                console.log('Error initializing  Geofencing permission', error)
         } finally {
             setLoading(false);
-            login();
         }
     };
 

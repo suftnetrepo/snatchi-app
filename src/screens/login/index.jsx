@@ -70,7 +70,7 @@ const Login = () => {
               marginHorizontal={16}
               justifyContent="center"
               alignItems="center">
-              <Pressable onLongPress={() => navigator.navigate("GeofenceTestApp")}>
+              <Pressable onLongPress={() => navigator.navigate("GeofencingDebug")}>
                 <StyledImage
                   borderWidth={0}
                   resizeMode="cover"

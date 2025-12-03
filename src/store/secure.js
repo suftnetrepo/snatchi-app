@@ -1,12 +1,15 @@
 import * as Keychain from 'react-native-keychain';
 
 // Store JWT
-const storeJWT = async token => {
+const storeJWT = async (token) => {
   try {
-    await Keychain.setGenericPassword('userToken', token);
-    console.log('Token stored securely');
+    console.log('🔐 Saving JWT securely');
+    await Keychain.setGenericPassword('auth', token, {
+      accessible: Keychain.ACCESSIBLE.ALWAYS,
+    });
+    console.log('✅ JWT stored successfully');
   } catch (error) {
-    console.error('Error storing token:', error);
+    console.error('❌ Error storing token:', error);
   }
 };
 
@@ -15,12 +18,14 @@ const getJWT = async () => {
   try {
     const credentials = await Keychain.getGenericPassword();
     if (credentials) {
-      let token = credentials.password;
-      console.log('Token removed............................', token);
-      return token; // Return the JWT token as a string
+      console.log('🔑 Retrieved JWT');
+      return credentials.password;
     }
+    console.log('⚪ No token found');
+    return null;
   } catch (error) {
-    console.error('Error retrieving token:', error);
+    console.error('❌ Error retrieving token:', error);
+    return null;
   }
 };
 
@@ -28,10 +33,10 @@ const getJWT = async () => {
 const removeJWT = async () => {
   try {
     await Keychain.resetGenericPassword();
-    console.log('Token removed');
+    console.log('🗑️ Token removed successfully');
   } catch (error) {
-    console.error('Error removing token:', error);
+    console.error('❌ Error removing token:', error);
   }
 };
 
-export {storeJWT, getJWT, removeJWT};
+export { storeJWT, getJWT, removeJWT };

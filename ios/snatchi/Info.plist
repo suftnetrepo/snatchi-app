@@ -2,6 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.transistorsoft.fetch</string>
+		<string>com.transistorsoft.customtask</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -54,16 +59,18 @@
 	<string>This app requires access to your calendar to schedule and remind you of important Tasks.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires camera access to allow users to scan QR codes and upload profile pictures.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>App needs location access for geofences.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>App needs Always location access to monitor geofences in background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>App needs Always location access to monitor geofences in background.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>App needs location access for geofences.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app uses motion detection to improve location accuracy.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to your photo library to upload Task photos.</string>
+	<key>TSLocationManagerLicense</key>
+	<string>eyJhbGciOiJFZERTQSIsImtpZCI6ImVkMjU1MTktbWFpbi12MSIsImtpZCI6IjIwMjUtMTAifQ.eyJvcyI6ImlvcyIsImFwcF9pZCI6ImNvbS5zdWZ0bmV0LnNuYXRjaGkiLCJvcmRlcl9udW1iZXIiOjE0ODI2LCJyZW5ld2FsX3VybCI6Imh0dHBzOi8vc2hvcC50cmFuc2lzdG9yc29mdC5jb20vY2FydC8xNjUwNzg2MTUwNToxP25vdGU9OTg5MyIsImN1c3RvbWVyX2lkIjo5MDAwLCJwcm9kdWN0IjoicmVhY3QtbmF0aXZlLWJhY2tncm91bmQtZ2VvbG9jYXRpb24iLCJrZXlfdmVyc2lvbiI6MSwiYWxsb3dlZF9zdWZmaXhlcyI6WyIuZGV2IiwiLmRldmVsb3BtZW50IiwiLnN0YWdpbmciLCIuc3RhZ2UiLCIucWEiLCIudWF0IiwiLnRlc3QiLCIuZGVidWciXSwibWF4X2J1aWxkX3N0YW1wIjoyMDI2MTEzMCwiZ3JhY2VfYnVpbGRzIjowLCJlbnRpdGxlbWVudHMiOlsiY29yZSJdLCJpYXQiOjE3NjQxOTM2MzN9.u15bQ7Gc4WYXf7MNqylId7W1RDeb9LqIAcDHG1PqMd5F2U8xEUuEZlFovrvTnNWZEwIG5Bm4LDydTn2NlW3RDQ</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>CrimsonText-Bold.ttf</string>
@@ -96,15 +103,12 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
-	<string>location</string>
-    <string>background-fetch</string>  <!-- Changed from "fetch" -->
-    <string>background-processing</string>  <!-- Changed from "processing" -->
-    <string>audio</string>
-	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>com.transistorsoft.fetch</string>
-		<string>com.transistorsoft.customtask</string>
+		<string>location</string>
+		<string>background-fetch</string>
+		<string>background-processing</string>
+		<string>audio</string>
+		<string>processing</string>
+		<string>fetch</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

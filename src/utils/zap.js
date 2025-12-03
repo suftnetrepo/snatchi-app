@@ -1,81 +1,66 @@
-import {getJWT} from '../store/secure';
+import axios from 'axios';
+import { getJWT } from '../store/secure';
 
-const defaultHeaders = {
-  'Content-Type': 'application/json',
-  'X-App-Route': 'mobile',
-};
+const api = axios.create({
+  headers: {
+    'content-type': 'application/json',
+    'x-app-route': 'mobile',
+  },
+});
 
+// ZAT wrapper
 export const zat = async (url, body, method, queryParams = null) => {
   try {
-    const headers = {...defaultHeaders};
-
-    // Remove Content-Type if FormData is used
-    if (body instanceof FormData) {
-      delete headers['Content-Type'];
-    }
-
-    // Add the Bearer token to the headers if available
     const token = await getJWT();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    console.log("🔑 JWT TOKEN:", token);
 
-    // Request options
-    const requestOptions = {
-      method,
-      headers,
+    // Add mobile token to header
+    const headers = {
+      'x-app-route': 'mobile',
+      ...(body instanceof FormData ? {} : { 'content-type': 'application/json' }),
     };
 
-    // Handle query parameters
-    if (
-      queryParams &&
-      (method === 'GET' || method === 'DELETE' || method === 'PUT')
-    ) {
-      const params = new URLSearchParams(queryParams);
-      url += `?${params.toString()}`;
+    if (token) {
+      headers['x-access-token'] = `Bearer ${token}`;  // <-- SAFE HEADER FOR iOS
     }
 
-    // Set body
-    if (body) {
-      requestOptions.body =
-        body instanceof FormData ? body : JSON.stringify(body);
-    }
+    // Build Axios config
+    const config = {
+      method: method?.toLowerCase(),
+      url,
+      headers,
+      ...(queryParams && { params: queryParams }), // Axios handles query params cleanly
+      ...(body && { data: body instanceof FormData ? body : JSON.stringify(body) }),
+    };
 
-    // Perform the fetch
-    const response = await fetch(url, requestOptions);
+    console.log("📡 AXIOS REQUEST:", config);
 
-    // Handle error statuses
-    if ([400, 401, 403].includes(response.status)) {
-      const errorData = await response.json();
-      return {
-        success: false,
-        status: response.status,
-        errorMessage: errorData.error || errorData,
-      };
-    }
+    // Perform request
+    const response = await api(config);
 
-    // Handle non-OK responses
-    if (!response.ok) {
-      return {
-        success: false,
-        errorMessage: `Network response was not ok: ${response.statusText}`,
-      };
-    }
+    const data = response.data;
 
-    // Parse the response JSON
-    const json = await response.json();
-
-    // Handle DELETE separately if required
-    const results = method === 'DELETE' ? true : json;
-
-    // Return success result
     return {
       success: true,
-      data: results?.data || results,
-      totalCount: results?.totalCount,
+      data: method === 'DELETE' ? true : data?.data || data,
+      totalCount: data?.totalCount,
     };
   } catch (error) {
-    // Return error result
-    return {success: false, status: 500, errorMessage: error.message};
+    console.log("❌ AXIOS ERROR:", error.response?.data || error.message);
+
+    // Axios error shape
+    if (error.response) {
+      return {
+        success: false,
+        status: error.response.status,
+        errorMessage: error.response.data?.error || error.response.data,
+      };
+    }
+
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error.message,
+    };
   }
 };
