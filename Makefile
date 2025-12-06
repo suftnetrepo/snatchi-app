@@ -4,7 +4,8 @@
 APP_ID := com.suftnet.snatchi
 ANDROID_APP := android/app/build/outputs/apk
 IOS_PROJECT := ios
-DEVICE_ID :=R58TA0L5RPK
+DEVICE_ID := R58TA0L5RPK
+TEAM_ID := YOUR_TEAM_ID_HERE
 
 # ============================================================
 #  ANDROID COMMANDS
@@ -84,10 +85,10 @@ ios-run-device:
 	npx react-native run-ios --device "iPhone"
 
 ios-build:
-	cd ios && xcodebuild -workspace Snatchi.xcworkspace -scheme Snatchi -configuration Debug -sdk iphonesimulator -derivedDataPath build
+	cd ios && xcodebuild -workspace snatchi.xcworkspace -scheme snatchi -configuration Debug -sdk iphonesimulator -derivedDataPath build
 
 ios-build-release:
-	cd ios && xcodebuild -workspace Snatchi.xcworkspace -scheme Snatchi -configuration Release -sdk iphoneos -derivedDataPath build
+	cd ios && xcodebuild -workspace snatchi.xcworkspace -scheme snatchi -configuration Release -sdk iphoneos -derivedDataPath build
 
 ios-clean:
 	cd ios && xcodebuild clean
@@ -96,7 +97,37 @@ ios-pods:
 	cd ios && pod install
 
 ios-open:
-	open ios/Snatchi.xcworkspace
+	open ios/snatchi.xcworkspace
+
+# ------------------------------------------------------------
+#  NEW: iOS RELEASE ARCHIVE + EXPORT + INSTALL SCRIPTS
+# ------------------------------------------------------------
+
+# 1) Archive the app (.xcarchive)
+ios-archive-release:
+	cd ios && xcodebuild archive \
+		-workspace snatchi.xcworkspace \
+		-scheme snatchi \
+		-configuration Release \
+		-archivePath build/snatchi.xcarchive \
+		-allowProvisioningUpdates
+
+# 2) Export the IPA (Development method)
+ios-export-release:
+	cd ios && xcodebuild -exportArchive \
+		-archivePath build/snatchi.xcarchive \
+		-exportPath build \
+		-exportOptionsPlist ExportOptions.plist \
+		-allowProvisioningUpdates
+
+# 3) Build + Archive + Export in one command
+ios-release-test: ios-archive-release ios-export-release ios-install-release
+	@echo "==== iOS Release Build Complete ===="
+	@echo "IPA is located at: ios/build/snatchi.ipa"
+
+# 4) Install IPA on connected device
+ios-install-release:
+	ios-deploy --bundle ios/build/snatchi.ipa
 
 # ============================================================
 #  METRO CLEAN / CACHE RESET
@@ -142,11 +173,14 @@ help:
 	@echo ""
 	@echo "--- iOS ---"
 	@echo "make ios-run"
-	@echo "make ios-run-device"
 	@echo "make ios-build"
 	@echo "make ios-build-release"
 	@echo "make ios-open"
 	@echo "make ios-clean"
+	@echo "make ios-archive-release"
+	@echo "make ios-export-release"
+	@echo "make ios-release-test"
+	@echo "make ios-install-release"
 	@echo ""
 	@echo "--- Tools ---"
 	@echo "make clean-metro"

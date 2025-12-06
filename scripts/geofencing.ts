@@ -3,11 +3,6 @@ import BackgroundGeolocation, {
   GeofenceEvent as RNBGGeofenceEvent,
   Subscription,
   Config,
-  State,
-  Location,
-  ProviderChangeEvent,
-  MotionChangeEvent,
-  LocationFilterPolicy,
 } from 'react-native-background-geolocation';
 import type {
   GeofenceEvent,
@@ -15,17 +10,19 @@ import type {
   ProjectGeofence,
   GeofencingState,
   GeofenceEventBase,
-} from './types';
+} from '../src/types/types';
 import {
   store,
   getStore,
   PROJECT_KEY,
-} from '../../utils/asyncStorage';
-import { toModel } from '../../utils/help';
-import { zat } from '../../utils/zap';
-import { FENCE, VERBS } from '../../../config';
-import { localNotificationService } from '../../../Notification/LocalNotificationService';
+} from '../src/utils/asyncStorage';
+import { toModel } from '../src/utils/help';
+import { zat } from '../src/utils/zap';
+import { FENCE, VERBS } from '../config';
+import { localNotificationService } from '../Notification/LocalNotificationService';
 import { Vibration } from 'react-native';
+import { getCurrentLocation } from './getReliableLocation';
+
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
@@ -46,7 +43,7 @@ class GeofencingSingleton {
   private stateListeners = new Set<(state: GeofencingState) => void>();
   private currentlyInside = new Set<string>();
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): GeofencingSingleton {
     if (!GeofencingSingleton.instance) {
@@ -155,13 +152,18 @@ class GeofencingSingleton {
     }
   }
 
-    private async handleSave(body: any) {
+  private async handleSave(body: any) {
     try {
       const { success } = await zat(FENCE.addOne, body, VERBS.POST);
       return success;
     } catch (error) {
       if (__DEV__) console.error('API SAVE ERROR:', error);
     }
+  }
+
+  async handleState() {
+    const state = await BackgroundGeolocation.getState()
+    return state.enabled
   }
 
   private setupEventListeners() {
@@ -192,17 +194,17 @@ class GeofencingSingleton {
     );
 
     this.locationSubscription = BackgroundGeolocation.onLocation(
-      () => {},
+      () => { },
       err => {
         if (__DEV__) console.error('Location error:', err);
       },
     );
 
     this.providerSubscription = BackgroundGeolocation.onProviderChange(
-      () => {},
+      () => { },
     );
 
-    this.motionSubscription = BackgroundGeolocation.onMotionChange(() => {});
+    this.motionSubscription = BackgroundGeolocation.onMotionChange(() => { });
   }
 
   private async enrichEvent(
@@ -215,6 +217,7 @@ class GeofencingSingleton {
 
   async initialize(debug = true) {
     try {
+
       const schedule = await this.restoreProjects();
 
       const config: Config = {
@@ -291,8 +294,11 @@ class GeofencingSingleton {
         .catch(error => {
           if (__DEV__) console.error('Error starting geofences:', error);
         });
+
+        return true
     } catch (err) {
       if (__DEV__) console.error('Init failed:', err);
+      return false
     }
   }
 
@@ -391,7 +397,7 @@ class GeofencingSingleton {
     }
   }
 
-    private async initialInsideCheck() {
+  private async initialInsideCheck() {
     try {
       const allProjects = await this.loadProjects();
       if (!allProjects.length) return;
@@ -401,20 +407,16 @@ class GeofencingSingleton {
       );
       if (!projects.length) return;
 
-      const loc = await BackgroundGeolocation.getCurrentPosition({
-        samples: 1,
-        desiredAccuracy: 40,
-        persist: false,
-      });
+      const loc = await getCurrentLocation();
 
-      const { latitude, longitude } = loc.coords;
+      const { latitude, longitude } = loc;
 
       for (const p of projects) {
         const id = p.projectId;
 
-        const distance = this.getDistance(
-          latitude,
-          longitude,
+         const distance = this.getDistance(
+          loc.latitude,
+          loc.longitude,
           p.latitude,
           p.longitude,
         );
@@ -436,8 +438,8 @@ class GeofencingSingleton {
           const evt: GeofenceEvent = {
             id,
             transition: 'ENTER',
-            latitude,
-            longitude,
+              latitude: loc.latitude,
+            longitude: loc.longitude,
             timestamp: new Date().toISOString(),
             ...safeProject,
           };
@@ -463,8 +465,8 @@ class GeofencingSingleton {
     const a =
       Math.sin(dLat / 2) ** 2 +
       Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) ** 2;
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 

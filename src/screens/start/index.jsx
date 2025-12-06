@@ -4,14 +4,15 @@ import {
     StyledBackgroundImage,
     StyledHeader,
 } from 'fluent-styles';
-import { Box, VStack, Text, Button, HStack, useToast, Spinner } from "@gluestack-ui/themed";
+import { Box, VStack, Text, Button, HStack, Spinner } from "@gluestack-ui/themed";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CommonActions } from '@react-navigation/native';
-import { geofencingSingleton } from '../../types/geofencing';
+import { geofencingSingleton } from '../../../scripts/geofencing';
 import { theme } from "../../utils/theme";
-import { store, getStore } from "../../utils/asyncStorage";
+import { useFocus } from "../../hooks/useFocus";
 
 export default function Start({ navigation }) {
+    const { key } = useFocus();
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
 
@@ -25,49 +26,53 @@ export default function Start({ navigation }) {
     };
 
     const handleAllow = async () => {
-        const LOCATION_DENIED_MESSAGE = 'Location access denied. You can enable it later in Settings.';
-        const GENERIC_ERROR_MESSAGE = 'Something went wrong.';
-
-        const requestLocationPermission = async () => {
-            try {
-                return await geofencingSingleton.requestPermissions();
-            } catch (error) {
-                if (__DEV__)
-                    console.error('❌ Permission request error:', error);
-                throw new Error(GENERIC_ERROR_MESSAGE);
-            }
-        };
-
-        const initialize = async () => {
-            try {
-                await geofencingSingleton.initialize(false);
-            } catch (error) {
-                if (__DEV__)
-                    console.error('❌ Geofencing initialization error:', error);
-                throw new Error(GENERIC_ERROR_MESSAGE);
-            }
-        };
-
+        console.log('🔘 [START] Allow button pressed');
+        
         try {
             setLoading(true);
-            const state = await geofencingSingleton.getStates();
-            if(state?.enabled) {
-                 await store('GeofencingGranted', true);
-                 handleSkip()
-            }else {
-                 await initialize()
-            }
 
+            // Initialize geofencing
+            const granted = await geofencingSingleton.initialize();
+            console.log('📍 [START] Initialize result:', granted);
+
+            if (granted) {
+                console.log('✅ [START] Permission granted, navigating to login');
+                // Small delay to show success state
+                setTimeout(() => {
+                    login();
+                }, 300);
+            } else {
+                console.log('❌ [START] Permission denied');
+                // You might want to show an alert here
+                alert(
+                    'Location Permission Required',
+                    'Snatchi needs location access to track job sites. Please enable it in Settings.',
+                    [
+                        { text: 'Continue Anyway', onPress: login },
+                        { text: 'Try Again', onPress: handleAllow }
+                    ]
+                );
+            }
         } catch (error) {
-            if(__DEV__)
-                console.log('Error initializing  Geofencing permission', error)
+            console.error('❌ [START] Geofencing initialization error:', error);
+            
+            // Show error to user
+            alert(
+                'Initialization Error',
+                'Something went wrong. Please try again.',
+                [
+                    { text: 'Continue Anyway', onPress: login },
+                    { text: 'Try Again', onPress: handleAllow }
+                ]
+            );
         } finally {
             setLoading(false);
         }
     };
 
     const handleSkip = () => {
-        login()
+        console.log('⏭️ [START] Skip button pressed');
+        login();
     };
 
     return (
@@ -119,7 +124,7 @@ export default function Start({ navigation }) {
                                 textAlign="center"
                                 px={8}
                             >
-                                Before you begin, we’d like your permission to enable location
+                                Before you begin, we'd like your permission to enable location
                                 tracking. This allows Snatchi to automatically detect when you arrive
                                 at or leave assigned job sites — even when the app is closed.
                             </Text>
@@ -134,9 +139,14 @@ export default function Start({ navigation }) {
                             </Text>
 
                             {loading ? (
-                                <Spinner size="large" mt="$4" />
+                                <VStack space="sm" alignItems="center" mt="$4">
+                                    <Spinner size="large" />
+                                    <Text color="$gray600" fontSize="$sm">
+                                        Requesting permission...
+                                    </Text>
+                                </VStack>
                             ) : (
-                                <HStack space="md" justifyContent="flex-start" alignItems="center">
+                                <HStack space="md" justifyContent="flex-start" alignItems="center" width="100%">
                                     <Button
                                         flex={1}
                                         size="lg"
@@ -144,6 +154,7 @@ export default function Start({ navigation }) {
                                         bg="$cyan500"
                                         borderRadius="$xl"
                                         onPress={handleAllow}
+                                        disabled={loading}
                                     >
                                         <Text color="$white" fontWeight="600" fontSize="$md">
                                             Allow Access
@@ -156,15 +167,14 @@ export default function Start({ navigation }) {
                                         borderColor="$cyan500"
                                         borderRadius="$xl"
                                         onPress={handleSkip}
+                                        disabled={loading}
                                     >
                                         <Text color="$gray800" fontWeight="500" fontSize="$md">
                                             Continue
                                         </Text>
                                     </Button>
-
                                 </HStack>
                             )}
-
                         </VStack>
                     </Box>
                 </StyledBackgroundImage>

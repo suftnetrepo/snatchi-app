@@ -1,12 +1,12 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid } from 'react-native';
-import { navigationRef } from '../navigation/NavigationRef';
-import { store, getStore, add, SCHEDULE_KEY } from './asyncStorage';
-import { geofencingSingleton } from '../types/geofencing/';
-import { localNotificationService } from '../../Notification/LocalNotificationService';
-import { NotificationBus } from '../../scripts/notificationBus';
-import { zat } from './zap';
-import { VERBS, USER_HOST_ADDRESS } from '../../config';
+import { navigationRef } from '../src/navigation/NavigationRef';
+import { store, getStore, add, SCHEDULE_KEY } from '../src/utils/asyncStorage';
+import { geofencingSingleton } from './geofencing';
+import { localNotificationService } from '../Notification/LocalNotificationService';
+import { NotificationBus } from './notificationBus';
+import { zat } from '../src/utils/zap';
+import { VERBS, USER_HOST_ADDRESS } from '../config';
 
 export const fcmStart = async () => {
   try {

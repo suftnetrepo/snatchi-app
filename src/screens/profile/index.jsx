@@ -52,7 +52,7 @@ const Profile = () => {
     }
     fetchFcm();
     user && handleEdit(user);
-  }, [user]);
+  }, []);
 
   const onHandleImageSelect = async response => {
     if (response.assets[0].uri) {
@@ -158,7 +158,7 @@ const Profile = () => {
           borderColor={theme.colors.gray[100]}
           height={120}
           width={120}
-          imageUrl={fields.secure_url ? fields.secure_url : imageUrl}>
+          imageUrl={imageUrl ? imageUrl : fields.secure_url}>
           <XStack absolute right={-74} bottom={-74}>
             <Icon
               size={48}
@@ -181,7 +181,7 @@ const Profile = () => {
           returnKeyType="next"
           maxLength={50}
           fontSize={theme.fontSize.normal}
-          borderColor={theme.colors.gray[800]}
+          borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
           borderRadius={32}
           paddingHorizontal={8}
@@ -199,7 +199,7 @@ const Profile = () => {
           returnKeyType="next"
           maxLength={50}
           fontSize={theme.fontSize.normal}
-          borderColor={theme.colors.gray[800]}
+          borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
           borderRadius={32}
           paddingHorizontal={8}
@@ -217,7 +217,7 @@ const Profile = () => {
           returnKeyType="next"
           maxLength={50}
           fontSize={theme.fontSize.normal}
-          borderColor={theme.colors.gray[800]}
+          borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
           borderRadius={32}
           paddingHorizontal={8}
@@ -235,7 +235,7 @@ const Profile = () => {
           returnKeyType="next"
           maxLength={50}
           fontSize={theme.fontSize.normal}
-          borderColor={theme.colors.gray[800]}
+          borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
           borderRadius={32}
           paddingHorizontal={8}

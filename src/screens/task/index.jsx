@@ -89,11 +89,11 @@ const Task = () => {
     return (
       <StyledCard
         borderRadius={16}
-        marginVertical={8}
+        marginVertical={6}
         borderColor={theme.colors.gray[1]}
         backgroundColor={theme.colors.gray[1]}
-        paddingVertical={8}
-        paddingHorizontal={8}
+        paddingVertical={12}
+        paddingHorizontal={12}
         borderWidth={1}
         pressable={true}
         pressableProps={{

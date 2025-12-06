@@ -2,42 +2,51 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Navigator } from './src/navigation/AppNavigation';
 import AppProvider from './src/hooks/appContext';
-import { fcmStart } from './src/utils/pushNotification';
+import { fcmStart } from './scripts/pushNotification';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
-import { geofencingSingleton } from './src/types/geofencing';
+import { geofencingSingleton } from './scripts/geofencing';
 import { StyledIndicator } from './src/components/indicator';
+import useLocation from './src/hooks/useLocation';
+import { useGeofenceForeground } from './src/hooks/useGeofencing';
 
 function App() {
-  const [granted, setGranted] = useState(null);
+  useLocation()
+  const [granted, setGranted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  useGeofenceForeground(granted, debounceMs = 2000)
 
- useEffect(() => {
-    const init = async () => {
+  useEffect(() => {
+    const initGeofencing = async () => {
       try {
-        console.log('🎬 [APP] Starting app initialization');
-
-        // Initialize geofencing (only runs full setup once per app lifetime)
-        const geofenceGranted = await geofencingSingleton.initialize();
-        console.log('📍 [APP] Geofencing permission:', geofenceGranted);
-        setGranted(geofenceGranted);
-
-        // Initialize FCM
-        const fcmToken = await fcmStart();
-        console.log('🔔 [APP] FCM token:', fcmToken ? 'received' : 'none');
-
-        console.log('✅ [APP] Initialization complete');
-      } catch (error) {
-        console.error('❌ [APP] Initialization error:', error);
+        const state = await geofencingSingleton.handleState()
+        if (state) {
+          await geofencingSingleton.initialize()
+          setGranted(true);
+          return
+        }
         setGranted(false);
-      } finally {
-        setIsLoading(false);
+      } catch {
+        setGranted(false);
       }
     };
 
-    init();
-  }, []); 
+    const initFCM = async () => {
+      try {
+        await fcmStart();
+      } catch (error) {
+        console.error('FCM initialization error:', error);
+      }
+    };
+
+    const initializeApp = async () => {
+      await Promise.allSettled([initGeofencing(), initFCM()]);
+      setIsLoading(false);
+    };
+
+    initializeApp();
+  }, []);
 
 
   if (isLoading) {

@@ -11,14 +11,13 @@ import Invoice from '../screens/invoice/invoice';
 import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
 import Chat from '../screens/messaging/chat';
-import GeofenceTestApp from '../screens/geofence';
 import Start from '../screens/start';
 import Notify from '../screens/notify';
 import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
 import Profile from '../screens/profile';
-import {GeofencingDebug} from '../screens/geofence/debugGeofence';
+import {GeofencingDebug} from '../screens/geofence';
 
 const Stack = createStackNavigator();
 function Navigator({granted}) {
@@ -70,13 +69,6 @@ function Navigator({granted}) {
       <Stack.Screen
         name="notify"
         component={Notify}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="GeofenceTestApp"
-        component={GeofenceTestApp}
         options={{
           headerShown: false,
         }}

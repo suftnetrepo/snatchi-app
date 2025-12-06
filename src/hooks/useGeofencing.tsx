@@ -1,70 +1,59 @@
-import { useState, useEffect } from 'react';
-import { geofencingSingleton } from '../types/geofencing';
-import type { ProjectGeofence, GeofencingState } from '../types/geofencing/types';
+import { useState, useEffect, useRef } from 'react';
+import { geofencingSingleton } from '../../scripts/geofencing';
+import type { ProjectGeofence, GeofencingState } from '../types/types';
+import { AppState, AppStateStatus } from 'react-native';
 
-export const useProjectGeofencing = ({
-
+export const useGeofenceForeground = ({ 
+  enabled = true, 
+  debounceMs = 2000 
 } = {}) => {
-
-  const initialize = async () => {
-    try {
-      await geofencingSingleton.initialize(false);
-    } catch (error) {
-    }
-  };
+  const appState = useRef<AppStateStatus>(AppState.currentState);
+  const lastCheckTime = useRef<number>(0);
 
   useEffect(() => {
-    initialize();
-  }, []);
+    if (!enabled) return;
 
+    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      const previousState = appState.current;
+      appState.current = nextAppState;
+
+      // Check if coming from background to foreground
+      const isBackgroundToForeground = previousState.match(/inactive|background/) && 
+                                      nextAppState === 'active';
+      
+      if (!isBackgroundToForeground) return;
+
+      // Debounce check
+      const now = Date.now();
+      if (now - lastCheckTime.current < debounceMs) return;
+
+      // Update last check time immediately to prevent rapid triggers
+      lastCheckTime.current = now;
+
+      // Small delay to let app settle before reinitializing
+      setTimeout(async () => {
+        try {
+          const success = await geofencingSingleton.initialize();
+          
+          if (success) {
+            const inside = geofencingSingleton.getCurrentGeofenceStates();
+            // You could add callback/event here if needed
+          }
+        } catch (error) {
+          console.error('Geofence reinitialization error:', error);
+        }
+      }, 500);
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [enabled, debounceMs]);
+
+  return appState.current;
 };
-
-// export const useGeofenceEvents = (
-//   onEnter?: (event: GeofenceEvent) => void,
-//   onExit?: (event: GeofenceEvent) => void,
-//   onDwell?: (event: GeofenceEvent) => void,
-// ) => {
-//   const [eventStats, setEventStats] = useState({
-//     totalEvents: 0,
-//     enterEvents: 0,
-//     exitEvents: 0,
-//     dwellEvents: 0,
-//     eventsToday: 0,
-//     lastEvent: null as GeofenceEvent | null,
-//   });
-
-//   useEffect(() => {
-//     const unsubscribe = geofencingSingleton.addEventListener((event: GeofenceEvent) => {
-//       setEventStats(prev => {
-//         const isToday = new Date(event.timestamp).toDateString() === new Date().toDateString();
-//         return {
-//           totalEvents: prev.totalEvents + 1,
-//           enterEvents: event.transition === 'ENTER' ? prev.enterEvents + 1 : prev.enterEvents,
-//           exitEvents: event.transition === 'EXIT' ? prev.exitEvents + 1 : prev.exitEvents,
-//           dwellEvents: event.transition === 'DWELL' ? prev.dwellEvents + 1 : prev.dwellEvents,
-//           eventsToday: isToday ? prev.eventsToday + 1 : prev.eventsToday,
-//           lastEvent: event,
-//         };
-//       });
-
-//       switch (event.transition) {
-//         case 'ENTER':
-//           onEnter?.(event);
-//           break;
-//         case 'EXIT':
-//           onExit?.(event);
-//           break;
-//         case 'DWELL':
-//           onDwell?.(event);
-//           break;
-//       }
-//     });
-
-//     return () => unsubscribe();
-//   }, [onEnter, onExit, onDwell]);
-
-//   return { eventStats };
-// };
 
 export const useProjectState = () => {
   const [state, setState] = useState<GeofencingState>({

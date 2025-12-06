@@ -3,7 +3,6 @@ import { getJWT } from '../store/secure';
 
 const api = axios.create({
   headers: {
-    'content-type': 'application/json',
     'x-app-route': 'mobile',
   },
 });

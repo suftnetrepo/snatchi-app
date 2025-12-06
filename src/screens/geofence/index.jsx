@@ -1,320 +1,222 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// Add this debug screen to your app (optional but helpful)
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform, Alert } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Platform,
-  Vibration
-} from 'react-native';
-import {
-  StyledHeader,
-  StyledSafeAreaView,
+    StyledHeader,
+    StyledSafeAreaView,
 } from 'fluent-styles';
-
-import { geofencingSingleton } from '../../types/geofencing';
+import { geofencingSingleton } from '../../../scripts/geofencing';
+import BackgroundGeolocation from 'react-native-background-geolocation';
 import { useNavigation } from '@react-navigation/native';
-import { localNotificationService } from '../../../Notification/LocalNotificationService';
-import { useProjectState } from '../../hooks/useGeofencing';
-import { PROJECT_KEY, clear, store } from '../../utils/asyncStorage';
 import { theme } from '../../utils/theme';
-import { toModel } from '../../utils/help';
+import { PROJECT_KEY, clear, store } from '../../utils/asyncStorage';
+import { getCurrentLocation } from '../../../scripts/getReliableLocation';
 
 // ------------------------------------------------
 // 🔥 Create dynamic test geofence for TODAY only
 // ------------------------------------------------
 function createDynamicTestGeofence() {
-  const now = new Date();
+    const now = new Date();
 
-  const latitude = 52.54223;
-  const longitude = -0.30067;
+    const latitude = 52.54223;
+    const longitude = -0.30067;
 
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 0);
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 0);
 
-  const weekday = now.getDay() === 0 ? 7 : now.getDay();
+    const weekday = now.getDay() === 0 ? 7 : now.getDay();
 
-  return [
-    {
-      id: "dynamic-test-" + now.getTime(),
-      projectId: "dynamic-test-project",
-      intergatorId: "test-integrator",
-      siteName: "Dynamic Test Location (Today)",
-      latitude,
-      longitude,
-      radius: 250,
-      startDate: startOfDay.toISOString(),
-      endDate: endOfDay.toISOString(),
-      startTime: "00:00",
-      endTime: "23:59",
-      activeDays: [weekday],
+    return [
+        {
+            id: "dynamic-test-" + now.getTime(),
+            projectId: "dynamic-test-project",
+            intergatorId: "test-integrator",
+            siteName: "Dynamic Test Location (Today)",
+            latitude,
+            longitude,
+            radius: 250,
+            startDate: startOfDay.toISOString(),
+            endDate: endOfDay.toISOString(),
+            startTime: "00:00",
+            endTime: "23:59",
+            activeDays: [weekday],
 
-      completeAddress: "Test Location, Orton Waterville, Peterborough PE2 5SP, UK",
-      status: "Pending",
-      userId: "test-user",
-      firstName: "Test",
-      lastName: "User",
-    }
-  ];
+            completeAddress: "Test Location, Orton Waterville, Peterborough PE2 5SP, UK",
+            status: "Pending",
+            userId: "test-user",
+            firstName: "Test",
+            lastName: "User",
+        }
+    ];
 }
 
-const GeofenceTestApp = () => {
-  const navigator = useNavigation();
-  const [events, setEvents] = useState([]);
-  const { isInitialized, geofences, error, isLoading } = useProjectState();
+export const GeofencingDebug = () => {
+    const [debugInfo, setDebugInfo] = useState('');
+    const navigator = useNavigation();
 
-    console.log("...............", events)
+    const checkStatus = async () => {
+        let info = '=== GEOFENCING DEBUG ===\n\n';
 
-  // ------------------------------------------------
-  // 🔥 Subscribe DIRECTLY to geofence events
-  // ------------------------------------------------
-  // useEffect(() => {
-  //   console.log("👂 Subscribing directly to geofence events...");
-  //   const unsubscribe = geofencingSingleton.addEventListener((event) => {
-  //     console.log("📡 DIRECT EVENT:", event);
+        try {
+            // Check initialization status
+            const isInit = await geofencingSingleton.handleState();
+            info += `✓ Initialized: ${isInit}\n`;
 
-  //     setEvents(prev => {
-  //       if (
-  //         prev.length > 0 &&
-  //         prev[0].id === event.id &&
-  //         prev[0].transition === event.transition
-  //       ) {
-  //         return prev;
-  //       }
-  //       return [event, ...prev];
-  //     });
-  //   });
+            // Check BackgroundGeolocation state
+            const state = await BackgroundGeolocation.getState();
+            info += `--- BG State ---\n`;
+            info += `Enabled: ${state.enabled}\n`;
+            info += `isMoving: ${state.isMoving}\n`;
+            info += `trackingMode: ${state.trackingMode}\n`;
+            info += `schedulerEnabled: ${state.schedulerEnabled}\n\n`;
 
-  //   return () => {
-  //     console.log("🧹 Unsubscribe geofence listener");
-  //     unsubscribe();
-  //   };
-  // }, []);
+            // Check geofences
+            const geofences = await BackgroundGeolocation.getGeofences();
+            info += `--- Geofences (${geofences.length}) ---\n`;
+            geofences.forEach(g => {
+                info += `  ${g.identifier}\n`;
+                info += `    Lat: ${g.latitude}, Lon: ${g.longitude}\n`;
+                info += `    Radius: ${g.radius}m\n`;
+            });
+            info += '\n';
 
-  // ------------------------------------------------
-  // ADD TEST GEOFENCE
-  // ------------------------------------------------
-  const addTestGeofences = async () => {
-    const testGeofences = createDynamicTestGeofence();
-    try {
-      await geofencingSingleton.clearAllProjects();
-      await clear(PROJECT_KEY);
-      await store(PROJECT_KEY, testGeofences);
-      await geofencingSingleton.addProjects(testGeofences);
+            // Check current location
+            try {
+                const loc = await getCurrentLocation();
+                info += `--- Current Location ---\n`;
+                info += `Lat: ${loc.latitude}\n`;
+                info += `Lon: ${loc.longitude}\n`;
+                info += `Accuracy: ${loc.provider}m\n\n`;
+            } catch (locErr) {
+                info += `--- Location Error ---\n${locErr.message}\n\n`;
+            }
 
-      Alert.alert('Success', 'Added test geofence for today!');
-    } catch (error) {
-      Alert.alert('Error', `Could not add test geofence: ${error}`);
-    }
-  };
+            // Check currently inside
+            const inside = geofencingSingleton.getCurrentGeofenceStates();
+            info += `--- Currently Inside ---\n`;
+            info += inside.length > 0 ? inside.join(', ') : 'None\n';
 
-  // ------------------------------------------------
-  // CLEAR ALL
-  // ------------------------------------------------
-  const clearAllGeofences = async () => {
-    try {
-      await geofencingSingleton.clearAllProjects();
-      await clear(PROJECT_KEY);
-      setEvents([])
-      Alert.alert('Success', 'Geofences cleared!');
-    } catch (error) {
-      Alert.alert('Error', `Failed to clear: ${error}`);
-    }
-  };
+        } catch (error) {
+            info += `\n❌ ERROR: ${error.message}`;
+        }
 
-  // ------------------------------------------------
-  // Manual force checks
-  // ------------------------------------------------
-  const forceCheck = async () => {
-    try {
-      await geofencingSingleton.forceGeofenceCheck();
-    } catch (error) {
-      Alert.alert('Error', `Failed: ${error}`);
-    }
-  };
+        setDebugInfo(info);
+    };
 
-  const refreshGeofences = async () => {
-    try {
-      await geofencingSingleton.triggerGeofenceRefresh();
-    } catch (error) {
-      Alert.alert('Error', `Failed: ${error}`);
-    }
-  };
+    const resetInitialization = async () => {
+        if (confirm('Reset geofencing initialization? This simulates a fresh install.')) {
+            await geofencingSingleton.initialize();
+            setDebugInfo('✅ Reset complete. Restart app to re-initialize.');
+        }
+    };
 
-// 🔥 SIMULATED ENTER / EXIT (UI SAFE)
-// ------------------------------------------------
-const simulateEvent = async (transition) => {
-  console.log("--------------------------------------------------");
-  console.log(`🎮 SIMULATION STARTED for: ${transition}`);
+    const forceCheck = async () => {
+        await geofencingSingleton.forceGeofenceCheck();
+        setDebugInfo('✅ Manual geofence check triggered');
+    };
 
-  // Build a unique UI-safe event
-  const uiEvent = {
-    id: "sim-" + Date.now().toString(36) + Math.random().toString(36).slice(2),
-    transition,
-    latitude: 52.54223,
-    longitude: -0.30067,
-    timestamp: new Date().toISOString(),
-    siteName: "Manual Simulation",
-    radius: 250,
-    status: transition === "ENTER" ? "Enter" : "Exit",
-    first_name: "Test",
-    last_name: "User",
-    completeAddress: "Simulated Address",
+    const addTestGeofences = async () => {
+        const testGeofences = createDynamicTestGeofence();
+        try {
+            await geofencingSingleton.clearAllProjects();
+            await clear(PROJECT_KEY);
+            await store(PROJECT_KEY, testGeofences);
+            await geofencingSingleton.addProjects(testGeofences);
 
-    // 🔥 The secret — React can never merge or skip this item
-    _uid: `ui-${Date.now()}-${transition}-${Math.random()}`
-  };
+            Alert.alert('Success', 'Added test geofence for today!');
+        } catch (error) {
+            Alert.alert('Error', `Could not add test geofence: ${error}`);
+        }
+    };
 
-  console.log("📝 UI event built:", uiEvent);
+    const clearAllGeofences = async () => {
+        try {
+            await geofencingSingleton.clearAllProjects();
+            await clear(PROJECT_KEY);
+            Alert.alert('Success', 'Geofences cleared!');
+        } catch (error) {
+            Alert.alert('Error', `Failed to clear: ${error}`);
+        }
+    };
 
-  // -----------------------------
-  // Vibration
-  // -----------------------------
-  try {
-    console.log("📳 Vibrating...");
-    Vibration.vibrate(300);
-  } catch (e) {
-    console.warn("⚠️ Vibration failed:", e);
-  }
+    return (
+        <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
+            <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
+                <StyledHeader.Full />
+            </StyledHeader>
+            <ScrollView style={styles.container}>
+                <Text style={styles.title}>Geofencing Debug</Text>
 
-  // -----------------------------
-  // Local Notification
-  // -----------------------------
-  try {
-    console.log("🔔 Sending notification...");
-    localNotificationService.defaultChannel();
-    localNotificationService.showNotification(
-      Date.now() % 100000,
-      transition === "ENTER" ? "Entered Geofence" : "Exited Geofence",
-      `${uiEvent.siteName}`,
-      { simulated: true },
-      { playSound: true }
+                <TouchableOpacity style={styles.button} onPress={checkStatus}>
+                    <Text style={styles.buttonText}>Check Status</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.button} onPress={forceCheck}>
+                    <Text style={styles.buttonText}>Force Geofence Check</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.button, styles.dangerButton]} onPress={resetInitialization}>
+                    <Text style={styles.buttonText}>Reset Initialization</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.button, styles.buttonSuccess]} onPress={addTestGeofences}>
+                    <Text style={styles.buttonText}>Add Today Test Geofence</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.button, styles.buttonDanger]} onPress={clearAllGeofences}>
+                    <Text style={styles.buttonText}>Clear All Geofences</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={() => navigator.goBack()}>
+                    <Text style={styles.buttonText}>Go Back</Text>
+                </TouchableOpacity>
+
+                <View style={styles.debugBox}>
+                    <Text style={styles.debugText}>{debugInfo || 'Tap "Check Status" to see debug info'}</Text>
+                </View>
+            </ScrollView>
+        </StyledSafeAreaView>
     );
-  } catch (e) {
-    console.warn("⚠️ Notification failed:", e);
-  }
-
-  // -----------------------------
-  // Add to UI list
-  // -----------------------------
-  console.log("🧾 Adding event to UI list…");
-  setEvents(prev => [uiEvent, ...prev]);
-
-  console.log("🎮 SIMULATION COMPLETE:", transition);
-  console.log("--------------------------------------------------");
 };
 
-  return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
-        <StyledHeader.Full />
-      </StyledHeader>
-
-      <ScrollView style={styles.container}>
-        <Text style={styles.title}>Geofencing Test App</Text>
-
-        {/* STATUS */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Status</Text>
-          <Text>Initialized: {true ? '✅' : '❌'}</Text>
-          {/* <Text>Loading: {isLoading ? '⏳' : '✅'}</Text> */}
-          {/* <Text>Geofences: {geofences.length}</Text>
-          {error && <Text style={styles.errorText}>Error: {error}</Text>} */}
-        </View>
-
-        {/* BUTTONS */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Controls</Text>
-
-          {/* <TouchableOpacity style={[styles.button, styles.buttonSuccess]} onPress={addTestGeofences}>
-            <Text style={styles.buttonText}>Add Today Test Geofence</Text>
-          </TouchableOpacity> */}
-
-          {/* <TouchableOpacity style={[styles.button, styles.buttonInfo]} onPress={forceCheck}>
-            <Text style={styles.buttonText}>Force Manual Check</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.buttonInfo]} onPress={refreshGeofences}>
-            <Text style={styles.buttonText}>Refresh Geofences</Text>
-          </TouchableOpacity> */}
-
-          <TouchableOpacity style={[styles.button, styles.buttonDanger]} onPress={clearAllGeofences}>
-            <Text style={styles.buttonText}>Clear All Geofences</Text>
-          </TouchableOpacity>
-
-          {/* SIMULATIONS */}
-          <TouchableOpacity style={[styles.button, styles.buttonPrimary]} onPress={() => simulateEvent("ENTER")}>
-            <Text style={styles.buttonText}>Simulate ENTER</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.buttonPrimary]} onPress={() => simulateEvent("EXIT")}>
-            <Text style={styles.buttonText}>Simulate EXIT</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={() => navigator.goBack()}>
-            <Text style={styles.buttonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* EVENTS LOG */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Events Log ({events.length})</Text>
-
-          {events.map((ev, i) => (
-            <View key={i} style={styles.eventItem}>
-              <View style={styles.eventHeader}>
-                <Text style={[styles.eventTransition, ev.transition === "ENTER" ? styles.enterTransition : styles.exitTransition]}>
-                  {ev.transition}
-                </Text>
-                <Text style={styles.eventTime}>{new Date(ev.timestamp).toLocaleTimeString()}</Text>
-              </View>
-
-              <Text style={styles.eventCoords}>
-                {ev.latitude}, {ev.longitude}
-              </Text>
-            </View>
-          ))}
-
-          {events.length === 0 && (
-            <Text style={styles.emptyText}>No events yet — simulate ENTER/EXIT!</Text>
-          )}
-        </View>
-      </ScrollView>
-    </StyledSafeAreaView>
-  );
-};
-
-// ------------------------------------------------
-// STYLES
-// ------------------------------------------------
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5', padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-
-  section: { backgroundColor: 'white', borderRadius: 8, padding: 16, marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
-
-  errorText: { color: '#dc3545' },
-
-  button: { padding: 14, borderRadius: 6, marginBottom: 10, alignItems: 'center' },
-  buttonSuccess: { backgroundColor: '#28a745' },
-  buttonInfo: { backgroundColor: '#17a2b8' },
-  buttonDanger: { backgroundColor: '#dc3545' },
-  buttonPrimary: { backgroundColor: '#007bff' },
-  clearButton: { backgroundColor: '#6c757d' },
-  buttonText: { color: 'white', fontWeight: 'bold' },
-
-  eventItem: { borderLeftWidth: 3, borderLeftColor: '#17a2b8', paddingLeft: 12, marginBottom: 12 },
-  eventHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-  eventTransition: { fontSize: 16, fontWeight: 'bold' },
-  enterTransition: { color: '#28a745' },
-  exitTransition: { color: '#dc3545' },
-  eventTime: { fontSize: 12, color: '#666' },
-  eventCoords: { fontSize: 12, color: '#555' },
-
-  emptyText: { textAlign: 'center', color: '#666', marginTop: 20 },
+    container: {
+        flex: 1,
+        padding: 20,
+        backgroundColor: '#f5f5f5',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 10,
+    },
+    dangerButton: {
+        backgroundColor: '#FF3B30',
+    },
+    buttonText: {
+        color: 'white',
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    debugBox: {
+        backgroundColor: '#1e1e1e',
+        padding: 15,
+        borderRadius: 8,
+        marginTop: 20,
+    },
+    debugText: {
+        color: '#00ff00',
+        fontFamily: 'Courier',
+        fontSize: 12,
+    },
+    clearButton: { backgroundColor: '#6c757d' },
+    buttonSuccess: { backgroundColor: '#28a745' },
 });
-
-export default GeofenceTestApp;
