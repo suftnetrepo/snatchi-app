@@ -6,6 +6,9 @@ ANDROID_APP := android/app/build/outputs/apk
 IOS_PROJECT := ios
 DEVICE_ID := R58TA0L5RPK
 TEAM_ID := YOUR_TEAM_ID_HERE
+IOS_BUILD_DIR := ios/build
+IOS_ARCHIVE := $(IOS_BUILD_DIR)/snatchi.xcarchive
+IOS_IPA := $(IOS_BUILD_DIR)/snatchi.ipa
 
 # ============================================================
 #  ANDROID COMMANDS

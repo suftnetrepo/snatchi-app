@@ -84,8 +84,6 @@ const Keypad = () => {
                 routes: [{ name: 'bottom-tabs' }],
               })
             );
-
-            // navigator.navigate("bottom-tabs")
           }
         });
       }
