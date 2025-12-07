@@ -1,4 +1,5 @@
-import PushNotification from "react-native-push-notification"
+import { Platform } from 'react-native';
+import PushNotification from 'react-native-push-notification';
 
 class LocalNotificationService {
     // Use a stable, descriptive channel id. Changing this will create a new channel
@@ -6,13 +7,12 @@ class LocalNotificationService {
     // the wrong importance/visibility settings.
     CHANNEL_ID = 'default_channel_32_v2';
 
-    configure = (onOpenNotification) => {
+    configure = onOpenNotification => {
         PushNotification.configure({
-            onRegister: function (token) {
-            },
+            onRegister: function (token) { },
             onNotification: function (notification) {
                 if (!notification?.data) {
-                    return
+                    return;
                 }
                 notification.userInteraction = true;
                 onOpenNotification(notification.data);
@@ -36,55 +36,71 @@ class LocalNotificationService {
              *     requestPermissions: Platform.OS === 'ios'
              */
             requestPermissions: true,
-        })
-    }
+        });
+    };
 
     unregister = () => {
         PushNotification.unregister();
-    }
+    };
 
     showNotification = (id, title, message, data = {}, options = {}) => {
-           const safeId = Number(id);
-    const finalId = !isNaN(safeId)
-        ? (safeId % 2147483647)
-        : (Date.now() % 100000); // fallback safe ID
-        if (__DEV__) console.log('LocalNotificationService.showNotification', { finalId, title, message, data, options });
+        const safeId = Number(id);
+        const finalId = !isNaN(safeId) ? safeId % 2147483647 : Date.now() % 100000; // fallback safe ID
+        if (__DEV__)
+            console.log('LocalNotificationService.showNotification', {
+                finalId,
+                title,
+                message,
+                data,
+                options,
+            });
 
-        PushNotification.localNotification({
-            /* Android Only Properties */
-            ...this.buildAndroidNotification(finalId, title, message, data, options),
-            title: title || "",
-            message: message || "",
-            playSound: options.playSound || false,
-            soundName: options.soundName || 'default',
-            userInteraction: false,
-            channelId: this.CHANNEL_ID,
-            badge: true,
-            sound: true
-        });
-    }
+        if (Platform.OS === 'android') {
+            PushNotification.localNotification({
+                /* Android Only Properties */
+                ...this.buildAndroidNotification(finalId, title, message, data, options),
+                title: title || '',
+                message: message || '',
+                playSound: options.playSound || false,
+                soundName: options.soundName || 'default',
+                userInteraction: false,
+                channelId: this.CHANNEL_ID,
+                badge: true,
+                sound: true,
+            });
+        } else if (Platform.OS === 'ios') {
+            // iOS-specific notification handling
+            PushNotification.localNotification({
+                title: title || '',
+                message: message || '',
+                playSound: options.playSound || false,
+                soundName: options.soundName || 'default',
+                // iOS-specific properties only
+            });
+        }
+    };
 
     defaultChannel = () => {
         if (__DEV__) {
             // Remove any existing broken channel
             PushNotification.deleteChannel(this.CHANNEL_ID);
             PushNotification.deleteChannel('32'); // old one
-            console.log("Deleted dev channels to force recreation");
+            console.log('Deleted dev channels to force recreation');
         }
 
         PushNotification.createChannel(
             {
                 channelId: this.CHANNEL_ID,
-                channelName: "Default Notification Channel",
-                channelDescription: "Channel for local notifications",
-                importance: 4,        // MAX
+                channelName: 'Default Notification Channel',
+                channelDescription: 'Channel for local notifications',
+                importance: 4, // MAX
                 vibrate: true,
-                soundName: "default",
-                playSound: true
+                soundName: 'default',
+                playSound: true,
             },
-            (created) => {
+            created => {
                 console.log(`createChannel (${this.CHANNEL_ID}) returned '${created}'`);
-            }
+            },
         );
     };
 
@@ -92,8 +108,8 @@ class LocalNotificationService {
         return {
             id: id,
             autoCancel: true,
-            largeIcon: options.largeIcon || "ic_launcher",
-            smallIcon: options.smallIcon || "ic_launcher",
+            largeIcon: options.largeIcon || 'ic_launcher',
+            smallIcon: options.smallIcon || 'ic_launcher',
             bigText: message || '',
             subText: title || '',
             vibrate: options.vibrate || true,
@@ -101,17 +117,16 @@ class LocalNotificationService {
             priority: options.priority || 'high',
             importance: options.importance || 'high',
             data: data,
-        }
-    }
+        };
+    };
 
     cancelAllLocalNotifications = () => {
         PushNotification.cancelAllLocalNotifications();
-    }
+    };
 
-    removeDeliveredNotificationByID = (notificationId) => {
-        PushNotification.cancelLocalNotifications({ id: `${notificationId}` })
-    }
-
+    removeDeliveredNotificationByID = notificationId => {
+        PushNotification.cancelLocalNotifications({ id: `${notificationId}` });
+    };
 }
 
 export const localNotificationService = new LocalNotificationService();

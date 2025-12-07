@@ -189,7 +189,17 @@ class GeofencingSingleton {
         };
 
         const enriched = await this.enrichEvent(base);
-        this.saveFenceEvent(enriched);
+        this.saveFenceEvent(enriched).catch((error) => {
+          console.log("error", error)
+        })
+
+        if (action == "ENTER") {
+          // Entering the danger-zone, we want to aggressively track location.
+          await BackgroundGeolocation.start();
+        } else if (action == "EXIT") {
+          // Exiting the danger-zone, we resume geofences-only tracking.
+          await BackgroundGeolocation.startGeofences();
+        }
       },
     );
 
@@ -295,7 +305,7 @@ class GeofencingSingleton {
           if (__DEV__) console.error('Error starting geofences:', error);
         });
 
-        return true
+      return true
     } catch (err) {
       if (__DEV__) console.error('Init failed:', err);
       return false
@@ -344,6 +354,13 @@ class GeofencingSingleton {
 
   async restoreProjects() {
     try {
+
+      const state = await BackgroundGeolocation.getState()
+
+      if (!state.enabled) {
+        return []
+      }
+
       const projects = await this.loadProjects();
 
       const activeProjects = projects.filter(p =>
@@ -414,7 +431,7 @@ class GeofencingSingleton {
       for (const p of projects) {
         const id = p.projectId;
 
-         const distance = this.getDistance(
+        const distance = this.getDistance(
           loc.latitude,
           loc.longitude,
           p.latitude,
@@ -438,7 +455,7 @@ class GeofencingSingleton {
           const evt: GeofenceEvent = {
             id,
             transition: 'ENTER',
-              latitude: loc.latitude,
+            latitude: loc.latitude,
             longitude: loc.longitude,
             timestamp: new Date().toISOString(),
             ...safeProject,
