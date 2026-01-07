@@ -36,8 +36,7 @@ export const useGeofenceForeground = ({
           const success = await geofencingSingleton.initialize();
           
           if (success) {
-            const inside = geofencingSingleton.getCurrentGeofenceStates();
-            // You could add callback/event here if needed
+            
           }
         } catch (error) {
           console.error('Geofence reinitialization error:', error);
@@ -55,70 +54,4 @@ export const useGeofenceForeground = ({
   return appState.current;
 };
 
-export const useProjectState = () => {
-  const [state, setState] = useState<GeofencingState>({
-    isInitialized: false,
-    isLoading: false,
-    error: null,
-    geofences: [],
-  });
-  const [currentGeofences, setCurrentGeofences] = useState<string[]>([]);
-  const [debugInfo, setDebugInfo] = useState({
-    stateChangeCount: 0,
-  });
 
-  useEffect(() => {
-    const unsubscribe = geofencingSingleton.addStateListener((newState: GeofencingState) => {
-      setState(newState);
-      setCurrentGeofences(geofencingSingleton.getCurrentGeofenceStates());
-      setDebugInfo(prev => ({
-        ...prev,
-        stateChangeCount: prev.stateChangeCount + 1,
-      }));
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  return {
-    ...state,
-    currentGeofences,
-    debugInfo,
-  };
-};
-
-export const useGeofenceManagement = () => {
-  const [state, setState] = useState({
-    isLoading: false,
-    error: null as string | null,
-  });
-
-  const handleOperation = async (operation: () => Promise<void>) => {
-    setState({ isLoading: true, error: null });
-    try {
-      await operation();
-    } catch (error) {
-      setState({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Operation failed'
-      });
-      throw error;
-    }
-    setState({ isLoading: false, error: null });
-  };
-
-  return {
-    addProjects: (projects: ProjectGeofence[]) =>
-      handleOperation(() => geofencingSingleton.addProjects(projects)),
-    removeProjects: (projectIds: string[]) =>
-      handleOperation(() => geofencingSingleton.removeProjects(projectIds)),
-    clearAllProjects: () =>
-      handleOperation(() => geofencingSingleton.clearAllProjects()),
-    forceGeofenceCheck: () =>
-      handleOperation(() => geofencingSingleton.forceGeofenceCheck()),
-    refreshGeofences: () =>
-      handleOperation(() => geofencingSingleton.triggerGeofenceRefresh()),
-    isLoading: state.isLoading,
-    error: state.error,
-  };
-};

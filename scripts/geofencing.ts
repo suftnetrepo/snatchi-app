@@ -9,20 +9,13 @@ import type {
   GeofenceTransition,
   ProjectGeofence,
   GeofencingState,
-  GeofenceEventBase,
 } from '../src/types/types';
 import {
   store,
   getStore,
   PROJECT_KEY,
 } from '../src/utils/asyncStorage';
-import { toModel } from '../src/utils/help';
-import { zat } from '../src/utils/zap';
-import { FENCE, VERBS } from '../config';
-import { localNotificationService } from '../Notification/LocalNotificationService';
-import { Vibration } from 'react-native';
-import { getCurrentLocation } from './getReliableLocation';
-
+import { FENCE } from '../config';
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
@@ -41,7 +34,6 @@ class GeofencingSingleton {
 
   private eventListeners = new Set<(event: GeofenceEvent) => void>();
   private stateListeners = new Set<(state: GeofencingState) => void>();
-  private currentlyInside = new Set<string>();
 
   private constructor() { }
 
@@ -81,84 +73,18 @@ class GeofencingSingleton {
     return stored;
   }
 
-  private async saveProjects(projects: ProjectGeofence[]) {
+  public async storage(projects: ProjectGeofence[]) {
+    const existing = await this.loadProjects();
+    const filtered = existing.filter(
+      p => !projects.some(np => np.projectId === p.projectId),
+    );
+
+    const updated = [...filtered, ...projects];
+    await store(PROJECT_KEY, updated);
+  }
+
+  public async saveProjects(projects: ProjectGeofence[]) {
     await store(PROJECT_KEY, projects);
-  }
-
-  private isWithinProjectWindow(project: ProjectGeofence): boolean {
-    const now = new Date();
-
-    const today = now.toISOString().split('T')[0];
-    const startDay = project.startDate.split('T')[0];
-    const endDay = project.endDate.split('T')[0];
-
-    if (today < startDay || today > endDay) {
-      return false;
-    }
-
-    const [sh, sm] = project.startTime.split(':').map(Number);
-    const [eh, em] = project.endTime.split(':').map(Number);
-
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const startMinutes = sh * 60 + sm;
-    const endMinutes = eh * 60 + em;
-
-    if (nowMinutes < startMinutes || nowMinutes > endMinutes) {
-      return false;
-    }
-
-    const jsDay = now.getDay();
-    const localDay = jsDay === 0 ? 7 : jsDay;
-
-    if (project.activeDays?.length) {
-      if (!project.activeDays.includes(localDay)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private async saveFenceEvent(event: GeofenceEvent) {
-    try {
-      const model = toModel(event);
-
-      if (event.transition === 'ENTER' || event.transition === 'EXIT') {
-        Vibration.vibrate(300);
-
-        const title =
-          event.transition === 'ENTER'
-            ? 'Entered Geofence'
-            : 'Exited Geofence';
-
-        const message =
-          event.transition === 'ENTER'
-            ? `You entered ${model.siteName}`
-            : `You exited ${model.siteName}`;
-
-        localNotificationService.defaultChannel();
-        localNotificationService.showNotification(
-          Date.now() % 100000,
-          title,
-          message,
-          { eventType: event.transition },
-          { playSound: true },
-        );
-      }
-
-      await this.handleSave(model);
-    } catch (err) {
-      if (__DEV__) console.error(`saveFenceEvent error:`, err);
-    }
-  }
-
-  private async handleSave(body: any) {
-    try {
-      const { success } = await zat(FENCE.addOne, body, VERBS.POST);
-      return success;
-    } catch (error) {
-      if (__DEV__) console.error('API SAVE ERROR:', error);
-    }
   }
 
   async handleState() {
@@ -180,22 +106,9 @@ class GeofencingSingleton {
         if (action === 'EXIT') transition = 'EXIT';
         if (action === 'DWELL') transition = 'DWELL';
 
-        const base: GeofenceEventBase = {
-          id: identifier,
-          transition,
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          timestamp: new Date().toISOString(),
-        };
-
-        const enriched = await this.enrichEvent(base);
-        this.saveFenceEvent(enriched).catch((error) => {
-          console.log("error", error)
-        })
-
         if (action == "ENTER") {
           // Entering the danger-zone, we want to aggressively track location.
-          await BackgroundGeolocation.start();
+          await BackgroundGeolocation.startGeofences();
         } else if (action == "EXIT") {
           // Exiting the danger-zone, we resume geofences-only tracking.
           await BackgroundGeolocation.startGeofences();
@@ -217,18 +130,8 @@ class GeofencingSingleton {
     this.motionSubscription = BackgroundGeolocation.onMotionChange(() => { });
   }
 
-  private async enrichEvent(
-    base: GeofenceEventBase,
-  ): Promise<GeofenceEvent> {
-    const projects = await this.loadProjects();
-    const project = projects.find(p => p.projectId === base.id);
-    return { ...base, ...(project ?? {}) };
-  }
-
   async initialize(debug = true) {
     try {
-
-      const schedule = await this.restoreProjects();
 
       const config: Config = {
         geolocation: {
@@ -245,22 +148,18 @@ class GeofencingSingleton {
           geofenceProximityRadius: 1000,
           geofenceInitialTriggerEntry: true,
           geofenceModeHighAccuracy: true,
-          locationAuthorizationRequest: 'Always',
-          disableLocationAuthorizationAlert: false,
-          locationAuthorizationAlert: {
-            titleWhenNotEnabled: 'Location Required for Geofencing',
-            message:
-              'Location access is needed to detect geofence events.',
-            cancelButton: 'Cancel',
-            settingsButton: 'Settings',
-          },
         },
         http: {
+          url: FENCE.addOne,
           autoSync: true,
+          batchSync: true,
+          maxBatchSize: 10,
+          method: "POST",
         },
         app: {
           stopOnTerminate: false,
           startOnBoot: true,
+          preventSuspend: false,
           enableHeadless: true,
           backgroundPermissionRationale: {
             title: 'Allow background location for geofencing.',
@@ -274,8 +173,6 @@ class GeofencingSingleton {
             text: 'Monitoring geofence regions',
             smallIcon: 'mipmap/ic_launcher',
           },
-          schedule,
-          scheduleUseAlarmManager: true,
         },
         logger: {
           debug,
@@ -287,18 +184,10 @@ class GeofencingSingleton {
         .then(async state => {
           this.setupEventListeners();
 
-          await BackgroundGeolocation.setConfig({
-            app: {
-              schedule,
-              scheduleUseAlarmManager: true,
-            },
-          });
-
           if (!state.enabled) {
             await BackgroundGeolocation.startGeofences();
           }
 
-          await this.initialInsideCheck();
           return true;
         })
         .catch(error => {
@@ -313,201 +202,53 @@ class GeofencingSingleton {
   }
 
   async addProjects(projects: ProjectGeofence[]) {
-    const existing = await this.loadProjects();
-    const filtered = existing.filter(
-      p => !projects.some(np => np.projectId === p.projectId),
-    );
 
-    const updated = [...filtered, ...projects];
-    await this.saveProjects(updated);
-    const schedule = await this.restoreProjects();
+    for (const p of projects) {
+      const geofenceId = `${p.projectId}_${p.userId}`;
+
+      await BackgroundGeolocation.addGeofence({
+        identifier: geofenceId,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        radius: p.radius,
+        notifyOnEntry: true,
+        notifyOnExit: true,
+        notifyOnDwell: false,
+        extras: {
+          ...p
+        }
+      });
+    }
+
+    const schedule = projects.map(p => {
+      const days = p.activeDays?.length
+        ? p.activeDays.join(',')
+        : '1-7';
+      return `${days} ${p.startTime}-${p.endTime} geofence`;
+    });
 
     BackgroundGeolocation.setConfig({
       app: {
         schedule,
+           scheduleUseAlarmManager: true,
       },
     });
-  }
 
-  async removeProjects(ids: string[]) {
-    const existing = await this.loadProjects();
-
-    for (const id of ids) {
-      const project = existing.find(p => p.projectId === id);
-      if (project) {
-        this.currentlyInside.delete(project.projectId);
-      }
-    }
-
-    const updated = existing.filter(p => !ids.includes(p.projectId));
-    await this.saveProjects(updated);
-    await this.restoreProjects();
+    this.storage(projects).catch((error)=> {
+      console.log(error)
+    })
   }
 
   async clearAllProjects() {
-    this.currentlyInside.clear();
-    await this.saveProjects([]);
     await BackgroundGeolocation.removeGeofences();
     await BackgroundGeolocation.stopSchedule();
     await BackgroundGeolocation.stop();
-  }
-
-  async restoreProjects() {
-    try {
-
-      const state = await BackgroundGeolocation.getState()
-
-      if (!state.enabled) {
-        return []
-      }
-
-      const projects = await this.loadProjects();
-
-      const activeProjects = projects.filter(p =>
-        this.isWithinProjectWindow(p),
-      );
-
-      if (activeProjects.length === 0) {
-        await BackgroundGeolocation.removeGeofences();
-        this.currentlyInside.clear();
-        return [];
-      }
-
-      const existing = await BackgroundGeolocation.getGeofences();
-      const existingIds = new Set(existing.map(g => g.identifier));
-      const activeIds = new Set(
-        activeProjects.map(p => p.projectId),
-      );
-
-      for (const p of activeProjects) {
-        if (!existingIds.has(p.projectId)) {
-          await BackgroundGeolocation.addGeofence({
-            identifier: p.projectId,
-            latitude: p.latitude,
-            longitude: p.longitude,
-            radius: p.radius,
-            notifyOnEntry: true,
-            notifyOnExit: true,
-            notifyOnDwell: false,
-          });
-        }
-      }
-
-      for (const g of existing) {
-        if (!activeIds.has(g.identifier)) {
-          await BackgroundGeolocation.removeGeofence(g.identifier);
-          this.currentlyInside.delete(g.identifier);
-        }
-      }
-
-      const schedule = activeProjects.map(p => {
-        const days = p.activeDays?.length
-          ? p.activeDays.join(',')
-          : '1-7';
-        return `${days} ${p.startTime}-${p.endTime} geofence`;
-      });
-
-      return schedule;
-    } catch (err) {
-      if (__DEV__) console.error('restoreProjects failed:', err);
-      return [];
-    }
-  }
-
-  private async initialInsideCheck() {
-    try {
-      const allProjects = await this.loadProjects();
-      if (!allProjects.length) return;
-
-      const projects = allProjects.filter(p =>
-        this.isWithinProjectWindow(p),
-      );
-      if (!projects.length) return;
-
-      const loc = await getCurrentLocation();
-
-      const { latitude, longitude } = loc;
-
-      for (const p of projects) {
-        const id = p.projectId;
-
-        const distance = this.getDistance(
-          loc.latitude,
-          loc.longitude,
-          p.latitude,
-          p.longitude,
-        );
-
-        if (distance <= p.radius) {
-          if (this.currentlyInside.has(id)) {
-            continue;
-          }
-
-          this.currentlyInside.add(id);
-
-          const {
-            id: _ignoreId,
-            latitude: _ignoreLat,
-            longitude: _ignoreLon,
-            ...safeProject
-          } = p;
-
-          const evt: GeofenceEvent = {
-            id,
-            transition: 'ENTER',
-            latitude: loc.latitude,
-            longitude: loc.longitude,
-            timestamp: new Date().toISOString(),
-            ...safeProject,
-          };
-
-          this.eventListeners.forEach(cb => cb(evt));
-        }
-      }
-    } catch (err) {
-      if (__DEV__)
-        console.error('initialInsideCheck failed:', err);
-    }
-  }
-
-  private getDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ) {
-    const R = 6371000;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    await BackgroundGeolocation.destroyLocations()
   }
 
   addEventListener(listener: (event: GeofenceEvent) => void) {
     this.eventListeners.add(listener);
     return () => this.eventListeners.delete(listener);
-  }
-
-  async forceGeofenceCheck() {
-    this.initialInsideCheck();
-  }
-
-  async triggerGeofenceRefresh() {
-    await BackgroundGeolocation.getCurrentPosition({
-      samples: 2,
-      desiredAccuracy: 20,
-      persist: true,
-      timeout: 10000,
-    });
-    await this.initialInsideCheck();
-  }
-
-  getCurrentGeofenceStates() {
-    return Array.from(this.currentlyInside);
   }
 }
 

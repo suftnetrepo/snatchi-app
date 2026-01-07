@@ -124,7 +124,7 @@ export const ProjectDetails = () => {
 
     const RenderHeader = () => (
         <XStack
-            paddingHorizontal={16}
+            paddingHorizontal={8}
             paddingVertical={8}
             justifyContent="flex-start"
             alignItems="center"
@@ -141,7 +141,7 @@ export const ProjectDetails = () => {
                     />
                 </StyledCycle>
             </Pressable>
-            <StyledSpacer marginHorizontal={2} />
+            <StyledSpacer marginHorizontal={4} />
             <StyledText
                 fontFamily={fontStyles.Roboto_Regular}
                 fontWeight={theme.fontWeight.normal}

@@ -1,0 +1,22 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build Android release AAB (no Play Store upload)"
+  lane :beta do
+
+    UI.message("🔧 Cleaning Android project")
+    gradle(
+      task: "clean",
+    )
+
+    UI.message("📦 Building Android App Bundle (Release)")
+    gradle(
+      task: "bundle",
+      build_type: "Release"
+    )
+
+    UI.success("✅ Android AAB build completed")
+    UI.message("📁 Output:")
+    UI.message("android/app/build/outputs/bundle/release/app-release.aab")
+  end
+end

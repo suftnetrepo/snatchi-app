@@ -10,11 +10,13 @@ import { CommonActions } from '@react-navigation/native';
 import { geofencingSingleton } from '../../../scripts/geofencing';
 import { theme } from "../../utils/theme";
 import { useFocus } from "../../hooks/useFocus";
+import LocationPermissionAlert from "../../components/permissionAlert";
 
 export default function Start({ navigation }) {
     const { key } = useFocus();
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
+    const [showPermissionModal, setShowPermissionModal] = useState(false);
 
     const login = () => {
         navigation.dispatch(
@@ -25,50 +27,40 @@ export default function Start({ navigation }) {
         );
     };
 
+    const requestPermission = async () => {
+        const status = await geofencingSingleton.requestPermissions();
+        if (status) {
+            setShowPermissionModal(false);
+            geofencingSingleton.initialize().then(()=> {
+                login()
+            })
+        }
+    };
+
     const handleAllow = async () => {
         console.log('🔘 [START] Allow button pressed');
-        
+
         try {
             setLoading(true);
 
-            // Initialize geofencing
             const granted = await geofencingSingleton.initialize();
             console.log('📍 [START] Initialize result:', granted);
 
             if (granted) {
                 console.log('✅ [START] Permission granted, navigating to login');
-                // Small delay to show success state
-                setTimeout(() => {
-                    login();
-                }, 300);
+                setTimeout(login, 300);
             } else {
                 console.log('❌ [START] Permission denied');
-                // You might want to show an alert here
-                alert(
-                    'Location Permission Required',
-                    'Snatchi needs location access to track job sites. Please enable it in Settings.',
-                    [
-                        { text: 'Continue Anyway', onPress: login },
-                        { text: 'Try Again', onPress: handleAllow }
-                    ]
-                );
+                setShowPermissionModal(true); // ✅ SHOW MODAL
             }
         } catch (error) {
             console.error('❌ [START] Geofencing initialization error:', error);
-            
-            // Show error to user
-            alert(
-                'Initialization Error',
-                'Something went wrong. Please try again.',
-                [
-                    { text: 'Continue Anyway', onPress: login },
-                    { text: 'Try Again', onPress: handleAllow }
-                ]
-            );
+            setShowPermissionModal(true); // fallback
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleSkip = () => {
         console.log('⏭️ [START] Skip button pressed');
@@ -179,6 +171,12 @@ export default function Start({ navigation }) {
                     </Box>
                 </StyledBackgroundImage>
             </Box>
+            <LocationPermissionAlert
+                visible={showPermissionModal}
+                onRetry={requestPermission}
+                onContinue={login}
+                loading={loading}
+            />
         </StyledSafeAreaView>
     );
 }

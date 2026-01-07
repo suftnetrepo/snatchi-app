@@ -3487,7 +3487,7 @@ PODS:
   - Sentry/HybridSDK (8.57.3)
   - SocketRocket (0.7.1)
   - TSBackgroundFetch (4.0.5)
-  - TSLocationManager (4.0.0-beta.6):
+  - TSLocationManager (4.0.0-beta.9):
     - TSBackgroundFetch (~> 4.0)
   - Yoga (0.0.0)
 
@@ -3954,7 +3954,7 @@ SPEC CHECKSUMS:
   Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   TSBackgroundFetch: e91020924db32f27d0a43df7dec6f73f10743571
-  TSLocationManager: 66026e6297f19c2331d1c35854e50aff2636a334
+  TSLocationManager: 37c6f04d230ae09415536109905bba767bde2c88
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
 
 PODFILE CHECKSUM: a61dff0694d096b8cbf7c2d10763daa556e24841

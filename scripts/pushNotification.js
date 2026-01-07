@@ -1,7 +1,7 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { navigationRef } from '../src/navigation/NavigationRef';
-import { store, getStore, add, SCHEDULE_KEY } from '../src/utils/asyncStorage';
+import { store, getStore, add, SCHEDULE_KEY, PROJECT_KEY } from '../src/utils/asyncStorage';
 import { geofencingSingleton } from './geofencing';
 import { localNotificationService } from '../Notification/LocalNotificationService';
 import { NotificationBus } from './notificationBus';

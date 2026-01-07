@@ -87,6 +87,9 @@ ios-run:
 ios-run-device:
 	npx react-native run-ios --device "iPhone"
 
+ios-run-simulator:
+	npx react-native run-ios --simulator "12C98393-5C82-498A-A1D2-D7E0966AE7D5"
+
 ios-build:
 	cd ios && xcodebuild -workspace snatchi.xcworkspace -scheme snatchi -configuration Debug -sdk iphonesimulator -derivedDataPath build
 

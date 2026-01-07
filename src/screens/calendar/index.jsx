@@ -216,7 +216,7 @@ const CalendarListScreen = () => {
         fontWeight={theme.fontWeight.normal}
         color={theme.colors.gray[600]}
         fontSize={theme.fontSize.normal}>
-        My Calendar
+        My Job Schedule
       </StyledText>
       <StyledSpacer flex={1} />
       {fields.startDate && fields.title === '' && (

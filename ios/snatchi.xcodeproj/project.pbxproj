@@ -34,8 +34,8 @@
 		3621C3502D50EC8200A2557E /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3621C3282D50EC8200A2557E /* FontAwesome5_Brands.ttf */; };
 		36E73FF62D63525C009B99A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 36E73FF52D63525C009B99A6 /* GoogleService-Info.plist */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7812D0CB4A17FED833567918 /* Pods_snatchi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B90A45AFFEF43A33A2F97626 /* Pods_snatchi.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		B5F87EC4D42B06CB009C0E7B /* Pods_snatchi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7602498E3BBFD3F93C3D5C4 /* Pods_snatchi.framework */; };
 		B6E412389555011133A451D0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -73,9 +73,9 @@
 		36E740062D63D81B009B99A6 /* FirebaseCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FirebaseCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = snatchi/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = snatchi/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		A5EFFE1E07D473BC9AB1574F /* Pods-snatchi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-snatchi.debug.xcconfig"; path = "Target Support Files/Pods-snatchi/Pods-snatchi.debug.xcconfig"; sourceTree = "<group>"; };
-		AE499D740F9313A81B0079DF /* Pods-snatchi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-snatchi.release.xcconfig"; path = "Target Support Files/Pods-snatchi/Pods-snatchi.release.xcconfig"; sourceTree = "<group>"; };
-		D7602498E3BBFD3F93C3D5C4 /* Pods_snatchi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_snatchi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		86479243C89CCC31F26745C5 /* Pods-snatchi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-snatchi.release.xcconfig"; path = "Target Support Files/Pods-snatchi/Pods-snatchi.release.xcconfig"; sourceTree = "<group>"; };
+		8FC4F41E954525FEB790C637 /* Pods-snatchi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-snatchi.debug.xcconfig"; path = "Target Support Files/Pods-snatchi/Pods-snatchi.debug.xcconfig"; sourceTree = "<group>"; };
+		B90A45AFFEF43A33A2F97626 /* Pods_snatchi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_snatchi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -84,7 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5F87EC4D42B06CB009C0E7B /* Pods_snatchi.framework in Frameworks */,
+				7812D0CB4A17FED833567918 /* Pods_snatchi.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -110,7 +110,7 @@
 			children = (
 				36E740062D63D81B009B99A6 /* FirebaseCore.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				D7602498E3BBFD3F93C3D5C4 /* Pods_snatchi.framework */,
+				B90A45AFFEF43A33A2F97626 /* Pods_snatchi.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -179,8 +179,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				A5EFFE1E07D473BC9AB1574F /* Pods-snatchi.debug.xcconfig */,
-				AE499D740F9313A81B0079DF /* Pods-snatchi.release.xcconfig */,
+				8FC4F41E954525FEB790C637 /* Pods-snatchi.debug.xcconfig */,
+				86479243C89CCC31F26745C5 /* Pods-snatchi.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -192,15 +192,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "snatchi" */;
 			buildPhases = (
-				771350322E1E0C4EFDD41D10 /* [CP] Check Pods Manifest.lock */,
+				BC1B56A83FF784786276C722 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				84F47767F4674EDAAAEE74BD /* Upload Debug Symbols to Sentry */,
-				7EEF7547E54BD94EEED69D07 /* [CP] Embed Pods Frameworks */,
-				64E62F6E03EDF34274F32AE6 /* [CP] Copy Pods Resources */,
-				FBE7ACD6A2E7EEE118E210B3 /* [CP-User] [RNFB] Core Configuration */,
+				B35F1652A2326DA4D042EBE9 /* [CP] Embed Pods Frameworks */,
+				74B60D0F40807C92A4AD6261 /* [CP] Copy Pods Resources */,
+				F18A5C12E19F13D3E1F6348E /* [CP-User] [RNFB] Core Configuration */,
 			);
 			buildRules = (
 			);
@@ -297,7 +297,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nSENTRY_XCODE=\"$REACT_NATIVE_PATH/../@sentry/react-native/scripts/sentry-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $SENTRY_XCODE\"\n";
 		};
-		64E62F6E03EDF34274F32AE6 /* [CP] Copy Pods Resources */ = {
+		74B60D0F40807C92A4AD6261 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -314,7 +314,38 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		771350322E1E0C4EFDD41D10 /* [CP] Check Pods Manifest.lock */ = {
+		84F47767F4674EDAAAEE74BD /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh";
+		};
+		B35F1652A2326DA4D042EBE9 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BC1B56A83FF784786276C722 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -336,38 +367,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		7EEF7547E54BD94EEED69D07 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-snatchi/Pods-snatchi-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		84F47767F4674EDAAAEE74BD /* Upload Debug Symbols to Sentry */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Upload Debug Symbols to Sentry";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh";
-		};
-		FBE7ACD6A2E7EEE118E210B3 /* [CP-User] [RNFB] Core Configuration */ = {
+		F18A5C12E19F13D3E1F6348E /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -396,7 +396,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A5EFFE1E07D473BC9AB1574F /* Pods-snatchi.debug.xcconfig */;
+			baseConfigurationReference = 8FC4F41E954525FEB790C637 /* Pods-snatchi.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
@@ -404,7 +404,7 @@
 				CODE_SIGN_ENTITLEMENTS = snatchi/snatchi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = ZQADUF26X5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = snatchi/Info.plist;
@@ -414,7 +414,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.7;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -435,7 +435,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = AE499D740F9313A81B0079DF /* Pods-snatchi.release.xcconfig */;
+			baseConfigurationReference = 86479243C89CCC31F26745C5 /* Pods-snatchi.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
@@ -443,7 +443,7 @@
 				CODE_SIGN_ENTITLEMENTS = snatchi/snatchi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = ZQADUF26X5;
 				INFOPLIST_FILE = snatchi/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = com.suftnet.snatchi;
@@ -452,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.7;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -550,10 +550,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -633,10 +630,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
