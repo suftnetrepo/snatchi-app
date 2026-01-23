@@ -92,6 +92,11 @@ class GeofencingSingleton {
     return state.enabled
   }
 
+  async handleClearSchedules() {
+    const geofences = await BackgroundGeolocation.getGeofences();
+    this.clearSchedules(geofences)
+  }
+
   private setupEventListeners() {
     this.geofenceSubscription?.remove();
     this.locationSubscription?.remove();
@@ -132,6 +137,7 @@ class GeofencingSingleton {
 
   async initialize(debug = true) {
     try {
+
 
       const config: Config = {
         geolocation: {
@@ -182,6 +188,10 @@ class GeofencingSingleton {
 
       BackgroundGeolocation.ready(config)
         .then(async state => {
+          this.handleClearSchedules().catch((error) => {
+            if (__DEV__) console.error('Error clearing geofences:', error);
+          }
+          )
           this.setupEventListeners();
 
           if (!state.enabled) {
@@ -230,11 +240,11 @@ class GeofencingSingleton {
     BackgroundGeolocation.setConfig({
       app: {
         schedule,
-           scheduleUseAlarmManager: true,
+        scheduleUseAlarmManager: true,
       },
     });
 
-    this.storage(projects).catch((error)=> {
+    this.storage(projects).catch((error) => {
       console.log(error)
     })
   }
@@ -249,6 +259,20 @@ class GeofencingSingleton {
   addEventListener(listener: (event: GeofenceEvent) => void) {
     this.eventListeners.add(listener);
     return () => this.eventListeners.delete(listener);
+  }
+
+  private async clearSchedules(schedules: RNBGGeofence[]) {
+    const now = new Date();
+
+    for (const schedule of schedules) {
+      if (schedule.extras && schedule.extras.endDate) {
+        const endDate = new Date(schedule.extras.endDate as string | number);
+
+        if (endDate < now) {
+          await BackgroundGeolocation.removeGeofence(schedule.identifier);
+        }
+      }
+    }
   }
 }
 
