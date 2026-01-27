@@ -52,6 +52,11 @@ yarn-error.log
 **/fastlane/screenshots
 **/fastlane/test_output
 
+ios/fastlane/keys/*.p8
+ios/fastlane/.env
+ios/fastlane/.env.default
+*.p8
+
 # Bundle artifact
 *.jsbundle
 

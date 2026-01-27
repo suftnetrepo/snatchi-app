@@ -85,7 +85,7 @@ ios-run:
 	npx react-native run-ios
 
 ios-run-device:
-	npx react-native run-ios --device "iPhone"
+	npx react-native run-ios --device "00008110-00010C4422C2401E"
 
 ios-run-simulator:
 	npx react-native run-ios --simulator "12C98393-5C82-498A-A1D2-D7E0966AE7D5"

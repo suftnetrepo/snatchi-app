@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Navigator } from './src/navigation/AppNavigation';
 import AppProvider from './src/hooks/appContext';
@@ -6,32 +6,14 @@ import { fcmStart } from './scripts/pushNotification';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
-import { geofencingSingleton } from './scripts/geofencing';
-import { StyledIndicator } from './src/components/indicator';
 import useLocation from './src/hooks/useLocation';
 import { useGeofenceForeground } from './src/hooks/useGeofencing';
 
 function App() {
   useLocation()
-  const [granted, setGranted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  useGeofenceForeground(granted, debounceMs = 2000)
+  // useGeofenceForeground(granted, debounceMs = 2000)
 
   useEffect(() => {
-    const initGeofencing = async () => {
-      try {
-        const state = await geofencingSingleton.handleState()
-        if (state) {
-          await geofencingSingleton.initialize()
-          setGranted(true);
-          return
-        }
-        setGranted(false);
-      } catch {
-        setGranted(false);
-      }
-    };
-
     const initFCM = async () => {
       try {
         await fcmStart();
@@ -40,24 +22,18 @@ function App() {
       }
     };
 
-    const initializeApp = async () => {
-      await Promise.allSettled([initGeofencing(), initFCM()]);
-      setIsLoading(false);
+    const init = async () => {
+      await initFCM()
     };
 
-    initializeApp();
+    init();
   }, []);
-
-
-  if (isLoading) {
-    return <StyledIndicator />;
-  }
 
   return (
     <AppProvider>
       <GluestackUIProvider config={glueStackConfigUi}>
         <NavigationContainer ref={navigationRef}>
-          <Navigator granted={granted} />
+          <Navigator />
         </NavigationContainer>
       </GluestackUIProvider>
     </AppProvider>

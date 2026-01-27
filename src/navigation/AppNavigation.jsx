@@ -20,10 +20,10 @@ import Profile from '../screens/profile';
 import {GeofencingDebug} from '../screens/geofence';
 
 const Stack = createStackNavigator();
-function Navigator({granted}) {
+function Navigator() {
 
   return (
-    <Stack.Navigator initialRouteName={granted ? 'login' : 'start'}>
+    <Stack.Navigator initialRouteName={'start'}>
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
