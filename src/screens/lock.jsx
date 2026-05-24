@@ -1,232 +1,266 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
-  YStack,
-  XStack,
+  StyledSpinner,
+  StyledOkDialog,
   StyledHeader,
   StyledSafeAreaView,
-  StyledImage,
-  StyledSpacer,
-  StyledText,
-  StyledSpinner,
-  StyledButton,
-  StyledCycle,
 } from 'fluent-styles';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Animated, Pressable, Vibration, Platform } from 'react-native';
-import { theme } from '../utils/theme';
-import { fontStyles } from '../utils/fontStyles';
 import { useSecure } from '../hooks/useSecure';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
-import { useAppContext } from '../hooks/appContext';
-import { useUserChat } from '../hooks/useChat';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+const CODE_LENGTH = 6;
+
+const KeypadButton = ({ label, onPress, variant = 'default' }) => (
+  <TouchableOpacity
+    style={[styles.key, variant === 'action' && styles.keyAction]}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
+    {typeof label === 'string' ? (
+      <Text style={[styles.keyLabel, variant === 'action' && styles.keyActionLabel]}>
+        {label}
+      </Text>
+    ) : (
+      label
+    )}
+  </TouchableOpacity>
+);
 
 const Keypad = () => {
+  const navigation = useNavigation();
   const route = useRoute();
-  const navigator = useNavigation();
-  const { login, updateChangeStatus } = useAppContext();
-  const { error, loading, handleVerifyCode, handleReset } = useSecure();
-  const [pin, setPin] = useState('');
-  const { email } = route.params;
-  const { handleChatSignIn } = useUserChat();
-  const shakeAnimation = useRef(new Animated.Value(0)).current;
+  const { email } = route.params || {};
+  const [code, setCode] = useState([]);
+  const { error, loading, handleVerifyCode, handleLogin, handleReset } = useSecure();
 
-  const triggerShake = () => {
-    Animated.sequence([
-      Animated.timing(shakeAnimation, {
-        toValue: 10,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnimation, {
-        toValue: -10,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnimation, {
-        toValue: 10,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnimation, {
-        toValue: -10,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shakeAnimation, {
-        toValue: 0,
-        duration: 50,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    Vibration.vibrate(100);
-  };
-
-  if (error) {
-    triggerShake();
-  }
-
-  const handlePress = num => {
-    if (pin.length < 6) {
-      let passCode = pin + num;
-      setPin(pin + num);
-
-      if (passCode.length === 6) {
-        handleVerifyCode({ code: passCode, email: email }).then(result => {
-          if (result) {
-            login(result).then(() => { });
-            updateChangeStatus(true)
-            handleChatSignIn(email, '12345!').then(() => { });
-           
-            navigator.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'bottom-tabs' }],
-              })
-            );
-          }
-        });
-      }
+  const handlePress = (digit) => {
+    if (code.length >= CODE_LENGTH) return;
+    const next = [...code, digit];
+    setCode(next);
+    if (next.length === CODE_LENGTH) {
+      handleVerifyCode({ email, code: next.join('') }).then(user => {
+        if (user) {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'bottom-tabs', params: { screen: 'Home' } }],
+            })
+          );
+        } else {
+          setCode([]);
+        }
+      });
     }
   };
 
   const handleDelete = () => {
-    setPin(pin.slice(0, -1));
+    setCode(prev => prev.slice(0, -1));
   };
 
-  const RenderHeader = () => (
-    <XStack
-      paddingHorizontal={16}
-      paddingVertical={8}
-      justifyContent="flex-start"
-      alignItems="center"
-      backgroundColor={theme.colors.gray[50]}>
-      <Pressable onPress={() => navigator.goBack()}>
-        <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.gray[400]}>
-          <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
-        </StyledCycle>
-      </Pressable>
-
-      <StyledSpacer marginHorizontal={2} />
-      <StyledText
-        fontFamily={fontStyles.Roboto_Regular}
-        fontWeight={theme.fontWeight.normal}
-        color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
-        OTP Verification
-      </StyledText>
-      <StyledSpacer flex={1} />
-    </XStack>
-  );
+  const handleResendCode = () => {
+    setCode([]);
+    handleLogin({ email });
+  };
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
-      <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
-        <StyledHeader.Full>
-          <RenderHeader />
-        </StyledHeader.Full>
+    <StyledSafeAreaView backgroundColor="#F7F8F5">
+      <StyledHeader
+        skipAndroid={Platform.OS === 'android' ? false : true}
+        marginHorizontal={8}
+        statusProps={{ translucent: true }}
+      >
+        <StyledHeader.Full />
       </StyledHeader>
-      <YStack flex={1} justifyContent="center" alignItems="center">
-        <YStack
-          marginHorizontal={16}
-          justifyContent="center"
-          alignItems="center">
-          <StyledImage
-            borderWidth={0}
-            source={require('../../assets/img/icons8--ogin-64.png')}></StyledImage>
-          <StyledText
-            paddingTop={16}
-            paddingHorizontal={24}
-            fontFamily={fontStyles.Roboto_Regular}
-            fontWeight={theme.fontWeight.normal}
-            color={theme.colors.gray[400]}
-            textAlign="center"
-            fontSize={theme.fontSize.normal}>
-            Enter your access code sent to.
-          </StyledText>
-          <StyledText
-            paddingVertical={2}
-            paddingHorizontal={16}
-            fontFamily={fontStyles.Roboto_Regular}
-            fontWeight={theme.fontWeight.medium}
-            color={theme.colors.gray[800]}
-            textAlign="center"
-            fontSize={theme.fontSize.normal}>
-            {email}
-          </StyledText>
-        </YStack>
 
-        <StyledSpacer marginVertical={16} />
-        <Animated.View style={{ transform: [{ translateX: shakeAnimation }] }}>
-          <XStack marginBottom={20}>
-            {[0, 1, 2, 3, 4, 5].map((_, index) => (
-              <YStack
-                key={index}
-                width={40}
-                height={40}
-                borderWidth={1}
-                borderRadius={10}
-                margin={5}
-                justifyContent="center"
-                alignItems="center">
-                <StyledText fontSize={18} fontWeight="bold">
-                  {pin[index]}
-                </StyledText>
-              </YStack>
-            ))}
-          </XStack>
-        </Animated.View>
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={18} color="#374151" />
+        </TouchableOpacity>
+        <Text style={styles.navTitle}>OTP verification</Text>
+      </View>
 
-        <StyledSpacer marginVertical={8} />
-        <XStack
-          paddingHorizontal={8}
-          flexWrap="wrap"
-          justifyContent="center"
-          alignItems="center">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num, index) => (
-            <YStack key={index} margin={5}>
-              <StyledButton
-                width={70}
-                height={70}
-                borderWidth={1}
-                borderRadius={35}
-                backgroundColor={theme.colors.gray[1]}
-                borderColor={theme.colors.gray[400]}
-                key={index}
-                onPress={() => handlePress(num.toString())}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontSize={theme.fontSize.xxlarge}
-                  fontWeight={theme.fontWeight.bold}>
-                  {num}
-                </StyledText>
-              </StyledButton>
-            </YStack>
+      <View style={styles.container}>
+
+        <View style={styles.iconTile}>
+          <Icon name="forward-to-inbox" size={28} color="#C0DD97" />
+        </View>
+
+        <Text style={styles.eyebrow}>SNATCHI</Text>
+        <Text style={styles.headline}>Check your email</Text>
+
+        <Text style={styles.subtitle}>Access code sent to</Text>
+        <Text style={styles.email}>{email}</Text>
+
+        <View style={styles.cellsRow}>
+          {Array.from({ length: CODE_LENGTH }).map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.cell,
+                i === code.length && styles.cellActive,
+                code[i] !== undefined && styles.cellFilled,
+              ]}
+            >
+              <Text style={styles.cellText}>{code[i] ?? ''}</Text>
+            </View>
           ))}
-          <StyledButton
-            width={70}
-            height={70}
-            borderWidth={1}
-            borderRadius={35}
-            backgroundColor={theme.colors.gray[1]}
-            borderColor={theme.colors.gray[400]}
-            onPress={handleDelete}>
-            <StyledText
-              fontSize={theme.fontSize.xxlarge}
-              fontWeight={theme.fontWeight.bold}>
-              ⌫
-            </StyledText>
-          </StyledButton>
-        </XStack>
-        <StyledSpacer marginVertical={8} />
-      </YStack>
+        </View>
+
+        <View style={styles.keypadGrid}>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+            <KeypadButton key={n} label={String(n)} onPress={() => handlePress(String(n))} />
+          ))}
+          <KeypadButton label="resend" variant="action" onPress={handleResendCode} />
+          <KeypadButton label="0" onPress={() => handlePress('0')} />
+          <KeypadButton
+            label={<Icon name="backspace" size={20} color="#374151" />}
+            onPress={handleDelete}
+          />
+        </View>
+
+      </View>
+
+      {error && (
+        <StyledOkDialog
+          title={error}
+          description="Please try again later"
+          visible={true}
+          onOk={() => handleReset()}
+        />
+      )}
       {loading && <StyledSpinner />}
-      {error && handleReset()}
     </StyledSafeAreaView>
   );
 };
 
 export default Keypad;
+
+const styles = StyleSheet.create({
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#111827',
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  iconTile: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#3B6D11',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 2,
+    color: '#639922',
+    marginBottom: 6,
+  },
+  headline: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#111827',
+    lineHeight: 32,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginBottom: 2,
+  },
+  email: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3B6D11',
+    marginBottom: 24,
+  },
+  cellsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 28,
+  },
+  cell: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cellActive: {
+    borderWidth: 2,
+    borderColor: '#3B6D11',
+  },
+  cellFilled: {
+    borderColor: '#C0DD97',
+  },
+  cellText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  keypadGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  key: {
+    width: '30%',
+    flexGrow: 1,
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  keyAction: {
+    backgroundColor: '#EAF3DE',
+    borderColor: '#C0DD97',
+  },
+  keyLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  keyActionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#3B6D11',
+  },
+});

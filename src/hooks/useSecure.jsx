@@ -79,8 +79,7 @@ const useSecure = () => {
     );
 
     if (success) {
-      storeJWT(data?.token).catch(()=> {
-      })
+      storeJWT(data?.token).catch(()=> {})
       store('user_', data?.user?.user_id).catch(()=> {})
       setState(pre => {
         return {...pre, data: success, loading: false};
