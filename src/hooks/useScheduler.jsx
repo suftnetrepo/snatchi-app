@@ -300,6 +300,37 @@ const useScheduler = (key) => {
     }
   }
 
+  async function handleSchedules({date, engineerId}) {
+
+    console.log("Fetching schedules for engineer:", engineerId, "on date:", date);
+
+    setState(prev => ({ ...prev, loading: true }));
+    const { success, data, errorMessage } = await zat(
+      SCHEDULER.getEngineerSchedules,
+      null,
+      VERBS.GET,
+      {
+        action: 'getEngineerSchedules',
+        status: ["Ready", "ReadyToStart", "InProgress", "Progress", "Pending", "Accepted"],
+        date : date,
+        engineerId : engineerId
+      },
+    );
+
+    console.log("Fetched schedules:...", data);
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: data.data,
+        success: true,
+        loading: false,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
   return {
     ...state,
     handleReset,
@@ -312,7 +343,8 @@ const useScheduler = (key) => {
     handleDelete,
     handleMySchedulesByDates,
     handlNotifyChange,
-    handleNotifySave
+    handleNotifySave,
+    handleSchedules
   };
 };
 

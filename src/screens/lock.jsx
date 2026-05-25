@@ -15,6 +15,8 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useAppContext } from '../hooks/appContext';
+
 
 const CODE_LENGTH = 6;
 
@@ -36,10 +38,11 @@ const KeypadButton = ({ label, onPress, variant = 'default' }) => (
 
 const Keypad = () => {
   const navigation = useNavigation();
+  const { login } = useAppContext();
   const route = useRoute();
   const { email } = route.params || {};
   const [code, setCode] = useState([]);
-  const { error, loading, handleVerifyCode, handleLogin, handleReset } = useSecure();
+  const { error, loading, handleVerifyCode, handleLogin, handleReset , } = useSecure();
 
   const handlePress = (digit) => {
     if (code.length >= CODE_LENGTH) return;
@@ -48,6 +51,7 @@ const Keypad = () => {
     if (next.length === CODE_LENGTH) {
       handleVerifyCode({ email, code: next.join('') }).then(user => {
         if (user) {
+          login(user)
           navigation.dispatch(
             CommonActions.reset({
               index: 0,

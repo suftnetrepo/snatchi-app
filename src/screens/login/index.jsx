@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
 import {
   StyledSpinner,
-  YStack,
   StyledOkDialog,
-  StyledImage,
   StyledHeader,
   StyledSafeAreaView,
-  StyledSpacer,
-  StyledInput,
-  StyledText,
-  StyledButton,
 } from 'fluent-styles';
-import { fontStyles, theme } from '../../utils/theme';
 import { validatorRules } from './validatorRules';
 import { useSecure } from '../../hooks/useSecure';
 import { useNavigation } from '@react-navigation/native';
 import { validate } from '../../validator';
-import { Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Login = () => {
   const navigator = useNavigation();
@@ -36,100 +40,100 @@ const Login = () => {
       fields.user_name === '_kabelsus@gmail.com!' ||
       fields.user_name === 'abel.aghorighor@suftnet.com'
     ) {
-      navigator.navigate('keypad', {
-        email: fields.user_name,
-      });
+      navigator.navigate('keypad', { email: fields.user_name });
     } else {
       handleLogin({ email: fields.user_name }).then(async result => {
         if (result) {
-          navigator.navigate('keypad', {
-            email: fields.user_name,
-          });
+          navigator.navigate('keypad', { email: fields.user_name });
         }
       });
     }
   };
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
+    <StyledSafeAreaView backgroundColor="#F7F8F5">
       <KeyboardAvoidingView
         style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <StyledHeader skipAndroid={Platform.OS === 'android' ? false : true} marginHorizontal={8} statusProps={{ translucent: true }}>
-          <StyledHeader.Full></StyledHeader.Full>
+        <StyledHeader
+          skipAndroid={Platform.OS === 'android' ? false : true}
+          marginHorizontal={8}
+          statusProps={{ translucent: true }}
+        >
+          <StyledHeader.Full />
         </StyledHeader>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack
-            height={'100%'}
-            marginHorizontal={16}
-            flex={1}
-            justifyContent="flex-start"
-            alignItems="center">
-            <StyledSpacer marginVertical={64} />
-            <YStack
-              marginHorizontal={16}
-              justifyContent="center"
-              alignItems="center">
-              <Pressable onLongPress={() => navigator.navigate("GeofencingDebug")}>
-                <StyledImage
-                  borderWidth={0}
-                  resizeMode="cover"
-                  source={require('../../../assets/img/4.png')}></StyledImage>
-              </Pressable>
-              <StyledText
-                paddingVertical={16}
-                paddingHorizontal={16}
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.normal}
-                color={theme.colors.gray[500]}
-                textAlign="center"
-                fontSize={theme.fontSize.normal}>
-                Enter your account email to receive an access code.
-              </StyledText>
-            </YStack>
-            <StyledSpacer marginVertical={16} />
-            <StyledInput
-              label={'Email address'}
-              keyboardType="default"
-              placeholder=""
-              returnKeyType="next"
-              maxLength={50}
-              fontSize={theme.fontSize.normal}
-              borderColor={theme.colors.gray[200]}
-              backgroundColor={theme.colors.gray[1]}
-              borderRadius={32}
-              paddingHorizontal={8}
-              value={fields.user_name}
-              placeholderTextColor={theme.colors.gray[400]}
-              onChangeText={text => setFields({ ...fields, user_name: text })}
-              error={!!errorMessages?.user_name}
-              errorMessage={errorMessages?.user_name?.message}
-            />
 
-            <StyledSpacer marginVertical={8} />
-            <StyledButton
-              width="100%"
-              borderColor={theme.colors.cyan[500]}
-              backgroundColor={theme.colors.cyan[500]}
-              onPress={() => onSubmit()}>
-              <StyledText
-                paddingHorizontal={20}
-                paddingVertical={10}
-                color={theme.colors.gray[1]}>
-                Sign in
-              </StyledText>
-            </StyledButton>
-          
-          </YStack>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.container}>
+
+            {/* Icon tile */}
+            <Pressable onLongPress={() => navigator.navigate('GeofencingDebug')}>
+              <View style={styles.iconTile}>
+                <Icon name="lock-outline" size={28} color="#C0DD97" />
+              </View>
+            </Pressable>
+
+            {/* Brand + headline */}
+            <Text style={styles.eyebrow}>SNATCHI</Text>
+            <Text style={styles.headline}>Sign in to your{'\n'}account</Text>
+
+            {/* Subtitle */}
+            <Text style={styles.subtitle}>
+              Enter your account email and we'll send you a secure access code.
+            </Text>
+
+            {/* Email input */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Email address</Text>
+              <View style={[
+                styles.inputWrapper,
+                !!errorMessages?.user_name && styles.inputWrapperError,
+              ]}>
+                <Icon name="mail-outline" size={18} color="#9CA3AF" />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="done"
+                  maxLength={50}
+                  placeholder="you@company.com"
+                  placeholderTextColor="#C4C9D4"
+                  value={fields.user_name}
+                  onChangeText={text => setFields({ ...fields, user_name: text })}
+                  onSubmitEditing={onSubmit}
+                />
+              </View>
+              {!!errorMessages?.user_name && (
+                <Text style={styles.errorText}>{errorMessages.user_name.message}</Text>
+              )}
+            </View>
+
+            {/* Sign in button */}
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={onSubmit}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.primaryButtonText}>Sign in</Text>
+              <Icon name="arrow-forward" size={18} color="#EAF3DE" />
+            </TouchableOpacity>
+
+            {/* Trust hint */}
+            <Text style={styles.hint}>Access codes expire after 10 minutes</Text>
+
+          </View>
         </ScrollView>
+
         {error && (
           <StyledOkDialog
             title={error}
             description="Please try again later"
             visible={true}
-            onOk={() => {
-              handleReset();
-            }}
+            onOk={() => handleReset()}
           />
         )}
         {loading && <StyledSpinner />}
@@ -139,3 +143,109 @@ const Login = () => {
 };
 
 export default Login;
+
+const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 28,
+    paddingTop: 48,
+    paddingBottom: 40,
+  },
+
+  // Icon tile
+  iconTile: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#3B6D11',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 28,
+  },
+
+  // Typography
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 2,
+    color: '#639922',
+    marginBottom: 8,
+  },
+  headline: {
+    fontSize: 26,
+    fontWeight: '600',
+    color: '#111827',
+    lineHeight: 34,
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#4B5563',
+    marginBottom: 36,
+  },
+
+  // Field
+  fieldGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 52,
+  },
+  inputWrapperError: {
+    borderColor: '#E24B4A',
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    color: '#111827',
+    paddingVertical: 0,
+  },
+  errorText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#E24B4A',
+  },
+
+  // Button
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#3B6D11',
+    borderRadius: 14,
+    height: 52,
+    marginTop: 8,
+  },
+  primaryButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#EAF3DE',
+  },
+
+  // Hint
+  hint: {
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+});

@@ -1,8 +1,4 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-undef */
-/* eslint-disable prettier/prettier */
-/* eslint-disable react/prop-types */
-/* eslint-disable prettier/prettier */
+
 import { styled } from 'fluent-styles';
 import { theme } from '../../utils/theme';
 import { View } from 'react-native';

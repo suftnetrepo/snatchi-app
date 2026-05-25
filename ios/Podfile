@@ -1,7 +1,3 @@
-# Add the CocoaPods source at the very top
-# source 'https://github.com/CocoaPods/Specs.git'
-
-# Resolve react_native_pods.rb with node
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
@@ -11,7 +7,6 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-# Force static frameworks
 use_frameworks! :linkage => :static
 
 target 'snatchi' do
@@ -19,13 +14,11 @@ target 'snatchi' do
 
   $RNFirebaseAsStaticFramework = true
 
-  # Firebase (safe)
   pod 'GoogleUtilities', :modular_headers => true
   pod 'Firebase', :modular_headers => true
   pod 'FirebaseCoreInternal', :modular_headers => true
   pod 'FirebaseCore', :modular_headers => true
 
-  # RN Background Geolocation (installs TSBackgroundFetch internally)
   pod 'RNBackgroundGeolocation', :path => '../node_modules/react-native-background-geolocation'
 
   use_react_native!(
@@ -40,10 +33,33 @@ target 'snatchi' do
       :mac_catalyst_enabled => false,
     )
 
-    # Fix arm64 simulators
+    # Patch fmt/base.h: force FMT_CONSTEVAL to constexpr to avoid
+    # "call to consteval function is not a constant expression" errors with
+    # Xcode 26 / Apple Clang 19. fmt sets FMT_CONSTEVAL=consteval when
+    # __cpp_consteval is defined, but Clang 19's stricter consteval
+    # evaluation breaks Yoga, glog, and other pods that use fmt at runtime.
+    fmt_base = File.join(installer.sandbox.root, 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      content = File.read(fmt_base)
+      patched = content.gsub('#  define FMT_CONSTEVAL consteval', '#  define FMT_CONSTEVAL constexpr')
+      File.write(fmt_base, patched) if patched != content
+    end
+
+    # Set at project level so it propagates as default to all targets
+    installer.pods_project.build_configurations.each do |proj_config|
+      proj_config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+    end
+
     installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+      target.build_configurations.each do |build_config|
+        # Fix arm64 simulator builds
+        build_config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+
+        # Fix non-modular includes (Sentry, abseil, React-cxxreact, PromisesObjC, etc.)
+        # Belt-and-suspenders: both the Xcode setting and the explicit clang flag
+        build_config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        build_config.build_settings['OTHER_CFLAGS'] = '$(inherited) -Wno-non-modular-include-in-framework-module'
+        build_config.build_settings['OTHER_CPLUSPLUSFLAGS'] = '$(inherited) -Wno-non-modular-include-in-framework-module'
       end
     end
   end

@@ -2,8 +2,8 @@
 
 // STAGING
 const HOST_ADDRESS = "https://snatchi-web.onrender.com/";
-const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
-// const HOST_API_ADDRESS = "http://192.168.1.40:3000/api/";
+// const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
+const HOST_API_ADDRESS = "http://192.168.1.74:3000/api/";
 
 // END POINTS
 
@@ -27,6 +27,7 @@ export const SCHEDULER = {
   updatestatus: `${HOST_API_ADDRESS}scheduler`,
   removeOne: `${HOST_API_ADDRESS}scheduler`,
   getByUser: `${HOST_API_ADDRESS}scheduler`,
+  getEngineerSchedules: `${HOST_API_ADDRESS}scheduler`,
 };
 
 export const TASK_COMMENTS = {

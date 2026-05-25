@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   YStack,
   XStack,
@@ -25,6 +25,7 @@ import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
 import CalendarStrip from '../components/calender/calendarStrip';
 import { useProject } from "../hooks/useProject";
+import { useScheduler } from "../hooks/useScheduler"
 
 const Home = ({ route }) => {
   const { setTabBarVisible } = route.params || {};
@@ -34,12 +35,19 @@ const Home = ({ route }) => {
   const [selected, setSelected] = useState('dashboard');
   const scrollViewRef = useRef(null);
   const { data, error, aggregateData, loading } = useProject(user?.user_id, status);
+  const {  data : recentSchedules, handleSchedules } = useScheduler();
 
   useFocusEffect(
     useCallback(() => {
       setTabBarVisible(true);
     }, [setTabBarVisible]),
   );
+
+  useEffect(() => {
+    handleSchedules({ date: new Date().toISOString().slice(0, 10), engineerId: user?.user_id });
+  }, []);
+
+  console.log("Recent Schedules:", recentSchedules);
 
   const handleSelectItem = index => {
     const itemWidth = 100;

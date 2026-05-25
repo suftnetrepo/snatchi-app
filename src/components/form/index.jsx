@@ -1,15 +1,10 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable react/display-name */
-/* eslint-disable react/prop-types */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prettier/prettier */
+
 import React, { forwardRef } from 'react';
 import { TextInput, Platform } from 'react-native';
 import { YStack, XStack, StyledSpacer, StyledText } from 'fluent-styles';
 import { isValidColor, isValidNumber, isValidString } from '../../utils/help';
 import { styled } from '../../utils/styled';
 import { theme } from '../../utils/theme';
-
 
 const StyledInputText = styled(TextInput, {
     base: {
