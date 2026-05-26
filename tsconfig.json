@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
+    "typeRoots": ["./node_modules/@types", "./types"],
     "paths": {
       "@utils/*": ["utils/*"],
       "@hooks/*": ["hooks/*"],

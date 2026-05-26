@@ -302,8 +302,6 @@ const useScheduler = (key) => {
 
   async function handleSchedules({date, engineerId}) {
 
-    console.log("Fetching schedules for engineer:", engineerId, "on date:", date);
-
     setState(prev => ({ ...prev, loading: true }));
     const { success, data, errorMessage } = await zat(
       SCHEDULER.getEngineerSchedules,
@@ -317,12 +315,10 @@ const useScheduler = (key) => {
       },
     );
 
-    console.log("Fetched schedules:...", data);
-
     if (success) {
       setState(prevState => ({
         ...prevState,
-        data: data.data,
+        data: data,
         success: true,
         loading: false,
       }));

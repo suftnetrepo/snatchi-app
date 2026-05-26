@@ -228,7 +228,7 @@ const Home = ({ route }) => {
           </ScrollView>
         )}
         {selected === 'dashboard' && (
-          <Dashboard aggregateData={aggregateData} data={data} />
+          <Dashboard aggregateData={aggregateData} data={recentSchedules} />
         )}
       </YStack>
       {

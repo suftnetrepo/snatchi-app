@@ -792,8 +792,30 @@ function safetyGear(list) {
   );
 }
 
+function schedulesTransformal(data) {
+   const tramsformed = data?.map(item => {
+    return {
+      id: item._id,
+      title : item.title,
+      time: item.startTime,
+      endTime : item.endTime,
+      metta : {status : item.status, project : item.project},
+    };
+  });
+  return tramsformed;
+}
+
+const durationHrs = (start, end) => {
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  const diff = (eh * 60 + em) - (sh * 60 + sm);
+  return diff > 0 ? `${Math.round(diff / 60)} hrs` : null;
+};
+
 export {
+  durationHrs,
   Status_data,
+  schedulesTransformal,
   safetyGear,
   FileIcon,
   limitHtmlTextByWord,
