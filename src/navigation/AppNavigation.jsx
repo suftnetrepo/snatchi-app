@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../screens/login';
 import Keypad from '../screens/lock';
 import task from '../screens/task';
-import taskDocument from '../screens/task/taskDocument';
+import jobDocument from '../screens/project/uploadDocuments';
 import helpCenter from '../screens/settings/helpCenter';
 import BottomTabs from './BottomNavigation';
 import Invoice from '../screens/invoice/invoice';
@@ -123,8 +123,8 @@ function Navigator() {
         }}
       />
       <Stack.Screen
-        name="task-document"
-        component={taskDocument}
+        name="job-document"
+        component={jobDocument}
         options={{
           headerShown: false,
         }}

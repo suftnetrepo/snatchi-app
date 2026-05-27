@@ -16,14 +16,14 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { fontStyles, theme } from '../../utils/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useTaskDocument } from '../../hooks/useTaskDocument';
+import { useJobDocument } from '../../hooks/useJobDocument';
 import { ImagePickerModal } from '../../components/imagePickerModal';
 import { validate } from '../../validator';
 import { Pressable, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { jobPhotoCategories } from '../../utils/help';
 import { StyledDropdown } from '../../components/dropdown';
 
-const TaskDocument = () => {
+const UploadJobDocuments = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [imageUrl, setImageUrl] = useState(null);
@@ -39,7 +39,7 @@ const TaskDocument = () => {
     handleChange,
     handleUpload,
     handleReset,
-  } = useTaskDocument(project_id);
+  } = useJobDocument(project_id);
   const [errorMessages, setErrorMessages] = useState({});
   const [file, setFile] = useState(null);
 
@@ -73,7 +73,7 @@ const TaskDocument = () => {
 
     formData.append('document_type', taskStatus);
     formData.append('document_name', fields.document_name);
-    formData.append('projectId', project_id);
+    formData.append('id', project_id);
   
     handleUpload(formData).then(result => {
 
@@ -230,4 +230,4 @@ const TaskDocument = () => {
   );
 };
 
-export default TaskDocument;
+export default UploadJobDocuments;

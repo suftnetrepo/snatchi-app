@@ -72,6 +72,7 @@ export const FENCE = {
 
 export const PROJECT = {
   recent: `${HOST_API_ADDRESS}project/`,
+  uploadOne: `${HOST_API_ADDRESS}project_document`,
 };
 
 export const USER_HOST_USER_STATUS = {
