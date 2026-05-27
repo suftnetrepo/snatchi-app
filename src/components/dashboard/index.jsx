@@ -30,17 +30,15 @@ import {useScheduler} from '../../hooks/useScheduler';
 const Dashboard = ({userId}) => {
   const navigator = useNavigation();
   const {data, handleScheduleStatus} = useScheduler();
-  const recentSchedules = schedulesTransformal( []);
+
+  console.log('Dashboard data:', data); // Debug log to check the data structure
 
   useEffect(() => {
     handleScheduleStatus({engineerId: userId});
-  }, [userId]); 
+  }, [userId]);
 
   const getAggregate = (data, status) => {
-    {
-      // const result = (data || []).find(j => j.status === status);
-      return  0;
-    }
+    return data?.byStatus?.[status] || 0;
   };
 
   const RenderRecentCard = ({data}) => {
@@ -107,7 +105,7 @@ const Dashboard = ({userId}) => {
   };
 
   const RestDay = () => (
-    <XStack alignItems="center" paddingVertical={48} gap={12}>
+    <YStack alignItems="center" paddingVertical={48} gap={12}>
       <XStack
         width={72}
         height={72}
@@ -115,17 +113,85 @@ const Dashboard = ({userId}) => {
         backgroundColor="#f0fdf4"
         alignItems="center"
         justifyContent="center">
-        <Icon name="moon" size={28} color="#8bc34a" />
+        <Icon name="bell" size={28} color="#8bc34a" />
       </XStack>
       <StyledText fontSize={18} fontWeight="800" color="#1a1a1e">
-        Rest Day
+        No Schedule Day
       </StyledText>
       <StyledText fontSize={14} color="#9ca3af" textAlign="center">
         Recovery is part of the plan.{'\n'}Rest up and come back stronger 💚
       </StyledText>
-    </XStack>
+    </YStack>
   );
 
+  const RenderRecentTimeline = () => {
+    const {data, handleSchedules} = useScheduler();
+    const recentSchedules = schedulesTransformal(data);
+
+    useEffect(() => {
+      handleSchedules({
+        date: new Date().toISOString().slice(0, 10),
+        engineerId: userId,
+      });
+    }, [userId]);
+
+    return (
+      <>
+        <StyledSeparator
+          paddingHorizontal={24}
+          left={
+            <StyledText
+              fontFamily={fontStyles.Roboto_Regular}
+              fontWeight={theme.fontWeight.light}
+              fontSize={theme.fontSize.small}
+              color={theme.colors.gray[500]}>
+              My Recent Schedules ({recentSchedules?.length || 0})
+            </StyledText>
+          }
+          right={
+            <Pressable onPress={() => navigator.navigate('project')}>
+              <StyledText
+                fontFamily={fontStyles.Roboto_Regular}
+                fontWeight={theme.fontWeight.light}
+                fontSize={theme.fontSize.small}
+                color={theme.colors.gray[500]}>
+                View All
+              </StyledText>
+            </Pressable>
+          }
+        />
+        <StyledSpacer marginVertical={4} />
+        <YStack
+          borderRadius={16}
+          marginBottom={64}
+          paddingVertical={16}
+          paddingHorizontal={16}
+          marginHorizontal={8}
+          backgroundColor={theme.colors.gray[1]}>
+          {recentSchedules?.length === 0 ? (
+            <RestDay />
+          ) : (
+            <StyledTimeline
+              items={recentSchedules}
+              renderItem={item => <RenderRecentCard data={item} />}
+              variant="default"
+              dotShape="filled"
+              dotSize={10}
+              timeColumnWidth={58}
+              timeGap={12}
+              animated
+              colors={{
+                dot: theme.colors.gray[800],
+                line: theme.colors.gray[800],
+                timeText: theme.colors.gray[800],
+                endTimeText: theme.colors.gray[500],
+              }}
+            />
+          )}
+        </YStack>
+      </>
+    );
+  };
   return (
     <YStack marginTop={16} flex={1}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -199,7 +265,7 @@ const Dashboard = ({userId}) => {
                   fontWeight={theme.fontWeight.normal}
                   color={theme.colors.gray[600]}
                   fontSize={theme.fontSize.normal}>
-                  Progress
+                  In Progress
                 </StyledText>
 
                 <StyledBadge
@@ -207,11 +273,11 @@ const Dashboard = ({userId}) => {
                   fontFamily={fontStyles.Roboto_Regular}
                   fontWeight={theme.fontWeight.medium}
                   fontSize={theme.fontSize.small}
-                  backgroundColor={backgroundColorHelper('Progress')}
+                  backgroundColor={backgroundColorHelper('InProgress')}
                   paddingVertical={4}
-                  borderColor={backgroundColorHelper('Progress')}
-                  color={textColorHelper('Progress')}>
-                  {getAggregate(data, 'Progress')}
+                  borderColor={backgroundColorHelper('InProgress')}
+                  color={textColorHelper('InProgress')}>
+                  {getAggregate(data, 'InProgress')}
                 </StyledBadge>
               </XStack>
             </StyledCard>
@@ -243,7 +309,7 @@ const Dashboard = ({userId}) => {
                   fontWeight={theme.fontWeight.normal}
                   color={theme.colors.gray[600]}
                   fontSize={theme.fontSize.normal}>
-                  Completed
+                  Accepted
                 </StyledText>
 
                 <StyledBadge
@@ -251,11 +317,11 @@ const Dashboard = ({userId}) => {
                   fontFamily={fontStyles.Roboto_Regular}
                   fontWeight={theme.fontWeight.medium}
                   fontSize={theme.fontSize.small}
-                  backgroundColor={backgroundColorHelper('Completed')}
+                  backgroundColor={backgroundColorHelper('Accepted')}
                   paddingVertical={4}
-                  borderColor={backgroundColorHelper('Completed')}
-                  color={textColorHelper('Completed')}>
-                  {getAggregate(data, 'Completed')}
+                  borderColor={backgroundColorHelper('Accepted')}
+                  color={textColorHelper('Accepted')}>
+                  {getAggregate(data, 'Accepted')}
                 </StyledBadge>
               </XStack>
             </StyledCard>
@@ -285,7 +351,7 @@ const Dashboard = ({userId}) => {
                   fontWeight={theme.fontWeight.normal}
                   color={theme.colors.gray[600]}
                   fontSize={theme.fontSize.normal}>
-                  Cancelled
+                  Ready to Start
                 </StyledText>
 
                 <StyledBadge
@@ -293,68 +359,18 @@ const Dashboard = ({userId}) => {
                   fontFamily={fontStyles.Roboto_Regular}
                   fontWeight={theme.fontWeight.medium}
                   fontSize={theme.fontSize.small}
-                  backgroundColor={backgroundColorHelper('Cancelled')}
+                  backgroundColor={backgroundColorHelper('ReadyToStart')}
                   paddingVertical={4}
-                  borderColor={backgroundColorHelper('Cancelled')}
-                  color={textColorHelper('Cancelled')}>
-                  {getAggregate(data, 'Canceled')}
+                  borderColor={backgroundColorHelper('ReadyToStart')}
+                  color={textColorHelper('ReadyToStart')}>
+                  {getAggregate(data, 'ReadyToStart')}
                 </StyledBadge>
               </XStack>
             </StyledCard>
           </XStack>
         </YStack>
 
-        <StyledSeparator
-          paddingHorizontal={16}
-          left={
-            <StyledText
-              fontFamily={fontStyles.Roboto_Regular}
-              fontWeight={theme.fontWeight.light}
-              fontSize={theme.fontSize.medium}
-              color={theme.colors.gray[500]}>
-              My Recent Schedules ({data?.length})
-            </StyledText>
-          }
-          right={
-            <Pressable onPress={() => navigator.navigate('project')}>
-              <StyledText
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.light}
-                fontSize={theme.fontSize.small}
-                color={theme.colors.gray[500]}>
-                View All
-              </StyledText>
-            </Pressable>
-          }
-        />
-        <YStack
-          borderRadius={16}
-          marginBottom={64}
-          paddingVertical={16}
-          paddingHorizontal={16}
-          marginHorizontal={8}
-          backgroundColor={theme.colors.gray[1]}>
-          {recentSchedules?.length === 0 ? (
-            <RestDay />
-          ) : (
-            <StyledTimeline
-              items={recentSchedules}
-              renderItem={item => <RenderRecentCard data={item} />}
-              variant="default"
-              dotShape="filled"
-              dotSize={10}
-              timeColumnWidth={58}
-              timeGap={12}
-              animated
-              colors={{
-                dot: theme.colors.gray[800],
-                line: theme.colors.gray[800],
-                timeText: theme.colors.gray[800],
-                endTimeText: theme.colors.gray[500],
-              }}
-            />
-          )}
-        </YStack>
+        <RenderRecentTimeline />
       </ScrollView>
     </YStack>
   );
