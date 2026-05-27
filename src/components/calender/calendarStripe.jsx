@@ -10,7 +10,6 @@ import {
 } from 'fluent-styles';
 import {CalendarProvider} from 'react-native-calendars';
 import {useNavigation} from '@react-navigation/native';
-import {Badge, BadgeText} from '@gluestack-ui/themed';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {theme, fontStyles} from '../../utils/theme';
 import {useScheduler} from '../../hooks/useScheduler';
@@ -18,11 +17,14 @@ import WeekStrip from './weekStrip';
 import {
   getMarkedDates,
   schedulesTransformal,
-  getPriorityColor,
-  capitalizeFirstLetter,
   durationHrs,
 } from '../../utils/help';
 import StyledTimeline from '../../components/timeline';
+import ScheduleStatusBadge from '../shared/ScheduleStatusBadge';
+import {
+  getScheduleStatusTheme,
+  getScheduleTimelineColors,
+} from '../../constants/scheduleStatusTheme';
 
 function toISO(d) {
   const y = d.getFullYear();
@@ -58,13 +60,16 @@ export default function CalendarStrip({userId}) {
   }, []);
 
   const RenderRecentCard = ({data}) => {
+    const statusTheme = getScheduleStatusTheme(data?.metta?.status);
+
     return (
-      <StyledCard
+     <StyledCard
         flex={1}
         borderRadius={24}
-        borderColor={theme.colors.gray[1]}
-        backgroundColor={theme.colors.gray[1]}
-        
+        borderColor={statusTheme.border}
+        borderLeftColor={statusTheme.text}
+        borderLeftWidth={4}
+        paddingVertical={12}
         paddingHorizontal={12}
         borderWidth={1}>
         <StyledText
@@ -78,34 +83,18 @@ export default function CalendarStrip({userId}) {
           gap={16}
           alignItems="center"
           justifyContent="flex-start"
-          marginTop={4}>
-          <Badge
-            size="md"
-            variant="solid"
-            bg={getPriorityColor(data?.metta?.status)}
-            rounded="$full"
-            px="$3"
-            py="$1">
-            <BadgeText color="$white" fontSize="$sm" fontWeight="$medium">
-              {capitalizeFirstLetter(data?.metta?.status)}
-            </BadgeText>
-          </Badge>
-          <Icon name="access-time" size={24} color="#9CA3AF" />
+          flexWrap="wrap"
+          marginTop={8}>
+          <ScheduleStatusBadge status={data?.metta?.status} size="sm" />
           <StyledText
             fontFamily={fontStyles.Roboto_Regular}
             fontWeight={theme.fontWeight.normal}
             color={theme.colors.gray[600]}
-            fontSize={theme.fontSize.normal}>
+            fontSize={theme.fontSize.small}>
             {durationHrs(data.time, data.endTime)}
           </StyledText>
-
-          <StyledCycle
-            paddingHorizontal={10}
-            borderWidth={1}
-            width={48}
-            height={48}
-            borderColor={theme.colors.gray[400]}>
-            <Icon
+          <StyledSpacer flex={1} />
+         <Icon
               size={24}
               name="chevron-right"
               color={theme.colors.gray[800]}
@@ -115,7 +104,6 @@ export default function CalendarStrip({userId}) {
                 });
               }}
             />
-          </StyledCycle>
         </XStack>
       </StyledCard>
     );
@@ -126,8 +114,8 @@ export default function CalendarStrip({userId}) {
       flex={1}
       borderRadius={16}
       marginVertical={16}
-      marginHorizontal={0}
-      paddingHorizontal={16}
+      marginHorizontal={8}
+      paddingHorizontal={8}
       paddingVertical={8}
       backgroundColor={theme.colors.gray[1]}>
       <CalendarProvider
@@ -156,6 +144,7 @@ export default function CalendarStrip({userId}) {
           <StyledTimeline
             items={recentSchedules}
             renderItem={item => <RenderRecentCard data={item} />}
+            getItemColors={item => getScheduleTimelineColors(item?.metta?.status)}
             variant="default"
             dotShape="filled"
             dotSize={10}
@@ -163,8 +152,6 @@ export default function CalendarStrip({userId}) {
             timeGap={12}
             animated
             colors={{
-              dot: theme.colors.gray[800],
-              line: theme.colors.gray[800],
               timeText: theme.colors.gray[800],
               endTimeText: theme.colors.gray[500],
             }}

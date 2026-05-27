@@ -158,6 +158,7 @@ const StyledTimeline = ({
   timeGap         = 16,
   animated        = true,
   colors: colorsProp,
+  getItemColors,
   onItemPress,
   fonts: fontsProp,
 }) => {
@@ -192,6 +193,14 @@ const StyledTimeline = ({
       {allItems.map((item, index) => {
         const isLast  = index === allItems.length - 1;
         const hasTime = !!item.time;
+        const itemColors = getItemColors?.(item, index) || {};
+        const resolvedColors = {
+          line: itemColors.line ?? C.line,
+          dot: itemColors.dot ?? C.dot,
+          dotBorder: itemColors.dotBorder ?? C.dotBorder,
+          timeText: itemColors.timeText ?? C.timeText,
+          endTimeText: itemColors.endTimeText ?? C.endTimeText,
+        };
 
         const resolvedContent = item.content
           ? item.content
@@ -211,7 +220,7 @@ const StyledTimeline = ({
                     style={{
                       fontSize:   F.startFontSize,
                       fontWeight: F.startFontWeight,
-                      color:      C.timeText,
+                      color:      resolvedColors.timeText,
                     }}
                   >
                     {item.time}
@@ -223,7 +232,7 @@ const StyledTimeline = ({
                     style={{
                       fontSize:   F.endFontSize,
                       fontWeight: F.endFontWeight,
-                      color:      C.endTimeText,
+                      color:      resolvedColors.endTimeText,
                     }}
                   >
                     {item.endTime}
@@ -237,8 +246,8 @@ const StyledTimeline = ({
               <View style={{ paddingTop: 4 }}>
                 <TimelineDot
                   size={dotSize}
-                  color={C.dot}
-                  borderColor={C.dotBorder}
+                  color={resolvedColors.dot}
+                  borderColor={resolvedColors.dotBorder}
                   shape={dotShape}
                   animated={animated}
                   delay={index * 60}
@@ -249,7 +258,7 @@ const StyledTimeline = ({
                   style={{
                     flex:            1,
                     width:           1.5,
-                    backgroundColor: C.line,
+                    backgroundColor: resolvedColors.line,
                     marginTop:       4,
                     minHeight:       gap,
                   }}
