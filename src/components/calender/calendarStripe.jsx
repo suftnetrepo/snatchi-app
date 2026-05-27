@@ -58,14 +58,13 @@ export default function CalendarStrip({userId}) {
   }, []);
 
   const RenderRecentCard = ({data}) => {
-    console.log('Rendering card for schedule:', data);
     return (
       <StyledCard
         flex={1}
         borderRadius={24}
         borderColor={theme.colors.gray[1]}
         backgroundColor={theme.colors.gray[1]}
-        paddingVertical={12}
+        
         paddingHorizontal={12}
         borderWidth={1}>
         <StyledText
@@ -125,9 +124,12 @@ export default function CalendarStrip({userId}) {
   return (
     <YStack
       flex={1}
+      borderRadius={16}
       marginVertical={16}
-      marginHorizontal={16}
-      backgroundColor={theme.colors.gray[200]}>
+      marginHorizontal={0}
+      paddingHorizontal={16}
+      paddingVertical={8}
+      backgroundColor={theme.colors.gray[1]}>
       <CalendarProvider
         date={selectedDate}
         onDateChanged={onDateChanged}

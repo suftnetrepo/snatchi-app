@@ -28,6 +28,7 @@ export const SCHEDULER = {
   removeOne: `${HOST_API_ADDRESS}scheduler`,
   getByUser: `${HOST_API_ADDRESS}scheduler`,
   getEngineerSchedules: `${HOST_API_ADDRESS}scheduler`,
+  engineerStatusAggregate: `${HOST_API_ADDRESS}scheduler`,
 };
 
 export const TASK_COMMENTS = {

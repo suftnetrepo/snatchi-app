@@ -793,7 +793,7 @@ function safetyGear(list) {
 }
 
 function schedulesTransformal(data) {
-   const tramsformed = data?.map(item => {
+   const tramsformed = (data || []).map(item => {
     return {
       id: item._id,
       title : item.title,

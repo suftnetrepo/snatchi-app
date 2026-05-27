@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   YStack,
   XStack,
@@ -8,8 +8,6 @@ import {
   StyledHeader,
   StyledSpacer,
   StyledButton,
-  StyledSpinner,
-  StyledOkDialog
 } from 'fluent-styles';
 import { StyledMIcon } from '../components/icon';
 import { theme } from '../utils/theme';
@@ -18,36 +16,26 @@ import { useNavigation, CommonActions } from '@react-navigation/native';
 import { useAppContext } from '../hooks/appContext';
 import { getGreetings, toWordCase } from '../utils/help';
 import { useFocus } from '../hooks/useFocus';
-import { Platform, ScrollView } from 'react-native';
+import { Platform } from 'react-native';
 import Dashboard from '../components/dashboard';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
 import CalendarStrip from '../components/calender/calendarStripe';
-import { useProject } from "../hooks/useProject";
-import { useScheduler } from "../hooks/useScheduler"
 
 const Home = ({ route }) => {
   const { setTabBarVisible } = route.params || {};
   const navigate = useNavigation();
-  const { user, status } = useAppContext();
+  const { user } = useAppContext();
   const { key } = useFocus();
   const [selected, setSelected] = useState('dashboard');
   const scrollViewRef = useRef(null);
-  const { data, error, aggregateData, loading } = useProject(user?.user_id, status);
-  const {  data : recentSchedules, handleSchedules } = useScheduler();
 
   useFocusEffect(
     useCallback(() => {
       setTabBarVisible(true);
     }, [setTabBarVisible]),
   );
-
-  useEffect(() => {
-    handleSchedules({ date: new Date().toISOString().slice(0, 10), engineerId: user?.user_id });
-  }, []);
-
-  console.log("Recent Schedules:", recentSchedules);
 
   const handleSelectItem = index => {
     const itemWidth = 100;
@@ -64,8 +52,8 @@ const Home = ({ route }) => {
         justifyContent="space-between"
         alignItems="center"
         paddingVertical={8}
-        marginHorizontal={16}
-        paddingHorizontal={8}>
+        marginHorizontal={0}
+        paddingHorizontal={16}>
         <YStack>
           <StyledText
             fontFamily={fontStyles.Roboto_Regular}
@@ -179,17 +167,17 @@ const Home = ({ route }) => {
             <StyledButton
               borderRadius={35}
               borderColor={
-                selected === 'calender'
+                selected === 'schedules'
                   ? theme.colors.gray[800]
                   : theme.colors.gray[1]
               }
               backgroundColor={
-                selected === 'calender'
+                selected === 'schedules'
                   ? theme.colors.gray[800]
                   : theme.colors.gray[1]
               }
               onPress={() => {
-                setSelected('calender');
+                setSelected('schedules');
                 handleSelectItem(2);
               }}>
               <XStack
@@ -202,44 +190,26 @@ const Home = ({ route }) => {
                   paddingHorizontal={16}
                   fontFamily={fontStyles.Roboto_Regular}
                   color={
-                    selected === 'calender'
+                    selected === 'schedules'
                       ? theme.colors.gray[1]
                       : theme.colors.gray[800]
                   }>
-                  Calender
+                  Schedules
                 </StyledText>
               </XStack>
             </StyledButton>
           </XStack>
       </YStack>
       <YStack flex={1}>
-        {selected === 'calender' && (
+        {selected === 'schedules' && (
           <CalendarStrip
               userId={user?.user_id}
             />
         )}
         {selected === 'dashboard' && (
-          <Dashboard aggregateData={aggregateData} data={recentSchedules} />
+          <Dashboard userId={user?.user_id} />
         )}
       </YStack>
-      {
-        loading && <StyledSpinner />
-      }
-      {error && (
-        <StyledOkDialog
-          title={error}
-          description="Please try again later"
-          visible={true}
-          onOk={() => {
-            navigate.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'login' }],
-              }),
-            );
-          }}
-        />
-      )}
     </StyledSafeAreaView>
   );
 };
