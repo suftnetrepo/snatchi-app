@@ -812,7 +812,38 @@ const durationHrs = (start, end) => {
   return diff > 0 ? `${Math.round(diff / 60)} hrs` : null;
 };
 
+const LIME      = '#c6ef3e';
+const LIME_DARK = '#8bc34a';
+const DARK      = '#1a1a1e';
+const MUTED     = '#9ca3af';
+const BG        = '#f5f5f5';
+
+function getMarkedDates(schedules) {
+  const dates = new Set();
+
+  for (const booking of schedules) {
+    const start = new Date(booking.startDate);
+    const end   = new Date(booking.endDate);
+
+    const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+    const last   = new Date(Date.UTC(end.getUTCFullYear(),   end.getUTCMonth(),   end.getUTCDate()));
+
+    while (cursor <= last) {
+      const y  = cursor.getUTCFullYear();
+      const m  = String(cursor.getUTCMonth() + 1).padStart(2, '0');
+      const d  = String(cursor.getUTCDate()).padStart(2, '0');
+      dates.add(`${y}-${m}-${d}`);
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+  }
+
+  return Object.fromEntries(
+    [...dates].map(date => [date, { marked: true, dotColor: LIME_DARK }])
+  );
+}
+
 export {
+  getMarkedDates,
   durationHrs,
   Status_data,
   schedulesTransformal,

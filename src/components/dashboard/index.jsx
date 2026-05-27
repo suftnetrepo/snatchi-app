@@ -123,7 +123,7 @@ const Dashboard = ({data, aggregateData}) => {
   );
 
   return (
-    <YStack paddingHorizontal={16}>
+    <YStack paddingHorizontal={16} marginTop={16} flex={1}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <XStack gap={16}>
           <StyledCard

@@ -23,7 +23,7 @@ import Dashboard from '../components/dashboard';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
-import CalendarStrip from '../components/calender/calendarStrip';
+import CalendarStrip from '../components/calender/calendarStripe';
 import { useProject } from "../hooks/useProject";
 import { useScheduler } from "../hooks/useScheduler"
 
@@ -135,16 +135,12 @@ const Home = ({ route }) => {
       <YStack
         key={key}
         justifyContent="flex-start"
-        alignItems="start"
+        alignItems="flex-start"
         paddingHorizontal={24}>
-        <ScrollView
-          ref={scrollViewRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}>
           <XStack
-            justifyContent="space-between"
+            justifyContent="flex-start"
             alignItems="center"
-            paddingVertical={16}>
+            paddingTop={16}>
             <StyledButton
               borderRadius={35}
               borderColor={
@@ -215,17 +211,12 @@ const Home = ({ route }) => {
               </XStack>
             </StyledButton>
           </XStack>
-        </ScrollView>
       </YStack>
       <YStack flex={1}>
         {selected === 'calender' && (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-start', paddingBottom: 100 }}>
-            <CalendarStrip
-              data={data}
+          <CalendarStrip
+              userId={user?.user_id}
             />
-          </ScrollView>
         )}
         {selected === 'dashboard' && (
           <Dashboard aggregateData={aggregateData} data={recentSchedules} />
