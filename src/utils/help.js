@@ -776,8 +776,8 @@ const FileIcon = ({ fileType }) => {
 };
 
 const Status_data = [
-    'All',
     'Pending',
+    'Accepted',
     'Progress',
     'Completed',
     'Cancelled',

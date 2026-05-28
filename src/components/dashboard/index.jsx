@@ -283,7 +283,7 @@ const Dashboard = ({userId}) => {
                 <Icon
                   name="play-circle-filled"
                   size={48}
-                  color={theme.colors.orange[400]}
+                  color={theme.colors.orange[300]}
                 />
               </XStack>
               <StyledSpacer marginVertical={20} />

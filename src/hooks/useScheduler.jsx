@@ -361,8 +361,34 @@ const useScheduler = key => {
     }
   }
 
+    async function handleScheduleFilterByStatus({status, engineerId}) {
+    setState(prev => ({...prev, loading: true}));
+    const {success, data, errorMessage} = await zat(
+      SCHEDULER.engineerStatusAggregate,
+      null,
+      VERBS.GET,
+      {
+        action: 'engineerSchedulesByStatus',
+         status: status,
+        engineerId: engineerId,
+      },
+    );
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: data,
+        success: true,
+        loading: false,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
   return {
     ...state,
+    handleScheduleFilterByStatus,
     handleReset,
     handleEdit,
     handleMySchedules,
