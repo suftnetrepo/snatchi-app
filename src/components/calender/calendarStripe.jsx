@@ -4,10 +4,10 @@ import {
   YStack,
   StyledCard,
   StyledText,
-  StyledCycle,
   StyledScrollView,
   StyledSpacer,
 } from 'fluent-styles';
+import {Pressable} from 'react-native';
 import {CalendarProvider} from 'react-native-calendars';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -63,38 +63,44 @@ export default function CalendarStrip({userId}) {
     const statusTheme = getScheduleStatusTheme(data?.metta?.status);
 
     return (
-     <StyledCard
-        flex={1}
-        borderRadius={24}
-        borderColor={statusTheme.border}
-        borderLeftColor={statusTheme.text}
-        borderLeftWidth={4}
-        paddingVertical={12}
-        paddingHorizontal={12}
-        borderWidth={1}>
-        <StyledText
-          fontFamily={fontStyles.Roboto_Regular}
-          fontWeight={theme.fontWeight.normal}
-          color={theme.colors.gray[600]}
-          fontSize={theme.fontSize.medium}>
-          {data.title}
-        </StyledText>
-        <XStack
-          gap={16}
-          alignItems="center"
-          justifyContent="flex-start"
-          flexWrap="wrap"
-          marginTop={8}>
-          <ScheduleStatusBadge status={data?.metta?.status} size="sm" />
+      <Pressable
+        onPress={() => {
+          navigator.navigate('project-details', {
+            id: data?.metta?.project,
+          });
+        }}>
+        <StyledCard
+          flex={1}
+          borderRadius={24}
+          borderColor={statusTheme.border}
+          borderLeftColor={statusTheme.text}
+          borderLeftWidth={4}
+          paddingVertical={12}
+          paddingHorizontal={12}
+          borderWidth={1}>
           <StyledText
             fontFamily={fontStyles.Roboto_Regular}
             fontWeight={theme.fontWeight.normal}
             color={theme.colors.gray[600]}
-            fontSize={theme.fontSize.small}>
-            {durationHrs(data.time, data.endTime)}
+            fontSize={theme.fontSize.medium}>
+            {data.title}
           </StyledText>
-          <StyledSpacer flex={1} />
-         <Icon
+          <XStack
+            gap={16}
+            alignItems="center"
+            justifyContent="flex-start"
+            flexWrap="wrap"
+            marginTop={8}>
+            <ScheduleStatusBadge status={data?.metta?.status} size="sm" />
+            <StyledText
+              fontFamily={fontStyles.Roboto_Regular}
+              fontWeight={theme.fontWeight.normal}
+              color={theme.colors.gray[600]}
+              fontSize={theme.fontSize.small}>
+              {durationHrs(data.time, data.endTime)}
+            </StyledText>
+            <StyledSpacer flex={1} />
+            <Icon
               size={24}
               name="chevron-right"
               color={theme.colors.gray[800]}
@@ -104,8 +110,9 @@ export default function CalendarStrip({userId}) {
                 });
               }}
             />
-        </XStack>
-      </StyledCard>
+          </XStack>
+        </StyledCard>
+      </Pressable>
     );
   };
 
@@ -144,12 +151,14 @@ export default function CalendarStrip({userId}) {
           <StyledTimeline
             items={recentSchedules}
             renderItem={item => <RenderRecentCard data={item} />}
-            getItemColors={item => getScheduleTimelineColors(item?.metta?.status)}
+            getItemColors={item =>
+              getScheduleTimelineColors(item?.metta?.status)
+            }
             variant="default"
             dotShape="filled"
-            dotSize={10}
+            dotSize={20}
             timeColumnWidth={58}
-            timeGap={12}
+            timeGap={1}
             animated
             colors={{
               timeText: theme.colors.gray[800],

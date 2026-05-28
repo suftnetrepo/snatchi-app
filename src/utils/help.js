@@ -108,6 +108,15 @@ function formatDateTime(dateTimeString) {
   return `${formattedDate} ${formattedTime}`;
 }
 
+function formatOnlyDate(dateTimeString) {
+  if (dateTimeString === null || dateTimeString === undefined) return '';
+  const [datePart, timePart] = dateTimeString?.split('T');
+  const formattedDate = datePart?.split('-').reverse().join('-');
+  const formattedTime = timePart?.split('.')[0].slice(0, 5);
+
+  return `${formattedDate}`;
+}
+
 function formatCurrency(currencySymbol, amount) {
   const numericAmount = parseFloat(amount);
 
@@ -800,6 +809,8 @@ function schedulesTransformal(data) {
       time: item.startTime,
       endTime : item.endTime,
       metta : {status : item.status, project : item.project},
+      startDate : item.startDate,
+      endDate : item.endDate,
     };
   });
   return tramsformed;
@@ -894,5 +905,6 @@ export {
   jobPhotoCategories,
   toModel,
   formatShortDate,
-  formatShortDateYYYMMD
+  formatShortDateYYYMMD,
+  formatOnlyDate
 };

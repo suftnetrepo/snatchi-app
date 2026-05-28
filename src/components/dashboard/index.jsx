@@ -15,10 +15,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {theme} from '../../utils/theme';
 import {fontStyles} from '../../utils/fontStyles';
-import {
-  schedulesTransformal,
-  durationHrs,
-} from '../../utils/help';
+import {schedulesTransformal, durationHrs} from '../../utils/help';
 import StyledTimeline from '../../components/timeline';
 import {useScheduler} from '../../hooks/useScheduler';
 import ScheduleStatusBadge from '../shared/ScheduleStatusBadge';
@@ -45,6 +42,12 @@ const Dashboard = ({userId}) => {
     const statusTheme = getScheduleStatusTheme(data?.metta?.status);
 
     return (
+      <Pressable
+        onPress={() => {
+          navigator.navigate('project-details', {
+            id: data?.metta?.project,
+          });
+        }}>
       <StyledCard
         flex={1}
         borderRadius={24}
@@ -76,18 +79,15 @@ const Dashboard = ({userId}) => {
             {durationHrs(data.time, data.endTime)}
           </StyledText>
           <StyledSpacer flex={1} />
-         <Icon
-              size={24}
-              name="chevron-right"
-              color={theme.colors.gray[800]}
-              onPress={() => {
-                navigator.navigate('project-details', {
-                  id: data?.metta?.project,
-                });
-              }}
-            />
+          <Icon
+            size={24}
+            name="chevron-right"
+            color={theme.colors.gray[800]}
+            
+          />
         </XStack>
       </StyledCard>
+      </Pressable>
     );
   };
 
@@ -114,10 +114,11 @@ const Dashboard = ({userId}) => {
   const RenderRecentTimeline = () => {
     const {data, handleSchedules} = useScheduler();
     const recentSchedules = schedulesTransformal(data);
+    const currentDate = new Date().toISOString().slice(0, 10);
 
     useEffect(() => {
       handleSchedules({
-        date: new Date().toISOString().slice(0, 10),
+        date: currentDate,
         engineerId: userId,
       });
     }, [userId]);
@@ -125,14 +126,14 @@ const Dashboard = ({userId}) => {
     return (
       <>
         <StyledSeparator
-          paddingHorizontal={24}
+          paddingHorizontal={32}
           left={
             <StyledText
               fontFamily={fontStyles.Roboto_Regular}
               fontWeight={theme.fontWeight.light}
               fontSize={theme.fontSize.small}
               color={theme.colors.gray[500]}>
-              My Recent Schedules ({recentSchedules?.length || 0})
+              Today {currentDate}
             </StyledText>
           }
           right={
@@ -147,7 +148,7 @@ const Dashboard = ({userId}) => {
             </Pressable>
           }
         />
-    
+
         <YStack
           borderRadius={24}
           marginBottom={64}
@@ -161,12 +162,14 @@ const Dashboard = ({userId}) => {
             <StyledTimeline
               items={recentSchedules}
               renderItem={item => <RenderRecentCard data={item} />}
-              getItemColors={item => getScheduleTimelineColors(item?.metta?.status)}
+              getItemColors={item =>
+                getScheduleTimelineColors(item?.metta?.status)
+              }
               variant="default"
               dotShape="filled"
-              dotSize={10}
+              dotSize={20}
               timeColumnWidth={58}
-              timeGap={12}
+              timeGap={1}
               animated
               colors={{
                 timeText: theme.colors.gray[800],
@@ -183,177 +186,198 @@ const Dashboard = ({userId}) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack paddingHorizontal={16}>
           <XStack gap={16}>
-            <StyledCard
-              flex={1}
-              borderRadius={32}
-              marginBottom={8}
-              borderColor={theme.colors.gray[1]}
-              backgroundColor={theme.colors.gray[1]}
-              paddingVertical={16}
-              paddingHorizontal={16}
-              borderWidth={1}>
-              <XStack justifyContent="flex-end" alignItems="center" gap={1}>
-                <FontAwesome
-                  name="clock-o"
-                  size={48}
-                  color={theme.colors.indigo[400]}
-                />
-              </XStack>
-              <StyledSpacer marginVertical={20} />
-              <XStack
-                justifyContent="space-between"
-                alignItems="center"
-                gap={1}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  color={theme.colors.gray[600]}
-                  fontSize={theme.fontSize.normal}>
-                  Pending
-                </StyledText>
+            <Pressable
+              onPress={() => navigator.navigate('project', {status: 'Pending'})}
+              style={{flex: 1}}>
+              <StyledCard
+                flex={1}
+                borderRadius={32}
+                marginBottom={8}
+                borderColor={theme.colors.gray[1]}
+                backgroundColor={theme.colors.gray[1]}
+                paddingVertical={16}
+                paddingHorizontal={16}
+                borderWidth={1}>
+                <XStack justifyContent="flex-end" alignItems="center" gap={1}>
+                  <FontAwesome
+                    name="clock-o"
+                    size={48}
+                    color={theme.colors.indigo[400]}
+                  />
+                </XStack>
+                <StyledSpacer marginVertical={20} />
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={1}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    color={theme.colors.gray[600]}
+                    fontSize={theme.fontSize.normal}>
+                    Pending
+                  </StyledText>
 
-                <StyledBadge
-                  backgroundColor={getAggregateBadgeTheme('Pending').bg}
-                  paddingHorizontal={8}
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.medium}
-                  fontSize={theme.fontSize.small}
-                  paddingVertical={4}
-                  borderColor={getAggregateBadgeTheme('Pending').border}
-                  color={getAggregateBadgeTheme('Pending').text}>
-                  {getAggregate(data, 'Pending')}
-                </StyledBadge>
-              </XStack>
-            </StyledCard>
+                  <StyledBadge
+                    backgroundColor={getAggregateBadgeTheme('Pending').bg}
+                    paddingHorizontal={8}
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.medium}
+                    fontSize={theme.fontSize.small}
+                    paddingVertical={4}
+                    borderColor={getAggregateBadgeTheme('Pending').border}
+                    color={getAggregateBadgeTheme('Pending').text}>
+                    {getAggregate(data, 'Pending')}
+                  </StyledBadge>
+                </XStack>
+              </StyledCard>
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                navigator.navigate('project', {status: 'Accepted'})
+              }
+              style={{flex: 1}}>
+              <StyledCard
+                flex={1}
+                borderRadius={32}
+                marginBottom={8}
+                borderColor={theme.colors.gray[1]}
+                backgroundColor={theme.colors.gray[1]}
+                paddingVertical={16}
+                paddingHorizontal={16}
+                borderWidth={1}>
+                <XStack justifyContent="flex-end" alignItems="center" gap={1}>
+                  <FontAwesome
+                    name="check-circle"
+                    size={48}
+                    color={theme.colors.green[500]}
+                  />
+                </XStack>
+                <StyledSpacer marginVertical={20} />
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={1}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    color={theme.colors.gray[600]}
+                    fontSize={theme.fontSize.normal}>
+                    Accepted
+                  </StyledText>
 
-            <StyledCard
-              flex={1}
-              borderRadius={32}
-              marginBottom={8}
-              borderColor={theme.colors.gray[1]}
-              backgroundColor={theme.colors.gray[1]}
-              paddingVertical={16}
-              paddingHorizontal={16}
-              borderWidth={1}>
-              <XStack justifyContent="flex-end" alignItems="center" gap={1}>
-                <FontAwesome
-                  name="check-circle"
-                  size={48}
-                  color={theme.colors.green[500]}
-                />
-              </XStack>
-              <StyledSpacer marginVertical={20} />
-              <XStack
-                justifyContent="space-between"
-                alignItems="center"
-                gap={1}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  color={theme.colors.gray[600]}
-                  fontSize={theme.fontSize.normal}>
-                  Accepted
-                </StyledText>
-
-                <StyledBadge
-                  backgroundColor={getAggregateBadgeTheme('Accepted').bg}
-                  paddingHorizontal={8}
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.medium}
-                  fontSize={theme.fontSize.small}
-                  paddingVertical={4}
-                  borderColor={getAggregateBadgeTheme('Accepted').border}
-                  color={getAggregateBadgeTheme('Accepted').text}>
-                  {getAggregate(data, 'Accepted')}
-                </StyledBadge>
-              </XStack>
-            </StyledCard>
+                  <StyledBadge
+                    backgroundColor={getAggregateBadgeTheme('Accepted').bg}
+                    paddingHorizontal={8}
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.medium}
+                    fontSize={theme.fontSize.small}
+                    paddingVertical={4}
+                    borderColor={getAggregateBadgeTheme('Accepted').border}
+                    color={getAggregateBadgeTheme('Accepted').text}>
+                    {getAggregate(data, 'Accepted')}
+                  </StyledBadge>
+                </XStack>
+              </StyledCard>
+            </Pressable>
           </XStack>
           <XStack gap={16}>
-            <StyledCard
-              flex={1}
-              borderRadius={32}
-              marginBottom={8}
-              borderColor={theme.colors.gray[1]}
-              backgroundColor={theme.colors.gray[1]}
-              paddingVertical={16}
-              paddingHorizontal={16}
-              borderWidth={1}>
-              <XStack justifyContent="flex-end" alignItems="center" gap={1}>
-                <Icon
-                  name="play-circle-filled"
-                  size={48}
-                  color={theme.colors.orange[300]}
-                />
-              </XStack>
-              <StyledSpacer marginVertical={20} />
-              <XStack
-                justifyContent="space-between"
-                alignItems="center"
-                gap={1}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  color={theme.colors.gray[600]}
-                  fontSize={theme.fontSize.normal}>
-                  Ready 
-                </StyledText>
+            <Pressable
+              onPress={() =>
+                navigator.navigate('project', {status: 'ReadyToStart'})
+              }
+              style={{flex: 1}}>
+              <StyledCard
+                flex={1}
+                borderRadius={32}
+                marginBottom={8}
+                borderColor={theme.colors.gray[1]}
+                backgroundColor={theme.colors.gray[1]}
+                paddingVertical={16}
+                paddingHorizontal={16}
+                borderWidth={1}>
+                <XStack justifyContent="flex-end" alignItems="center" gap={1}>
+                  <Icon
+                    name="verified"
+                    size={48}
+                    color={theme.colors.blueGray[600]}
+                  />
+                </XStack>
+                <StyledSpacer marginVertical={20} />
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={1}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    color={theme.colors.gray[800]}
+                    fontSize={theme.fontSize.normal}>
+                    Ready
+                  </StyledText>
 
-                <StyledBadge
-                  backgroundColor={getAggregateBadgeTheme('ReadyToStart').bg}
-                  paddingHorizontal={8}
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.medium}
-                  fontSize={theme.fontSize.small}
-                  paddingVertical={4}
-                  borderColor={getAggregateBadgeTheme('ReadyToStart').border}
-                  color={getAggregateBadgeTheme('ReadyToStart').text}>
-                  {getAggregate(data, 'ReadyToStart')}
-                </StyledBadge>
-              </XStack>
-            </StyledCard>
-            <StyledCard
-              flex={1}
-              borderRadius={32}
-              marginBottom={8}
-              borderColor={theme.colors.gray[1]}
-              backgroundColor={theme.colors.gray[1]}
-              paddingVertical={16}
-              paddingHorizontal={16}
-              borderWidth={1}>
-              <XStack justifyContent="flex-end" alignItems="center" gap={1}>
-                <FontAwesome
-                  name="spinner"
-                  size={48}
-                  color={theme.colors.orange[300]}
-                />
-              </XStack>
-              <StyledSpacer marginVertical={20} />
-              <XStack
-                justifyContent="space-between"
-                alignItems="center"
-                gap={1}>
-                <StyledText
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.normal}
-                  color={theme.colors.gray[600]}
-                  fontSize={theme.fontSize.normal}>
-                  In Progress
-                </StyledText>
+                  <StyledBadge
+                    backgroundColor={getAggregateBadgeTheme('ReadyToStart').bg}
+                    paddingHorizontal={8}
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.medium}
+                    fontSize={theme.fontSize.small}
+                    paddingVertical={4}
+                    borderColor={getAggregateBadgeTheme('ReadyToStart').border}
+                    color={getAggregateBadgeTheme('ReadyToStart').text}>
+                    {getAggregate(data, 'ReadyToStart')}
+                  </StyledBadge>
+                </XStack>
+              </StyledCard>
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                navigator.navigate('project', {status: 'InProgress'})
+              }
+              style={{flex: 1}}>
+              <StyledCard
+                flex={1}
+                borderRadius={32}
+                marginBottom={8}
+                borderColor={theme.colors.gray[1]}
+                backgroundColor={theme.colors.gray[1]}
+                paddingVertical={16}
+                paddingHorizontal={16}
+                borderWidth={1}>
+                <XStack justifyContent="flex-end" alignItems="center" gap={1}>
+                  <FontAwesome
+                    name="spinner"
+                    size={48}
+                    color={theme.colors.orange[300]}
+                  />
+                </XStack>
+                <StyledSpacer marginVertical={20} />
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={1}>
+                  <StyledText
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.normal}
+                    color={theme.colors.gray[600]}
+                    fontSize={theme.fontSize.normal}>
+                    In Progress
+                  </StyledText>
 
-                <StyledBadge
-                  backgroundColor={getAggregateBadgeTheme('InProgress').bg}
-                  paddingHorizontal={8}
-                  fontFamily={fontStyles.Roboto_Regular}
-                  fontWeight={theme.fontWeight.medium}
-                  fontSize={theme.fontSize.small}
-                  paddingVertical={4}
-                  borderColor={getAggregateBadgeTheme('InProgress').border}
-                  color={getAggregateBadgeTheme('InProgress').text}>
-                  {getAggregate(data, 'InProgress')}
-                </StyledBadge>
-              </XStack>
-            </StyledCard>
+                  <StyledBadge
+                    backgroundColor={getAggregateBadgeTheme('InProgress').bg}
+                    paddingHorizontal={8}
+                    fontFamily={fontStyles.Roboto_Regular}
+                    fontWeight={theme.fontWeight.medium}
+                    fontSize={theme.fontSize.small}
+                    paddingVertical={4}
+                    borderColor={getAggregateBadgeTheme('InProgress').border}
+                    color={getAggregateBadgeTheme('InProgress').text}>
+                    {getAggregate(data, 'InProgress')}
+                  </StyledBadge>
+                </XStack>
+              </StyledCard>
+            </Pressable>
           </XStack>
         </YStack>
 
