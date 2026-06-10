@@ -151,11 +151,21 @@ const Settings = () => {
             title="Help Center"
             screen="help-center"
           />
-          <StyledSpacer marginVertical={4} />
+      
           <RenderRow
             icon="account-circle"
             title="Edit Profile"
             screen="profile"
+          />
+             <RenderRow
+            icon="edit-location"
+            title="Address"
+            screen="profile-address"
+          />
+             <RenderRow
+            icon="monetization-on"
+            title="Rate"
+            screen="rate-logs"
           />
         </YStack>
       </StyledScrollView>

@@ -89,8 +89,33 @@ const useUser = () => {
     }
   }
 
+  const updateStoreAddress = async (fields, id) => {
+    setState(prev => ({...prev, loading: true, error: null}));
+
+    const {success, errorMessage } = await zat(
+      USER_HOST_ADDRESS.updateAddress,
+      fields,
+      VERBS.PUT,
+      {id: id, action: 'updateAddress'},
+    );
+
+    if (success) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: null,
+      }));
+
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the address.');
+      return false;
+    }
+  };
+
   return {
     ...state,
+    updateStoreAddress,
     handleDelete,
     handleSave,
     handleReset,

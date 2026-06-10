@@ -17,6 +17,7 @@ import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
 import TaskDetails from '../screens/task/task-details';
 import Profile from '../screens/profile';
+import ProfileAddress from '../screens/settings/address';
 import {GeofencingDebug} from '../screens/geofence';
 
 const Stack = createStackNavigator();
@@ -34,6 +35,13 @@ function Navigator() {
       <Stack.Screen
         name="profile"
         component={Profile}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="profile-address"
+        component={ProfileAddress}
         options={{
           headerShown: false,
         }}

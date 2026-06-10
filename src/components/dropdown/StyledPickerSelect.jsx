@@ -6,13 +6,13 @@ import { theme } from "../../utils/theme";
 
 export default function StyledPickerSelect({
   placeholder = "Select...",
-  value = null,
   items = [],
   onChange,
   error = false,
   errorMessage = ""
 }) {
   const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
   const rotateAnim = useState(new Animated.Value(0))[0];
 
   const toggleDropdown = () => {
@@ -74,6 +74,7 @@ export default function StyledPickerSelect({
               key={index}
               style={styles.option}
               onPress={() => {
+                setValue(item.value);
                 onChange(item.value);
                 toggleDropdown();
               }}
@@ -101,12 +102,13 @@ export default function StyledPickerSelect({
 
 const styles = StyleSheet.create({
   input: {
-    height: 48,
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 8, // space for the icon
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "",
+    flexWrap: "wrap",
     justifyContent: "space-between",
     width: "100%",
   },

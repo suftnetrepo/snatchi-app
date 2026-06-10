@@ -13,7 +13,7 @@ import { theme } from '../../utils/theme';
 import { fontStyles } from '../../utils/fontStyles';
 import { useNavigation } from '@react-navigation/native';
 import { StyledMIcon } from '../../components/icon';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 
 const HelpCenter = () => {
   const navigator = useNavigation();
@@ -62,7 +62,7 @@ const HelpCenter = () => {
           <StyledText
             fontFamily={fontStyles.Roboto_Regular}
             fontSize={theme.fontSize.normal}>
-            Thank you for using iShopy and for your interest in contacting us.
+            Thank you for using Snatchi and for your interest in contacting us.
             We're always here to help and we appreciate your feedback.
           </StyledText>
           <StyledSpacer marginVertical={8} />

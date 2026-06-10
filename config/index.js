@@ -43,6 +43,7 @@ export const USER_HOST_ADDRESS = {
   changePassword: `${HOST_API_ADDRESS}user`,
   removeOne: `${HOST_API_ADDRESS}user/`,
   getById: `${HOST_API_ADDRESS}user/`,
+    updateAddress: `${HOST_API_ADDRESS}user?action=updateAddress`,
  }
 
  export const MYTASK_HOST_ADDRESS = {
@@ -61,7 +62,8 @@ export const USER_DOCUMENTS = {
   uploadOne: `${HOST_API_ADDRESS}user/document`,
   addOne: `${HOST_API_ADDRESS}user/document`,
   fetch: `${HOST_API_ADDRESS}user/document`,
-  removeOne: `${HOST_API_ADDRESS}user/document`
+  removeOne: `${HOST_API_ADDRESS}user/document`,
+
 };
 
 export const FENCE = {
