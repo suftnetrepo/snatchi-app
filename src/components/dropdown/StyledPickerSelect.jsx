@@ -1,15 +1,21 @@
-
-import React, { useState } from "react";
-import { TouchableOpacity, Animated, View, Text, StyleSheet } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { theme } from "../../utils/theme";
+import React, {useState} from 'react';
+import {
+  TouchableOpacity,
+  Animated,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import {theme} from '../../utils/theme';
 
 export default function StyledPickerSelect({
-  placeholder = "Select...",
+  placeholder = 'Select...',
   items = [],
   onChange,
   error = false,
-  errorMessage = ""
+  errorMessage = '',
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
@@ -28,12 +34,11 @@ export default function StyledPickerSelect({
 
   const rotate = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "180deg"],
+    outputRange: ['0deg', '180deg'],
   });
 
   return (
-    <View style={{ width: "100%", position: "relative" }}>
-      
+    <View style={{width: '100%', position: 'relative'}}>
       {/* INPUT */}
       <TouchableOpacity
         activeOpacity={0.7}
@@ -43,21 +48,19 @@ export default function StyledPickerSelect({
           {
             backgroundColor: theme.colors.gray[1],
             borderColor: error
-              ? theme.colors.pink[500]   // 🔥 ERROR border
+              ? theme.colors.pink[500] // 🔥 ERROR border
               : theme.colors.gray[400],
           },
-        ]}
-      >
+        ]}>
         <Text
           style={[
             styles.inputText,
-            { color: value ? theme.colors.gray[800] : theme.colors.gray[400] },
-          ]}
-        >
+            {color: value ? theme.colors.gray[800] : theme.colors.gray[400]},
+          ]}>
           {value ? items.find(i => i.value === value)?.label : placeholder}
         </Text>
 
-        <Animated.View style={{ transform: [{ rotate }] }}>
+        <Animated.View style={{transform: [{rotate}]}}>
           <Icon
             name="keyboard-arrow-down"
             size={22}
@@ -69,30 +72,32 @@ export default function StyledPickerSelect({
       {/* DROPDOWN FLOATING LIST */}
       {open && (
         <View style={[styles.dropdown]}>
-          {items.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.option}
-              onPress={() => {
-                setValue(item.value);
-                onChange(item.value);
-                toggleDropdown();
-              }}
-            >
-              <Text style={styles.optionText}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
+          <ScrollView contentContainerStyle={{marginBottom: 56}}>
+            {items.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.option}
+                onPress={() => {
+                  setValue(item.value);
+                  onChange(item.value);
+                  toggleDropdown();
+                }}>
+                <Text style={styles.optionText}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       )}
 
       {/* ERROR MESSAGE */}
       {error && (
-        <Text style={{
-          marginTop: 2,
-          marginHorizontal:4,
-          color: theme.colors.pink[500],
-          fontSize: 14
-        }}>
+        <Text
+          style={{
+            marginTop: 2,
+            marginHorizontal: 4,
+            color: theme.colors.pink[500],
+            fontSize: 14,
+          }}>
           {errorMessage}
         </Text>
       )}
@@ -106,27 +111,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 8, // space for the icon
-    flexDirection: "row",
-    alignItems: "",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    width: "100%",
+    flexDirection: 'row',
+    alignItems: '',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   inputText: {
     fontSize: 16,
   },
   dropdown: {
-    position: "absolute",
-    top: 52,
+    position: 'absolute',
+    top: 5,
     left: 0,
-    width: "100%",
+    width: '100%',
     zIndex: 9999,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 3},
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 5,
@@ -138,6 +143,6 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
 });

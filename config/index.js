@@ -43,7 +43,7 @@ export const USER_HOST_ADDRESS = {
   changePassword: `${HOST_API_ADDRESS}user`,
   removeOne: `${HOST_API_ADDRESS}user/`,
   getById: `${HOST_API_ADDRESS}user/`,
-    updateAddress: `${HOST_API_ADDRESS}user?action=updateAddress`,
+    updateAddress: `${HOST_API_ADDRESS}user/`,
  }
 
  export const MYTASK_HOST_ADDRESS = {

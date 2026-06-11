@@ -1,29 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import {YStack, XStack, StyledHeader, StyledSafeAreaView} from 'fluent-styles';
+import React, {useState, useEffect} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  KeyboardAwareScrollView
-} from "react-native";
+  YStack,
+  XStack,
+  StyledHeader,
+  StyledSafeAreaView,
+  StyledSpacer,
+  StyledButton,
+  StyledText,
+  StyledSpinner,
+  StyledOkDialog,
+} from 'fluent-styles';
+import {View, Text, StyleSheet, TextInput, Platform} from 'react-native';
 import {theme} from '../../utils/theme';
 import {fontStyles} from '../../utils/fontStyles';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, CommonActions} from '@react-navigation/native';
 import AddressSearchBar from '../../components/addressSearchBar';
 import {validate} from '../../validator';
 import {addressValidator} from '../../validator/addressValidator';
 import {useUser} from '../../hooks/useUser';
-import { useAppContext } from "../../hooks/appContext";
+import {useAppContext} from '../../hooks/appContext';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const ProfileAddress = () => {
   const navigator = useNavigation();
   const {user, updateCurrentUser} = useAppContext();
   const [validationError, setValidationError] = useState({});
   const [fields, setFields] = useState(addressValidator.fields);
-  const {updateStoreAddress} = useUser();
+  const {updateStoreAddress, loading, error, handleReset} = useUser();
+
+  console.log('User in ProfileAddress:', user); // Debugging log
 
   useEffect(() => {
     if (user) {
@@ -37,28 +42,29 @@ const ProfileAddress = () => {
   }, [user]);
 
   const handleSelectedAddress = selectedAddress => {
+    console.log('Selected Address:', selectedAddress);
     setFields(prev => {
       return {
         ...prev,
-        addressline1:
-          selectedAddress.address.country_code === 'gb' ||
-          selectedAddress.address.country_code === 'us'
-            ? selectedAddress.address.suburb
-            : selectedAddress.address.place,
-        addressline2:
-          selectedAddress.address.county || selectedAddress.address.city,
-        addressline3:
-          selectedAddress.address.state_district ||
-          selectedAddress.address.state,
+        addressLine1:
+          selectedAddress?.address?.country_code === 'gb' ||
+          selectedAddress?.address?.country_code === 'us'
+            ? selectedAddress?.address?.suburb
+            : selectedAddress?.address?.place,
+        county:
+          selectedAddress?.address?.county || selectedAddress?.address?.city,
+        town:
+          selectedAddress?.address?.state_district ||
+          selectedAddress?.address?.state,
         postcode:
-          selectedAddress.address.country_code === 'gb' ||
-          selectedAddress.address.country_code === 'us'
-            ? selectedAddress.address.postcode
+          selectedAddress?.address?.country_code === 'gb' ||
+          selectedAddress?.address?.country_code === 'us'
+            ? selectedAddress?.address?.postcode
             : '',
-        country_code: selectedAddress.address.country_code,
-        country: selectedAddress.address.country,
-        longitude: parseFloat(selectedAddress.lon),
-        latitude: parseFloat(selectedAddress.lat),
+        country_code: selectedAddress?.address?.country_code,
+        country: selectedAddress?.address?.country,
+        longitude: parseFloat(selectedAddress?.lon),
+        latitude: parseFloat(selectedAddress?.lat),
       };
     });
   };
@@ -70,14 +76,19 @@ const ProfileAddress = () => {
       return;
     }
 
-    updateStoreAddress(fields, user._id).then(result => {
+    updateStoreAddress(fields, user?.user_id).then(result => {
       if (result) {
         const copyUser = {
           ...user,
           address: fields,
         };
         updateCurrentUser(copyUser);
-        navigation.navigate('settings');
+        navigator.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{name: 'bottom-tabs', params: {screen: 'Settings'}}],
+          }),
+        );
       }
     });
   };
@@ -91,7 +102,7 @@ const ProfileAddress = () => {
         <StyledHeader.Header
           backgroundColor={theme.colors.gray[1]}
           onPress={() => navigator.goBack()}
-          title="Address"
+          title="Edit Address"
           icon
           cycleProps={{
             borderColor: theme.colors.gray[400],
@@ -105,8 +116,12 @@ const ProfileAddress = () => {
         justifyContent="flex-start"
         alignItems="center"
         backgroundColor={theme.colors.gray[50]}>
-        <AddressSearchBar handleSelectedAddress={handleSelectedAddress} />
+        <AddressSearchBar
+          placeholder="Search for address"
+          handleSelectedAddress={j => handleSelectedAddress(j)}
+        />
       </XStack>
+      <StyledSpacer marginVertical={8} />
       <KeyboardAwareScrollView
         keyboardShouldPersistTaps={'always'}
         enableOnAndroid={true}
@@ -118,7 +133,7 @@ const ProfileAddress = () => {
             <Text style={styles.label}>Street address</Text>
             <View style={{...styles.input}}>
               <TextInput
-                value={fields.addressline1}
+                value={fields.addressLine1}
                 placeholder="Street address"
                 placeholderTextColor={styles.placeholder}
                 maxLength={50}
@@ -126,13 +141,13 @@ const ProfileAddress = () => {
                 autoCorrect={false}
                 returnKeyType="next"
                 onChangeText={value =>
-                  setFields({...fields, addressline1: value})
+                  setFields({...fields, addressLine1: value})
                 }
                 style={{...styles.inputText}}></TextInput>
             </View>
-            {validationError.addressline1 && (
+            {validationError.addressLine1 && (
               <ValidationMessage
-                message={validationError.addressline1.message}
+                message={validationError.addressLine1.message}
               />
             )}
           </View>
@@ -140,44 +155,36 @@ const ProfileAddress = () => {
             <Text style={styles.label}>Town</Text>
             <View style={{...styles.input}}>
               <TextInput
-                value={fields.addressline2}
+                value={fields.town}
                 placeholder="Town"
                 placeholderTextColor={styles.placeholder}
                 maxLength={50}
                 autoCapitalize={'none'}
                 autoCorrect={false}
                 returnKeyType="next"
-                onChangeText={value =>
-                  setFields({...fields, addressline2: value})
-                }
+                onChangeText={value => setFields({...fields, town: value})}
                 style={{...styles.inputText}}></TextInput>
             </View>
-            {validationError.addressline2 && (
-              <ValidationMessage
-                message={validationError.addressline2.message}
-              />
+            {validationError.town && (
+              <ValidationMessage message={validationError.town.message} />
             )}
           </View>
           <View style={styles.flexContainer}>
             <Text style={styles.label}>County</Text>
             <View style={[styles.input]}>
               <TextInput
-                value={fields.addressline3}
+                value={fields.county}
                 placeholder="County"
                 placeholderTextColor={styles.placeholder}
                 maxLength={50}
                 autoCapitalize={'none'}
                 autoCorrect={false}
                 returnKeyType="next"
-                onChangeText={value =>
-                  setFields({...fields, addressline3: value})
-                }
+                onChangeText={value => setFields({...fields, county: value})}
                 style={{...styles.inputText}}></TextInput>
             </View>
-            {validationError.addressline3 && (
-              <ValidationMessage
-                message={validationError.addressline3.message}
-              />
+            {validationError.county && (
+              <ValidationMessage message={validationError.county.message} />
             )}
           </View>
           <View style={styles.rowContainer}>
@@ -219,14 +226,33 @@ const ProfileAddress = () => {
               )}
             </View>
           </View>
-
+          <StyledSpacer marginVertical={8} />
           <View style={{...styles.columnContainer}}>
-            <TouchableOpacity style={styles.button} onPress={onSubmit}>
-              <Text style={styles.buttonText}>Save Changes</Text>
-            </TouchableOpacity>
+            <StyledButton
+              width="100%"
+              backgroundColor={theme.colors.cyan[500]}
+              onPress={() => onSubmit()}>
+              <StyledText
+                paddingHorizontal={20}
+                paddingVertical={10}
+                color={theme.colors.gray[1]}>
+                Save Changes
+              </StyledText>
+            </StyledButton>
           </View>
         </View>
       </KeyboardAwareScrollView>
+      {loading && <StyledSpinner />}
+      {error && (
+        <StyledOkDialog
+          title={error?.message}
+          description="please try again"
+          visible={true}
+          onOk={() => {
+            handleReset();
+          }}
+        />
+      )}
     </StyledSafeAreaView>
   );
 };
@@ -297,7 +323,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  inputContainer: {},
+  inputContainer: {
+    marginHorizontal: 16,
+  },
   input: {
     flexDirection: 'row',
     justifyContent: 'space-between',

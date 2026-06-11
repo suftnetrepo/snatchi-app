@@ -17,7 +17,6 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAppContext } from '../hooks/appContext';
 
-
 const CODE_LENGTH = 6;
 
 const KeypadButton = ({ label, onPress, variant = 'default' }) => (

@@ -6,7 +6,7 @@ const addressValidator = {
         message: "street address is required",
       },
     ],
-    addressline2: [
+    town: [
       {
         pattern: /^.+$/,
         message: "town is required",
@@ -20,9 +20,9 @@ const addressValidator = {
     ],
   },
   fields: {
-    addressline1: "",
-    addressline2: "",
-    addressline3: "",
+    addressLine1: "",
+    town: "",
+    county: "",
     country_code: "",
     country: "",
     postcode: "",

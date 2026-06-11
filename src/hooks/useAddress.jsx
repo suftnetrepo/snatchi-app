@@ -44,6 +44,7 @@ const useAddress = () => {
     if (success) {
       setState(pre => ({
         ...pre,
+        data: data,
         loading: false,
       }));
       return data;

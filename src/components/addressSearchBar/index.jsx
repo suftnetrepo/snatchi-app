@@ -5,8 +5,8 @@ import {StyledSearchBar} from '../../components/searchBar';
 import {useAddress} from '../../hooks/useAddress';
 import StyledPickerSelect from '../../components/dropdown/StyledPickerSelect';
 
-const AddressSearchBar = ({handleSelectedAddress}) => {
-  const {handleFetch, handleReset, loading, error} = useAddress();
+const AddressSearchBar = ({placeholder, handleSelectedAddress}) => {
+  const {handleFetch, data, handleReset, loading, error} = useAddress();
   const [addresses, setAddresses] = useState([]);
 
   const onFindAddress = query => {
@@ -22,16 +22,22 @@ const AddressSearchBar = ({handleSelectedAddress}) => {
     });
   };
 
+  const onHandleSelectedAddress = address => {
+    const selected = data?.find(item => item.place_id === address);
+    handleSelectedAddress(selected);
+  };
+
+
   return (
     <YStack>
       <XStack backgroundColor={theme.colors.gray[1]}>
-        <StyledSearchBar  onPress={query => onFindAddress(query)} />
+        <StyledSearchBar placeholder={placeholder} onPress={query => onFindAddress(query)} />
       </XStack>
       <StyledSpacer marginVertical={4} />
       <StyledPickerSelect
         items={addresses}
         placeholder="Select address suggestions"
-        onChange={address => handleSelectedAddress(address.value)}
+        onChange={address => onHandleSelectedAddress(address)}
       />
       {loading && <StyledSpinner />}
       {error && (
