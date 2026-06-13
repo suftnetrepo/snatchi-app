@@ -140,3 +140,4 @@ export const getScheduleTimelineColors = (status?: string | null) => {
     dotBorder: '#FFFFFF',
   };
 };
+

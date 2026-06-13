@@ -21,6 +21,13 @@ export const INVOICE = {
   fetchMyInvoices: `${HOST_API_ADDRESS}invoice?action=myInvoices`,
 };
 
+export const RATE = {
+  addOne: `${HOST_API_ADDRESS}engineer-service-rate`,
+  updateOne: `${HOST_API_ADDRESS}engineer-service-rate`,
+  removeOne: `${HOST_API_ADDRESS}engineer-service-rate`,
+  fetchMyRates: `${HOST_API_ADDRESS}engineer-service-rate?action=list`,
+};
+
 export const SCHEDULER = {
   createOne: `${HOST_API_ADDRESS}scheduler`,
   updateOne: `${HOST_API_ADDRESS}scheduler`,

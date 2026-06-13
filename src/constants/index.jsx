@@ -1,0 +1,16 @@
+ export const ServiceOptions = [
+      { label: 'Site Survey & Needs Analysis', icon: 'place' },
+      { label: 'Client Sign-Off Walkthrough', icon: 'how_to_reg' },
+      { label: 'Onsite End-User Training', icon: 'school' },
+      { label: 'Remote Training Session', icon: 'cast_for_education' },
+      { label: 'Scheduled Preventive Maintenance', icon: 'event' },
+      { label: 'Emergency Callout Service', icon: 'warning' },
+      { label: 'Remote System Diagnostics', icon: 'wifi' },
+      { label: 'Supply of AV Equipment', icon: 'inventory_2' },
+      { label: 'Supply of Cables & Accessories', icon: 'electrical_services' },
+      { label: 'Supply of Control Interfaces', icon: 'settings_remote' },
+      { label: 'Supply of Mounting Hardware', icon: 'construction' },
+      { label: 'Delivery & Logistics Charges', icon: 'local_shipping' },
+      { label: 'Change Request Management', icon: 'change_circle' },
+      { label: 'Travel & Accommodation', icon: 'flight' },
+    ];

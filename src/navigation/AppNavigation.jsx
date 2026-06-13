@@ -19,6 +19,8 @@ import TaskDetails from '../screens/task/task-details';
 import Profile from '../screens/profile';
 import ProfileAddress from '../screens/settings/address';
 import {GeofencingDebug} from '../screens/geofence';
+import RateForm from '../screens/serviceRate/form';
+import ServiceRate from '../screens/serviceRate';
 
 const Stack = createStackNavigator();
 function Navigator() {
@@ -28,6 +30,20 @@ function Navigator() {
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="service-rate-form"
+        component={RateForm}
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="service-rate"
+        component={ServiceRate}
         options={{
           headerShown: false,
         }}

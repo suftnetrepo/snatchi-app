@@ -26,6 +26,7 @@ const invoiceValidator = {
   },
 };
 
+
 const itemValidator = {
   rules: {
     description: [

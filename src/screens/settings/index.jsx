@@ -164,8 +164,8 @@ const Settings = () => {
           />
              <RenderRow
             icon="monetization-on"
-            title="Rate"
-            screen="rate-logs"
+            title="Services Rate"
+            screen="service-rate"
           />
         </YStack>
       </StyledScrollView>
