@@ -10,18 +10,17 @@ import {
   StyledSpacer,
   StyledSpinner,
   StyledOkDialog,
+  StyledBadge,
 } from 'fluent-styles';
-import {Linking, Pressable} from 'react-native';
+import {Pressable} from 'react-native';
 import {FlatList, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {fontStyles, theme} from '../../utils/theme';
 import {StyledMIcon} from '../../components/icon';
 import {useServiceRate} from '../../hooks/useServiceRate';
-import {useAppContext} from '../../hooks/appContext';
 
 const ServiceRate = () => {
   const navigator = useNavigation();
-  const {user} = useAppContext();
   const {loading, error, data, handleDelete} = useServiceRate(true);
 
   const RenderHeader = () => (
@@ -34,7 +33,11 @@ const ServiceRate = () => {
       <StyledCycle
         pressable
         pressableProps={{
-          onPress: () => navigator.goBack(),
+          onPress: () =>
+            navigator.reset({
+              index: 0,
+              routes: [{ name: 'bottom-tabs', params: { screen: 'Settings' } }],
+            }),
         }}
         height={48}
         width={48}
@@ -75,21 +78,36 @@ const ServiceRate = () => {
         paddingVertical={8}
         paddingHorizontal={8}
         borderRadius={8}>
-        <YStack flex={1}>
+        <YStack alignItems="flex-start" flex={1}>
           <StyledText
             paddingHorizontal={8}
             fontWeight={theme.fontWeight.normal}
             fontSize={theme.fontSize.medium}
             color={theme.colors.gray[800]}>
-            {rate.name}
+            {rate.serviceName}
           </StyledText>
-          <StyledText
-            paddingHorizontal={8}
-            fontWeight={theme.fontWeight.normal}
-            fontSize={theme.fontSize.small}
-            color={theme.colors.gray[600]}>
-            {rate.description}
-          </StyledText>
+          <StyledSpacer marginVertical={4} />
+          <XStack paddingHorizontal={8} alignItems="center" gap={4}>
+            <StyledBadge
+              backgroundColor={theme.colors.green[200]}
+              paddingHorizontal={8}
+              borderColor={theme.colors.gray[400]}
+              fontWeight={theme.fontWeight.normal}
+              fontSize={theme.fontSize.small}
+              color={theme.colors.green[800]}>
+              {rate.rate}
+            </StyledBadge>
+            <StyledSpacer marginVertical={4} />
+            <StyledBadge
+              backgroundColor={theme.colors.orange[200]}
+              paddingHorizontal={8}
+              borderColor={theme.colors.gray[400]}
+              fontWeight={theme.fontWeight.normal}
+              fontSize={theme.fontSize.small}
+              color={theme.colors.orange[800]}>
+              {rate.rateType}
+            </StyledBadge>
+          </XStack>
         </YStack>
         <XStack justifyContent="space-between" alignItems="center" gap={4}>
           <Pressable onPress={() => {}}>
@@ -103,7 +121,7 @@ const ServiceRate = () => {
                 size={25}
                 color={theme.colors.gray[600]}
                 onPress={() =>
-                  navigator.navigate('service-rate-form', {rateId: rate._id})
+                  navigator.navigate('service-rate-form', {rate: rate})
                 }
               />
             </StyledCycle>

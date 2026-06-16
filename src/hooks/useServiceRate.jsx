@@ -19,6 +19,7 @@ const useServiceRate = (flag=false) => {
       fields: {
         ...prevState.fields,
         ...rate,
+        rate: rate?.rate?.toString() || '',
       },
     }));
   };
