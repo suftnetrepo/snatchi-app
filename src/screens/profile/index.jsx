@@ -22,7 +22,6 @@ import { useAppContext } from '../../hooks/appContext';
 import { validate } from '../../validator';
 import { ImagePickerModal } from '../../components/imagePickerModal';
 import { Pressable, Platform } from 'react-native';
-import { getStore } from '../../utils/asyncStorage';
 
 const Profile = () => {
   const navigator = useNavigation();
@@ -44,13 +43,6 @@ const Profile = () => {
   } = useUser();
 
   useEffect(() => {
-    async function fetchFcm() {
-      const fcm = await getStore('fcm');
-      handleChange('fcm', fcm);
-      // You can use the fcm token as needed
-      if (__DEV__) console.log('Stored FCM Token:', fcm);
-    }
-    fetchFcm();
     user && handleEdit(user);
   }, []);
 
@@ -87,10 +79,6 @@ const Profile = () => {
     formData.append('last_name', fields.last_name);
     formData.append('email', fields.email);
     formData.append('mobile', fields.mobile);
-
-    if (fields.fcm) {
-      formData.append('fcm', fields.fcm);
-    }
 
     handleSave(formData, user.user_id).then(async result => {
       if (result) {

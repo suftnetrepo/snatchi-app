@@ -4,6 +4,7 @@ import {zat} from '../utils/zap';
 import {forgotValidator} from '../validator/loginValidator';
 import {storeJWT, getJWT} from '../store/secure';
 import {getStore, store} from '../utils/asyncStorage';
+import {Platform} from 'react-native';
 
 const useSecure = () => {
   const [state, setState] = useState({
@@ -69,18 +70,25 @@ const useSecure = () => {
     setState(pre => {
       return {...pre, error: null, loading: true};
     });
+
     const {data, success, errorMessage} = await zat(
       ACCOUNT_HOST_ADDRESS.verify,
       (fields = {
         ...fields,
         fcm,
+        device: {
+          type: Platform.OS === 'ios' ? 'mobile_ios' : 'mobile_android',
+          platform: Platform.OS === 'ios' ? 'ios' : 'android',
+          appVersion: '1.0.0',
+          osVersion: Platform.Version,
+        },j
       }),
       VERBS.POST,
     );
 
     if (success) {
-      storeJWT(data?.token).catch(()=> {})
-      store('user_', data?.user?.user_id).catch(()=> {})
+      storeJWT(data?.token).catch(() => {});
+      store('user_', data?.user?.user_id).catch(() => {});
       setState(pre => {
         return {...pre, data: success, loading: false};
       });
