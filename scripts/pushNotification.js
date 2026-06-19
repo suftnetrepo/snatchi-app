@@ -15,7 +15,6 @@ export const fcmStart = async () => {
 
     localNotificationService.defaultChannel();
     localNotificationService.configure(notificationData => {
-      console.log('Notification opened:', notificationData);
       // Handle navigation or other actions here
     });
 
@@ -232,11 +231,10 @@ export function registerListenerWithFCM() {
         if (remoteMessage.data.screen === 'calendar') {
           const screenParams = JSON.parse(remoteMessage.data.screenParams);
           const scheduleId = screenParams.scheduleId;
-          console.log('Handling calendar push for scheduleId:', scheduleId);
-          console.log("------------------------23",screenParams )
-
+      
           const body = {
             id: scheduleId,
+            ...screenParams,
             siteName: remoteMessage.notification.title,
             description: remoteMessage.notification.body,
             action: false,
@@ -244,12 +242,12 @@ export function registerListenerWithFCM() {
             createdAt: Date.now(),
             startDate: screenParams.startDate,
             endDate: screenParams.endDate,
-            dateString: screenParams.startDate
+            dateString: screenParams.startDate,
+
           };
 
           await add(SCHEDULE_KEY, body);
           NotificationBus.emit('new-notification', body);
-          console.log('Navigating to screen from geofence push:', remoteMessage.data.screen, body);
           // navigationRef.current?.navigate(remoteMessage.data.screen, params);
         }
 

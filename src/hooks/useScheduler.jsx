@@ -361,6 +361,30 @@ const useScheduler = key => {
     }
   }
 
+   async function handleUpdateStatus(status, id) {
+    setState(prev => ({...prev, loading: true, error: null, success: false}));
+    const {success, errorMessage} = await zat(
+      SCHEDULER.updateOne,
+      {status},
+      VERBS.PUT,
+      {id: id, action: 'status'},
+    );
+
+    if (success) {
+      setState(prev => {
+        return {
+          ...prev,
+          success: true,
+          loading: false,
+        };
+      });
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the schedule.');
+      return false;
+    }
+  }
+
     async function handleScheduleFilterByStatus({status, engineerId}) {
     setState(prev => ({...prev, loading: true}));
     const {success, data, errorMessage} = await zat(
@@ -402,6 +426,7 @@ const useScheduler = key => {
     handleNotifySave,
     handleSchedules,
     handleScheduleStatus,
+    handleUpdateStatus
   };
 };
 

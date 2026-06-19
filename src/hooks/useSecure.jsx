@@ -66,6 +66,7 @@ const useSecure = () => {
   };
 
   const handleVerifyCode = async fields => {
+    try {
     const fcm = await getStore('fcm');
     setState(pre => {
       return {...pre, error: null, loading: true};
@@ -81,7 +82,7 @@ const useSecure = () => {
           platform: Platform.OS === 'ios' ? 'ios' : 'android',
           appVersion: '1.0.0',
           osVersion: Platform.Version,
-        },j
+        },
       }),
       VERBS.POST,
     );
@@ -94,8 +95,13 @@ const useSecure = () => {
       });
       return data?.user;
     } else {
+      console.log("Error verifying code:", errorMessage);
       handleError(errorMessage);
     }
+  } catch (error) {
+    console.error("An unexpected error occurred during code verification:", error);
+    handleError("An unexpected error occurred. Please try again.");
+  }
   };
 
   const handleLogout = async () => {
