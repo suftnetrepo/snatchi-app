@@ -5,6 +5,8 @@ import {forgotValidator} from '../validator/loginValidator';
 import {storeJWT, getJWT} from '../store/secure';
 import {getStore, store} from '../utils/asyncStorage';
 import {Platform} from 'react-native';
+import {refreshFCMToken} from '../../scripts/pushNotification';
+
 
 const useSecure = () => {
   const [state, setState] = useState({
@@ -39,7 +41,11 @@ const useSecure = () => {
   };
 
   const handleJwt = async () => {
-    let token = await getJWT();
+    let token = await getStore("fcm");
+    if (!token) {
+      token = await refreshFCMToken();
+    }
+    console.log('Retrieved JWT......:', token);
     setState(pre => {
       return {...pre, token, error: null};
     });
@@ -67,7 +73,8 @@ const useSecure = () => {
 
   const handleVerifyCode = async fields => {
     try {
-    const fcm = await getStore('fcm');
+    const token = state.token || await getStore('fcm');
+    console.log('Verifying code with token:', token);
     setState(pre => {
       return {...pre, error: null, loading: true};
     });
@@ -76,7 +83,7 @@ const useSecure = () => {
       ACCOUNT_HOST_ADDRESS.verify,
       (fields = {
         ...fields,
-        fcm,
+        fcm : token,
         device: {
           type: Platform.OS === 'ios' ? 'mobile_ios' : 'mobile_android',
           platform: Platform.OS === 'ios' ? 'ios' : 'android',
@@ -88,7 +95,7 @@ const useSecure = () => {
     );
 
     if (success) {
-      storeJWT(data?.token).catch(() => {});
+      store("fcm", data?.token).catch(() => {});
       store('user_', data?.user?.user_id).catch(() => {});
       setState(pre => {
         return {...pre, data: success, loading: false};

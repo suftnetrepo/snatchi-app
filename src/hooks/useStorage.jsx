@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { markAsRead, getByDate, deleteOne, getUnreadCount, PROJECT_KEY, SCHEDULE_KEY, add, clear } from '../utils/asyncStorage';
+import { markAsRead, getByDate, update, deleteOne, getUnreadCount, PROJECT_KEY, SCHEDULE_KEY, add, clear } from '../utils/asyncStorage';
 
 const useStorage = (key) => {
   const [state, setState] = useState({
@@ -19,6 +19,32 @@ const useStorage = (key) => {
         error: null
       };
     });
+  }, []);
+
+    const handleUpdate = useCallback(async (targetKey, id, updates) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    const success = await update(targetKey, id, updates);
+    if (success) {
+      // Get updated unread count from storage
+      const unReadCount = await getUnreadCount(targetKey);
+
+      // Update local state synchronously
+      setState((prevState) => ({
+        ...prevState,
+        data: prevState.data.map((item) =>
+          item.id === id ? { ...item, ...updates } : item,
+        ),
+        unReadCount: unReadCount,
+        success: true,
+        loading: false,
+      }));
+
+      return true;
+    }
+
+    // ensure loading flag cleared on failure
+    setState((prev) => ({ ...prev, loading: false }));
+    return false;
   }, []);
 
   const handleMarkAsRead = useCallback(async (targetKey, id) => {
@@ -51,9 +77,6 @@ const useStorage = (key) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     const success = await deleteOne(targetKey, id);
 
-    console.log('Delete operation success:', success);
-    console.log('Current state data before targetKey:', targetKey);
-       console.log('Current state data before id:', id);
     if (success) {
       const unReadCount = await getUnreadCount(targetKey);
 
@@ -96,8 +119,9 @@ const useStorage = (key) => {
     ...state,
     handleMarkAsRead,
     handleDelete,
-    handleReset
+    handleReset,
+    handleUpdate,
   };
 };
 
-export { useStorage, PROJECT_KEY, SCHEDULE_KEY, add, clear };
+export { useStorage, PROJECT_KEY, SCHEDULE_KEY, add, clear, update };

@@ -60,7 +60,7 @@ export default function Notify() {
         </StyledHeader.Full>
       </StyledHeader>
 
-      <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.gray[1] }}>
         <YStack flex={1} paddingHorizontal={16} backgroundColor={theme.colors.gray[100]}>
           <CalendarNotification />
         </YStack>

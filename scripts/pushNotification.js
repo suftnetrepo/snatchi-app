@@ -1,12 +1,27 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform, PermissionsAndroid } from 'react-native';
-import { navigationRef } from '../src/navigation/NavigationRef';
-import { store, getStore, add, SCHEDULE_KEY, PROJECT_KEY } from '../src/utils/asyncStorage';
-import { geofencingSingleton } from './geofencing';
-import { localNotificationService } from '../Notification/LocalNotificationService';
-import { NotificationBus } from './notificationBus';
-import { zat } from '../src/utils/zap';
-import { VERBS, USER_HOST_ADDRESS } from '../config';
+import {Platform, PermissionsAndroid} from 'react-native';
+import {navigationRef} from '../src/navigation/NavigationRef';
+import {add, store, SCHEDULE_KEY} from '../src/utils/asyncStorage';
+import {geofencingSingleton} from './geofencing';
+import {localNotificationService} from '../Notification/LocalNotificationService';
+import {NotificationBus} from './notificationBus';
+
+const parseScreenParams = value => {
+  if (!value) return {};
+
+  try {
+    let parsed = JSON.parse(value);
+
+    if (typeof parsed === 'string') {
+      parsed = JSON.parse(parsed);
+    }
+
+    return parsed;
+  } catch (error) {
+    console.log('Failed to parse screenParams:', error);
+    return {};
+  }
+};
 
 export const fcmStart = async () => {
   try {
@@ -18,19 +33,18 @@ export const fcmStart = async () => {
       // Handle navigation or other actions here
     });
 
-    // 2️⃣ Register the device for remote messages (required for iOS)
+    // 2️⃣ Register the device for remote messages (required for iOS)j
     await messaging().registerDeviceForRemoteMessages();
 
     const token = await messaging().getToken();
 
-    const storedToken = await getStore('fcm');
-    if (token && token !== storedToken) {
+    if (token) {
+      console.log('success to get FCM token', token);
       await store('fcm', token);
-      await syncToken(token);
     }
 
     // 5️⃣ Register background/foreground listeners
-    await registerListenerWithFCM();
+    registerListenerWithFCM();
 
     // 6️⃣ Link notifications to navigation handling
     setupNotificationNavigation(navigationRef);
@@ -42,23 +56,26 @@ export const fcmStart = async () => {
   }
 };
 
-const syncToken = async (token) => {
+export const refreshFCMToken = async () => {
   try {
-    const user = await getStore('user');
-    if (token && user) {
-      await zat(
-        USER_HOST_ADDRESS.updateFcm,
-        token,
-        VERBS.PUT,
-        { id: user.id } 
-      ).catch((error) => { 
-        if (__DEV__)
-          console.error('getFcmToken Device Token error', error);
-      });
+    // Delete current token to force refresh
+    await messaging().deleteToken();
+
+    // Get new token
+    const token = await messaging().getToken();
+    console.error('Failed to get FCM token', token);
+
+    if (token) {
+      await store('fcm', token);
+      // await syncToken(token);
+      console.log('✅ FCM token refreshed successfully');
+      return token;
     }
+
+    return null;
   } catch (error) {
-    if (__DEV__)
-      console.error('getFcmToken Device Token error', error);
+    console.error('❌ Error refreshing FCM token:', error);
+    return null;
   }
 };
 
@@ -153,11 +170,15 @@ export const checkApplicationNotificationPermission = async () => {
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (result !== PermissionsAndroid.RESULTS.GRANTED) {
-          if (__DEV__) console.log('🚫 Android POST_NOTIFICATIONS permission denied');
+          if (__DEV__)
+            console.log('🚫 Android POST_NOTIFICATIONS permission denied');
           return false;
         }
       } catch (err) {
-        console.error('🛑 Error requesting POST_NOTIFICATIONS permission:', err);
+        console.error(
+          '🛑 Error requesting POST_NOTIFICATIONS permission:',
+          err,
+        );
         return false;
       }
     }
@@ -165,13 +186,12 @@ export const checkApplicationNotificationPermission = async () => {
     // ✅ Register device for remote FCM messages
     await messaging().registerDeviceForRemoteMessages();
     return true;
-
   } catch (error) {
     console.error('🛑 Error checking notification permissions:', error);
     return false;
   }
 };
-const parseMaybeJson = (value) => {
+const parseMaybeJson = value => {
   if (!value) return null;
 
   if (typeof value === 'string') {
@@ -196,16 +216,14 @@ export function registerListenerWithFCM() {
         remoteMessage.messageId, // Unique ID for the notification
         remoteMessage.notification.title, // Notification title
         remoteMessage.notification.body, // Notification message
-        remoteMessage.data // Additional data
+        remoteMessage.data, // Additional data
       );
     }
 
     if (remoteMessage?.data) {
-
       try {
         // 🔹 ADD_PROJECTS
         if (remoteMessage.data.addProjects) {
-
           const projects = parseMaybeJson(remoteMessage?.data?.addProjects);
           console.log('Adding projects from push:', projects);
           if (Array.isArray(projects)) {
@@ -229,12 +247,11 @@ export function registerListenerWithFCM() {
         }
 
         if (remoteMessage.data.screen === 'calendar') {
-          const screenParams = JSON.parse(remoteMessage.data.screenParams);
+            const screenParams = parseScreenParams(remoteMessage.data.screenParams);
           const scheduleId = screenParams.scheduleId;
-      
+
           const body = {
             id: scheduleId,
-            ...screenParams,
             siteName: remoteMessage.notification.title,
             description: remoteMessage.notification.body,
             action: false,
@@ -243,14 +260,20 @@ export function registerListenerWithFCM() {
             startDate: screenParams.startDate,
             endDate: screenParams.endDate,
             dateString: screenParams.startDate,
-
+            status: screenParams.status,
+            startTime: screenParams.startTime,
+            endTime: screenParams.endTime,
+            scheduleId: screenParams.scheduleId,  
+            siteLocation : screenParams.siteLocation,
+            projectId: screenParams.projectId,
+            projectName: screenParams.projectName,
+            projectDescription: screenParams?.projectDescription,
           };
 
           await add(SCHEDULE_KEY, body);
           NotificationBus.emit('new-notification', body);
           // navigationRef.current?.navigate(remoteMessage.data.screen, params);
         }
-
       } catch (err) {
         console.error('❌ Failed to handle geofence push:', err);
       }

@@ -48,7 +48,7 @@ export interface JobNotification {
   endDate: string;
   startTime: string;
   endTime: string;
-  location: string;
+  siteLocation: string;
   siteName: string;
   description: string;
   action: boolean;
@@ -56,6 +56,8 @@ export interface JobNotification {
   createdAt: number;
   dateString: string;
   read: boolean;
+  projectName : string;
+  projectDescription : string;
 }
 
 interface JobCardProps {
@@ -90,7 +92,11 @@ function formatTime(time: string): string {
 function getDurationHours(start: string, end: string): number {
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
-  return (eh * 60 + em - (sh * 60 + sm)) / 60;
+
+  let mins = (eh * 60 + em) - (sh * 60 + sm);
+  if (mins < 0) mins += 1440; // wrap past midnight (24 * 60)
+
+  return Math.round((mins / 60) * 100) / 100;
 }
 
 function parseLocation(raw: string): {
@@ -225,16 +231,18 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
     );
   }
 
+  console.log('JobCard job data:', job); // Debugging log 
+
   // Derived data
   const {title: jobTitle, subtitle: jobSubtitle} = truncateSiteName(
     job.siteName,
   );
 
-  const location = parseLocation(job.location);
-  const tasks = parseDescription(job.description);
+  // const location = parseLocation(job.siteLocation);
+  // const tasks = parseDescription(job.projectDescription);
   const duration = getDurationHours(job.startTime, job.endTime);
-  const visibleTasks = expanded ? tasks : tasks.slice(0, 3);
-  const hiddenCount = tasks.length - 3;
+  // const visibleTasks = expanded ? tasks : tasks.slice(0, 3);
+  // const hiddenCount = tasks.length - 3;
 
   // ─── Main card ──────────────────────────────────────
 
@@ -294,7 +302,7 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
             bg="$background50">
             <BadgeIcon as={Clock} mr="$1.5" />
             <BadgeText fontSize="$xs" fontWeight="$medium">
-              {duration}h duration
+              {duration} duration
             </BadgeText>
           </Badge>
         </HStack>
@@ -303,23 +311,36 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
       <Divider height={0.5} />
 
       {/* ── Location ──────────────────────────────────── */}
-      <SectionRow icon={MapPin} iconBg="$info50" iconColor="$info600">
-        <Heading size="sm">
-          {location.area}
-          {location.city ? `, ${location.city}` : ''}
-        </Heading>
-        <HStack space="xs" alignItems="center" mt="$0.5">
-          <Text size="sm" color="$textLight500">
-            {location.postcode}
-          </Text>
-          <Text size="xs" color="$textLight300">
-            ·
-          </Text>
-          <Text size="xs" color="$textLight500">
-            Cambridgeshire
-          </Text>
+       <SectionRow icon={Calendar} iconBg="$primary50" iconColor="$primary600">
+        <Heading size="sm">Site Location</Heading>
+        <Text size="sm" color="$textLight500" mt="$0.5">
+          {job.siteLocation}
+        </Text>
+
+        <HStack space="sm" mt="$2">
+          <Badge
+            size="sm"
+            variant="outline"
+            action="muted"
+            borderRadius={999}
+            px="$3"
+            py="$1"
+            bg="$background50">
+            <BadgeIcon as={Clock} mr="$1.5" />
+            <BadgeText fontSize="$xs" fontWeight="$medium">
+              {duration} duration
+            </BadgeText>
+          </Badge>
         </HStack>
       </SectionRow>
+
+      {/* <SectionRow icon={MapPin} iconBg="$info50" iconColor="$info600">
+        <HStack space="xs" alignItems="center" mt="$0.5">
+          <Text size="sm" color="$textLight500">
+            {job?.siteLocation}
+          </Text>
+        </HStack>
+      </SectionRow> */}
 
       <Divider height={0.5} />
 
@@ -334,8 +355,7 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
 
         {/* Task checklist */}
         <VStack space="xs" mt="$2.5">
-          {visibleTasks.map((task, i) => (
-            <HStack key={i} space="sm" alignItems="flex-start">
+          <HStack space="sm" alignItems="flex-start">
               <Box
                 width={6}
                 height={6}
@@ -345,27 +365,11 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
                 opacity={0.6}
               />
               <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">
-                {task}
+                {job?.projectDescription}
               </Text>
             </HStack>
-          ))}
         </VStack>
 
-        {/* Show more / less toggle */}
-        {hiddenCount > 0 && (
-          <Pressable onPress={() => setExpanded(!expanded)} mt="$1.5" py="$1">
-            <HStack space="xs" alignItems="center">
-              <Text size="xs" color="$primary600" fontWeight="$medium">
-                {expanded ? 'Show less' : `+ ${hiddenCount} more tasks`}
-              </Text>
-              <Icon
-                as={expanded ? ChevronUp : ChevronDown}
-                size="2xs"
-                color="$primary600"
-              />
-            </HStack>
-          </Pressable>
-        )}
       </SectionRow>
 
       {/* ── Action buttons ────────────────────────────── */}

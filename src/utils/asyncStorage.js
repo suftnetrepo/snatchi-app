@@ -81,11 +81,8 @@ export const add = async (key, notification) => {
       createdAt: item.createdAt ?? Date.now(),
     };
 
-    console.log(".......................", newNotification)
-
     // 5️⃣ Save
     const updated = [...filtered, newNotification];
-    console.log("ssdddddddddddddddd", updated)
     await store(key, updated);
 
     // 6️⃣ Update badge counters
@@ -96,6 +93,43 @@ export const add = async (key, notification) => {
   } catch (e) {
     if (__DEV__)
       console.error("🔴 Error adding notification:", e);
+    return null;
+  }
+};
+
+export const update = async (key, notification) => {
+  try {
+    const notifications = await getAll(key);
+
+    if (!notification?.id) {
+      if (__DEV__)
+        console.warn('Cannot update notification without an id');
+      return null;
+    }
+
+    const index = notifications.findIndex(n => n.id === notification.id);
+
+    if (index === -1) {
+      if (__DEV__)
+        console.warn(`Notification with ID "${notification.id}" not found`);
+      return null;
+    }
+
+    const existingNotification = notifications[index];
+    const updatedNotification = {
+      ...existingNotification,
+      ...notification,
+      read: notification.read ?? existingNotification.read ?? false,
+      createdAt: notification.createdAt ?? existingNotification.createdAt ?? Date.now(),
+    };
+
+    notifications[index] = updatedNotification;
+    await store(key, notifications);
+
+    return updatedNotification;
+  } catch (e) {
+    if (__DEV__)
+      console.error('🔴 Error updating notification:', e);
     return null;
   }
 };

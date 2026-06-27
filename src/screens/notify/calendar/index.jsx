@@ -1,25 +1,13 @@
 import React, {useRef, useMemo, useState} from 'react';
 import {ScrollView, Animated} from 'react-native';
 import {Swipeable} from 'react-native-gesture-handler';
-import {
-  Text,
-  VStack,
-  HStack,
-  Pressable,
-  Divider,
-} from '@gluestack-ui/themed';
-import {
-  StyledSpinner,
-  StyledOkDialog,
-} from 'fluent-styles';
+import {Text, VStack, HStack, Pressable, Divider} from '@gluestack-ui/themed';
+import {StyledSpinner, StyledOkDialog} from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {useStorage, SCHEDULE_KEY} from '../../../hooks/useStorage';
-import {theme, fontStyles} from '../../../utils/theme';
-import {
-  getRelativeTimeString,
-  truncate,
-} from '../../../utils/help';
+import {theme} from '../../../utils/theme';
+import {getRelativeTimeString, truncate} from '../../../utils/help';
 import {useScheduler} from '../../../hooks/useScheduler';
 import {Dimensions} from 'react-native';
 import JobCard from '../../../components/notifyCard';
@@ -29,19 +17,17 @@ export default function CalendarNotification() {
   const bottomSheetRef = useRef(null);
   const [selectedJobId, setSelectedJobId] = useState('');
   const snapPoints = useMemo(() => ['90%', '100%'], []);
-  const {handleMarkAsRead, data, handleDelete} = useStorage(SCHEDULE_KEY);
+  const {handleMarkAsRead, handleUpdate, data, handleDelete} = useStorage(SCHEDULE_KEY);
   const {
-    handleChange,
-    handleNotifySave,
     handleReset,
-    fields,
-    rules,
     handlNotifyChange,
     loading,
     error,
     success,
     handleUpdateStatus,
   } = useScheduler(SCHEDULE_KEY);
+
+  console.log('CalendarNotification data:', data);
 
   const selectedJob = useMemo(() => {
     if (!selectedJobId || !Array.isArray(data)) {
@@ -50,13 +36,13 @@ export default function CalendarNotification() {
 
     return (
       data.find(job => {
-        const jobId = job?.id || job?.scheduleId || job?._id;
+        const jobId = job?.id;
         return jobId === selectedJobId;
       }) || null
     );
   }, [data, selectedJobId]);
 
-  console.log('CalendarNotification data:', selectedJob);
+  console.log('CalendarNotification selectedJobId:', selectedJobId);
 
   const onhandleDelete = id => {
     handleDelete(SCHEDULE_KEY, id);
@@ -64,6 +50,18 @@ export default function CalendarNotification() {
 
   const close = () => {
     bottomSheetRef.current?.close();
+  };
+
+  const onUpdateStatus = (status, id) => {
+    handleUpdateStatus(status, id).then(() => {
+      const job = data.find(job => {
+        const jobId = job?.id;
+        return jobId === selectedJobId;
+      });
+      handleUpdate(SCHEDULE_KEY, id, {...job, status: status});
+      close();
+      handleReset();
+    });
   };
 
   const renderRightActions = (dragX, onPress) => {
@@ -98,7 +96,7 @@ export default function CalendarNotification() {
           {data?.map((body, index) => (
             <Swipeable
               key={index}
-              renderRightActions={(dragX) =>
+              renderRightActions={dragX =>
                 renderRightActions(dragX, () => {
                   onhandleDelete(body.id);
                 })
@@ -107,7 +105,9 @@ export default function CalendarNotification() {
                 onPress={() => {
                   handleMarkAsRead(SCHEDULE_KEY, body.id).then(() => {
                     handlNotifyChange(body);
-                    setSelectedJobId(body?.id || body?.scheduleId || body?._id || '');
+                    setSelectedJobId(
+                      body?.id,
+                    );
                     bottomSheetRef.current?.snapToIndex(1);
                   });
                 }}>
@@ -123,8 +123,7 @@ export default function CalendarNotification() {
                       </Text>
                     </HStack>
                     <Text color="$coolGray600" mb={'$1'} fontSize="$sm">
-                      {truncate(body.description, 100) ||
-                        'No description provided'}
+                      {body.description || 'No description provided'}
                     </Text>
                     <Text color="$coolGray800" fontSize="$xs">
                       {getRelativeTimeString(body.createdAt)}
@@ -144,11 +143,11 @@ export default function CalendarNotification() {
         enablePanDownToClose={true}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore">
-       <JobCard
-            job={selectedJob}
-            onAccept={id => handleUpdateStatus('Accepted:', id)}
-            onDecline={id => handleUpdateStatus('Declined:', id)}
-          />
+        <JobCard
+          job={selectedJob}
+          onAccept={id => onUpdateStatus('Accepted', id)}
+          onDecline={id => onUpdateStatus('Declined', id)}
+        />
       </BottomSheet>
       {error && (
         <StyledOkDialog
