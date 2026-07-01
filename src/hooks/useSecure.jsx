@@ -44,8 +44,9 @@ const useSecure = () => {
     let token = await getStore("fcm");
     if (!token) {
       token = await refreshFCMToken();
+      store("fcm", token).catch(() => {});
     }
-    console.log('Retrieved JWT......:', token);
+    console.log('Retrieved STORE......:', token);
     setState(pre => {
       return {...pre, token, error: null};
     });
@@ -75,6 +76,7 @@ const useSecure = () => {
     try {
     const token = state.token || await getStore('fcm');
     console.log('Verifying code with token:', token);
+
     setState(pre => {
       return {...pre, error: null, loading: true};
     });
@@ -95,7 +97,7 @@ const useSecure = () => {
     );
 
     if (success) {
-      store("fcm", data?.token).catch(() => {});
+      storeJWT(data?.token).catch(() => {});
       store('user_', data?.user?.user_id).catch(() => {});
       setState(pre => {
         return {...pre, data: success, loading: false};

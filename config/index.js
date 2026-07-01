@@ -7,6 +7,13 @@ const HOST_API_ADDRESS = "http://192.168.1.74:3000/api/";
 
 // END POINTS
 
+export const NOTIFICATION = {
+  removeOne: `${HOST_API_ADDRESS}notifications`,
+  updateOne: `${HOST_API_ADDRESS}notifications`,
+  fetch: `${HOST_API_ADDRESS}notifications`,
+  fetchUnReadCount: `${HOST_API_ADDRESS}notifications/unread-count`,
+};
+
 export const ACCOUNT_HOST_ADDRESS = {
   login: `${HOST_API_ADDRESS}auth/login`,
   logout: `${HOST_API_ADDRESS}auth/logout`,

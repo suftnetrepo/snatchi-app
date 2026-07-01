@@ -222,6 +222,7 @@ export function registerListenerWithFCM() {
 
     if (remoteMessage?.data) {
       try {
+        console.log('Handling geofence push notification data:', remoteMessage.data);
         // 🔹 ADD_PROJECTS
         if (remoteMessage.data.addProjects) {
           const projects = parseMaybeJson(remoteMessage?.data?.addProjects);
@@ -264,11 +265,17 @@ export function registerListenerWithFCM() {
             startTime: screenParams.startTime,
             endTime: screenParams.endTime,
             scheduleId: screenParams.scheduleId,  
-            siteLocation : screenParams.siteLocation,
+            latitude: screenParams.latitude,
+            longitude: screenParams.longitude,
+            completeAddress : screenParams.completeAddress,
+            radius : screenParams.radius,
             projectId: screenParams.projectId,
             projectName: screenParams.projectName,
             projectDescription: screenParams?.projectDescription,
+            activeDays: screenParams?.activeDays,
           };
+
+          console.log('Adding notification to storage:', body);
 
           await add(SCHEDULE_KEY, body);
           NotificationBus.emit('new-notification', body);

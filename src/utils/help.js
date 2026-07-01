@@ -853,7 +853,41 @@ function getMarkedDates(schedules) {
   );
 }
 
+function getNotifications(notification) {
+  let screenParams = notification.screenParams;
+  if (typeof screenParams === 'string') {
+    try {
+      screenParams = JSON.parse(screenParams);
+    } catch (e) {
+      screenParams = {};
+    }
+  }
+
+  const scheduleId = screenParams.scheduleId || notification.relatedTo?._id || notification.relatedTo;
+
+  return {
+    id: scheduleId,
+    siteName: notification.title || '',
+    description: notification.body || '',
+    action: false,
+    screen: notification.screen || 'calendar',
+    createdAt: new Date(notification.createdAt).getTime(),
+    startDate: screenParams.startDate,
+    endDate: screenParams.endDate,
+    dateString: screenParams.startDate,
+    status: screenParams.status || notification.status,
+    startTime: screenParams.startTime,
+    endTime: screenParams.endTime,
+    scheduleId: scheduleId,
+    completeAddress: screenParams.completeAddress,
+    projectId: screenParams.projectId,
+    projectName: screenParams.projectName,
+    projectDescription: screenParams?.projectDescription
+  };
+}
+
 export {
+  getNotifications,
   getMarkedDates,
   durationHrs,
   Status_data,

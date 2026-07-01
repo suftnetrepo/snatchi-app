@@ -1,5 +1,5 @@
 import React, {useState, useCallback} from 'react';
-import {Alert} from 'react-native';
+import {Alert, ScrollView} from 'react-native';
 
 // ── gluestack-ui v3 component imports ────────────────────
 
@@ -48,7 +48,7 @@ export interface JobNotification {
   endDate: string;
   startTime: string;
   endTime: string;
-  siteLocation: string;
+  completeAddress: string;
   siteName: string;
   description: string;
   action: boolean;
@@ -56,8 +56,8 @@ export interface JobNotification {
   createdAt: number;
   dateString: string;
   read: boolean;
-  projectName : string;
-  projectDescription : string;
+  projectName: string;
+  projectDescription: string;
 }
 
 interface JobCardProps {
@@ -93,7 +93,7 @@ function getDurationHours(start: string, end: string): number {
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
 
-  let mins = (eh * 60 + em) - (sh * 60 + sm);
+  let mins = eh * 60 + em - (sh * 60 + sm);
   if (mins < 0) mins += 1440; // wrap past midnight (24 * 60)
 
   return Math.round((mins / 60) * 100) / 100;
@@ -231,7 +231,7 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
     );
   }
 
-  console.log('JobCard job data:', job); // Debugging log 
+  console.log('JobCard job data:', job); // Debugging log
 
   // Derived data
   const {title: jobTitle, subtitle: jobSubtitle} = truncateSiteName(
@@ -252,8 +252,8 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
       <HStack
         alignItems="center"
         justifyContent="space-between"
-        pt="$5"
-        pb="$3">
+  
+      >
         <VStack>
           <Text
             size="xs"
@@ -290,86 +290,39 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
         <Text size="sm" color="$textLight500" mt="$0.5">
           {formatTime(job.startTime)} – {formatTime(job.endTime)}
         </Text>
-
-        <HStack space="sm" mt="$2">
-          <Badge
-            size="sm"
-            variant="outline"
-            action="muted"
-            borderRadius={999}
-            px="$3"
-            py="$1"
-            bg="$background50">
-            <BadgeIcon as={Clock} mr="$1.5" />
-            <BadgeText fontSize="$xs" fontWeight="$medium">
-              {duration} duration
-            </BadgeText>
-          </Badge>
-        </HStack>
       </SectionRow>
 
       <Divider height={0.5} />
 
       {/* ── Location ──────────────────────────────────── */}
-       <SectionRow icon={Calendar} iconBg="$primary50" iconColor="$primary600">
+      <SectionRow icon={MapPin} iconBg="$info50" iconColor="$info600">
         <Heading size="sm">Site Location</Heading>
         <Text size="sm" color="$textLight500" mt="$0.5">
-          {job.siteLocation}
+          {job.completeAddress}
         </Text>
-
-        <HStack space="sm" mt="$2">
-          <Badge
-            size="sm"
-            variant="outline"
-            action="muted"
-            borderRadius={999}
-            px="$3"
-            py="$1"
-            bg="$background50">
-            <BadgeIcon as={Clock} mr="$1.5" />
-            <BadgeText fontSize="$xs" fontWeight="$medium">
-              {duration} duration
-            </BadgeText>
-          </Badge>
-        </HStack>
       </SectionRow>
-
-      {/* <SectionRow icon={MapPin} iconBg="$info50" iconColor="$info600">
-        <HStack space="xs" alignItems="center" mt="$0.5">
-          <Text size="sm" color="$textLight500">
-            {job?.siteLocation}
-          </Text>
-        </HStack>
-      </SectionRow> */}
 
       <Divider height={0.5} />
 
       {/* ── Job details ───────────────────────────────── */}
       <SectionRow icon={Wrench} iconBg="$warning50" iconColor="$warning600">
-        <Heading size="sm">{jobTitle}</Heading>
-        {jobSubtitle !== '' && (
-          <Text size="xs" color="$textLight500" mt="$0.5">
-            {jobSubtitle}
-          </Text>
-        )}
-
+        <Heading size="sm">{job.projectName}</Heading>
         {/* Task checklist */}
         <VStack space="xs" mt="$2.5">
           <HStack space="sm" alignItems="flex-start">
-              <Box
-                width={6}
-                height={6}
-                borderRadius={999}
-                bg="$primary400"
-                mt="$1.5"
-                opacity={0.6}
-              />
-              <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">
-                {job?.projectDescription}
-              </Text>
-            </HStack>
+            <Box
+              width={6}
+              height={6}
+              borderRadius={999}
+              bg="$primary400"
+              mt="$1.5"
+              opacity={0.6}
+            />
+            <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">
+              {job?.projectDescription}
+            </Text>
+          </HStack>
         </VStack>
-
       </SectionRow>
 
       {/* ── Action buttons ────────────────────────────── */}

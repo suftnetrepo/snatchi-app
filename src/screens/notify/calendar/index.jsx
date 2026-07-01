@@ -1,4 +1,4 @@
-import React, {useRef, useMemo, useState} from 'react';
+import React, {useRef, useMemo, useState, useEffect} from 'react';
 import {ScrollView, Animated} from 'react-native';
 import {Swipeable} from 'react-native-gesture-handler';
 import {Text, VStack, HStack, Pressable, Divider} from '@gluestack-ui/themed';
@@ -12,20 +12,26 @@ import {useScheduler} from '../../../hooks/useScheduler';
 import {Dimensions} from 'react-native';
 import JobCard from '../../../components/notifyCard';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+import {useNotification} from '../../../hooks/useNotification';
 
 export default function CalendarNotification() {
   const bottomSheetRef = useRef(null);
   const [selectedJobId, setSelectedJobId] = useState('');
   const snapPoints = useMemo(() => ['90%', '100%'], []);
-  const {handleMarkAsRead, handleUpdate, data, handleDelete} = useStorage(SCHEDULE_KEY);
+  const {data, loading, error: notificationsError, fetchNotifications, handleEdit: handleNotificationEdit, handleDelete: handleNotificationDelete} = useNotification();
+  const {handleMarkAsRead, handleUpdate, handleDelete} =
+    useStorage(SCHEDULE_KEY);
   const {
     handleReset,
     handlNotifyChange,
-    loading,
     error,
     success,
     handleUpdateStatus,
   } = useScheduler(SCHEDULE_KEY);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   console.log('CalendarNotification data:', data);
 
@@ -105,9 +111,7 @@ export default function CalendarNotification() {
                 onPress={() => {
                   handleMarkAsRead(SCHEDULE_KEY, body.id).then(() => {
                     handlNotifyChange(body);
-                    setSelectedJobId(
-                      body?.id,
-                    );
+                    setSelectedJobId(body?.id);
                     bottomSheetRef.current?.snapToIndex(1);
                   });
                 }}>
@@ -143,11 +147,13 @@ export default function CalendarNotification() {
         enablePanDownToClose={true}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore">
-        <JobCard
-          job={selectedJob}
-          onAccept={id => onUpdateStatus('Accepted', id)}
-          onDecline={id => onUpdateStatus('Declined', id)}
-        />
+        <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 56}}>
+          <JobCard
+            job={selectedJob}
+            onAccept={id => onUpdateStatus('Accepted', id)}
+            onDecline={id => onUpdateStatus('Declined', id)}
+          />
+        </ScrollView>
       </BottomSheet>
       {error && (
         <StyledOkDialog
