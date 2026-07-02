@@ -1,7 +1,6 @@
-
-import { faker } from '@faker-js/faker';
+import {faker} from '@faker-js/faker';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { theme } from './theme';
+import {theme} from './theme';
 
 export const isValidColor = value =>
   /^#([0-9A-F]{3}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(value);
@@ -277,7 +276,7 @@ function generateShades(hex) {
   const lighter = adjustColor(hex, lightAmount);
   const darker = adjustColor(hex, -darkAmount);
 
-  return { lighter, darker };
+  return {lighter, darker};
 }
 function addTimeToCurrentDate(timeStr) {
   const now = new Date();
@@ -383,67 +382,71 @@ const priorityTextColorHelper = priority => {
   }
 };
 
-const getPriorityColor = (priority) => {
+const getPriorityColor = priority => {
   switch (priority) {
-    case 'High': return '#0EA5E9';
-    case 'Medium': return '#F472B6';
-    case 'Low': return '#F59E0B';
-    default: return '#9CA3AF';
+    case 'High':
+      return '#0EA5E9';
+    case 'Medium':
+      return '#F472B6';
+    case 'Low':
+      return '#F59E0B';
+    default:
+      return '#9CA3AF';
   }
 };
 
 const taskStatusArray = [
-  { label: 'Pending', value: 'Pending' },
-  { label: 'Progress', value: 'Progress' },
-  { label: 'Completed', value: 'Completed' },
-  { label: 'Canceled', value: 'Canceled' },
+  {label: 'Pending', value: 'Pending'},
+  {label: 'Progress', value: 'Progress'},
+  {label: 'Completed', value: 'Completed'},
+  {label: 'Canceled', value: 'Canceled'},
 ];
 
 const statusOptions = {
   empty: [
-    { label: 'Select...', value: '' },
-    { label: 'Lock', value: 'Lock' },
+    {label: 'Select...', value: ''},
+    {label: 'Lock', value: 'Lock'},
   ],
   pending: [
-    { label: 'Select...', value: '' },
-    { label: 'Declined', value: 'Declined' },
-    { label: 'Accepted', value: 'Accepted' },
+    {label: 'Select...', value: ''},
+    {label: 'Declined', value: 'Declined'},
+    {label: 'Accepted', value: 'Accepted'},
   ],
   invoice: [
-    { label: 'Select...', value: '' },
-    { label: 'Draft', value: 'Draft' },
-    { label: 'Save', value: 'Save' },
-    { label: 'Quote', value: 'Quote' },
+    {label: 'Select...', value: ''},
+    {label: 'Draft', value: 'Draft'},
+    {label: 'Save', value: 'Save'},
+    {label: 'Quote', value: 'Quote'},
   ],
 };
 
 const personalDocumentsArray = [
-  { label: 'NI Number / Social Security', value: 'NINumber' },
-  { label: 'Passport', value: 'Passport' },
-  { label: 'Driver’s License', value: 'DriversLicense' },
-  { label: 'Work Permit / Visa', value: 'WorkPermit' },
-  { label: 'Professional Certificates', value: 'ProfessionalCertificates' },
-  { label: 'ID Card', value: 'IDCard' },
-  { label: 'Proof of Address', value: 'ProofOfAddress' },
-  { label: 'CV / Resume', value: 'CVResume' },
-  { label: 'DBS / Background Check', value: 'BackgroundCheck' },
-  { label: 'Emergency Contact Info', value: 'EmergencyContactInfo' },
-  { label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate' },
-  { label: 'Insurance Certificate', value: 'InsuranceCertificate' },
-  { label: 'Vaccination Record', value: 'VaccinationRecord' },
+  {label: 'NI Number / Social Security', value: 'NINumber'},
+  {label: 'Passport', value: 'Passport'},
+  {label: 'Driver’s License', value: 'DriversLicense'},
+  {label: 'Work Permit / Visa', value: 'WorkPermit'},
+  {label: 'Professional Certificates', value: 'ProfessionalCertificates'},
+  {label: 'ID Card', value: 'IDCard'},
+  {label: 'Proof of Address', value: 'ProofOfAddress'},
+  {label: 'CV / Resume', value: 'CVResume'},
+  {label: 'DBS / Background Check', value: 'BackgroundCheck'},
+  {label: 'Emergency Contact Info', value: 'EmergencyContactInfo'},
+  {label: 'Medical Fitness Certificate', value: 'MedicalFitnessCertificate'},
+  {label: 'Insurance Certificate', value: 'InsuranceCertificate'},
+  {label: 'Vaccination Record', value: 'VaccinationRecord'},
 ];
 
 const jobPhotoCategories = [
-  { label: 'Completed Installation', value: 'CompletedInstallation' },
-  { label: 'Before Work Started', value: 'BeforeWork' },
-  { label: 'Work in Progress', value: 'WorkInProgress' },
-  { label: 'After Work Finished', value: 'AfterWork' },
-  { label: 'Equipment Setup', value: 'EquipmentSetup' },
-  { label: 'Cabling / Wiring', value: 'CablingWiring' },
-  { label: 'Rack / Control Room', value: 'RackRoom' },
-  { label: 'Room Overview', value: 'RoomOverview' },
-  { label: 'Defect / Issue Found', value: 'DefectIssue' },
-  { label: 'Other (General Photo)', value: 'Other' },
+  {label: 'Completed Installation', value: 'CompletedInstallation'},
+  {label: 'Before Work Started', value: 'BeforeWork'},
+  {label: 'Work in Progress', value: 'WorkInProgress'},
+  {label: 'After Work Finished', value: 'AfterWork'},
+  {label: 'Equipment Setup', value: 'EquipmentSetup'},
+  {label: 'Cabling / Wiring', value: 'CablingWiring'},
+  {label: 'Rack / Control Room', value: 'RackRoom'},
+  {label: 'Room Overview', value: 'RoomOverview'},
+  {label: 'Defect / Issue Found', value: 'DefectIssue'},
+  {label: 'Other (General Photo)', value: 'Other'},
 ];
 
 const timeAgo = date => {
@@ -501,7 +504,7 @@ const randomColor = () => {
 
 function formatReadableDate(isoDate) {
   const date = new Date(isoDate);
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  const options = {year: 'numeric', month: 'long', day: 'numeric'};
   return date.toLocaleDateString('en-US', options);
 }
 
@@ -571,7 +574,7 @@ function formatMessageTimestamp(timestamp) {
   const isThisWeek = now - date < 7 * 24 * 60 * 60 * 1000;
 
   if (isToday) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
   }
 
   if (isYesterday) {
@@ -600,7 +603,7 @@ function getRelativeTimeString(timestamp) {
   // Handle Firestore timestamp format
   if (timestamp && typeof timestamp === 'object' && 'seconds' in timestamp) {
     date = new Date(
-      timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000
+      timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000,
     );
   }
   // Handle millisecond timestamp
@@ -623,7 +626,8 @@ function getRelativeTimeString(timestamp) {
   } else if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
     return `${hours}h ago`;
-  } else if (diffInSeconds < 604800) { // Less than 7 days
+  } else if (diffInSeconds < 604800) {
+    // Less than 7 days
     const days = Math.floor(diffInSeconds / 86400);
     return `${days}d ago`;
   } else {
@@ -631,7 +635,7 @@ function getRelativeTimeString(timestamp) {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
     });
   }
 }
@@ -658,10 +662,10 @@ function toModel(event) {
     first_name: event.firstName,
     last_name: event.lastName,
     time,
-    status: event.transition === "ENTER" ? "Enter" : "Exit",
+    status: event.transition === 'ENTER' ? 'Enter' : 'Exit',
     completeAddress: event.completeAddress,
     latitude: String(event.latitude),
-    longitude: String(event.longitude)
+    longitude: String(event.longitude),
   };
 }
 
@@ -683,18 +687,18 @@ function formatShortDateYYYMMD(input) {
   return `${year}-${month}-${day}`;
 }
 
-const getStatusTheme = (status) => {
+const getStatusTheme = status => {
   switch (status) {
     case 'Pending':
-      return { bg: '#FFF5E1', badge: '#F59E0B', progress: '#F59E0B' }; // amber theme
+      return {bg: '#FFF5E1', badge: '#F59E0B', progress: '#F59E0B'}; // amber theme
     case 'Ongoing':
-      return { bg: '#E0F2FE', badge: '#0EA5E9', progress: '#0EA5E9' }; // blue theme
+      return {bg: '#E0F2FE', badge: '#0EA5E9', progress: '#0EA5E9'}; // blue theme
     case 'Completed':
-      return { bg: '#DCFCE7', badge: '#22C55E', progress: '#22C55E' }; // green theme
+      return {bg: '#DCFCE7', badge: '#22C55E', progress: '#22C55E'}; // green theme
     case 'On Hold':
-      return { bg: '#FCE7F3', badge: '#EC4899', progress: '#EC4899' }; // pink theme
+      return {bg: '#FCE7F3', badge: '#EC4899', progress: '#EC4899'}; // pink theme
     default:
-      return { bg: '#F3F4F6', badge: '#9CA3AF', progress: '#9CA3AF' }; // gray
+      return {bg: '#F3F4F6', badge: '#9CA3AF', progress: '#9CA3AF'}; // gray
   }
 };
 const limitHtmlText = (html, limit = 50, ellipsis = '...') => {
@@ -710,7 +714,7 @@ const limitHtmlText = (html, limit = 50, ellipsis = '...') => {
     .replace(/<[^>]+>/g, '') // Remove all HTML tags
     .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
     .replace(/&amp;/g, '&') // Replace &amp; with &
-    .replace(/&lt;/g, '<') // Replace &lt; with 
+    .replace(/&lt;/g, '<') // Replace &lt; with
     .replace(/&gt;/g, '>') // Replace &gt; with >
     .replace(/&quot;/g, '"') // Replace &quot; with "
     .replace(/&#39;/g, "'") // Replace &#39; with '
@@ -760,7 +764,7 @@ const limitHtmlTextByWord = (html, limit = 50, ellipsis = '...') => {
   return truncated.slice(0, lastSpace).trim() + ellipsis;
 };
 
-const FileIcon = ({ fileType }) => {
+const FileIcon = ({fileType}) => {
   let icon;
   let color;
   switch (fileType?.toLowerCase()) {
@@ -785,32 +789,33 @@ const FileIcon = ({ fileType }) => {
 };
 
 const Status_data = [
-    'Pending',
-    'Accepted',
-    'Progress',
-    'Completed',
-    'Cancelled',
-  ];
+  'Pending',
+  'Accepted',
+  'Progress',
+  'Completed',
+  'Cancelled',
+];
 
 function safetyGear(list) {
-  return list?.map(item =>
-    item
-      .split("_")               // split by underscore
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
-      .join(" ")                // join back with spaces
+  return list?.map(
+    item =>
+      item
+        .split('_') // split by underscore
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
+        .join(' '), // join back with spaces
   );
 }
 
 function schedulesTransformal(data) {
-   const tramsformed = (data || []).map(item => {
+  const tramsformed = (data || []).map(item => {
     return {
       id: item._id,
-      title : item.title,
+      title: item.title,
       time: item.startTime,
-      endTime : item.endTime,
-      metta : {status : item.status, project : item.project},
-      startDate : item.startDate,
-      endDate : item.endDate,
+      endTime: item.endTime,
+      metta: {status: item.status, project: item.project},
+      startDate: item.startDate,
+      endDate: item.endDate,
     };
   });
   return tramsformed;
@@ -819,37 +824,41 @@ function schedulesTransformal(data) {
 const durationHrs = (start, end) => {
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
-  const diff = (eh * 60 + em) - (sh * 60 + sm);
+  const diff = eh * 60 + em - (sh * 60 + sm);
   return diff > 0 ? `${Math.round(diff / 60)} hrs` : null;
 };
 
-const LIME      = '#c6ef3e';
+const LIME = '#c6ef3e';
 const LIME_DARK = '#8bc34a';
-const DARK      = '#1a1a1e';
-const MUTED     = '#9ca3af';
-const BG        = '#f5f5f5';
+const DARK = '#1a1a1e';
+const MUTED = '#9ca3af';
+const BG = '#f5f5f5';
 
 function getMarkedDates(schedules) {
   const dates = new Set();
 
   for (const booking of schedules) {
     const start = new Date(booking.startDate);
-    const end   = new Date(booking.endDate);
+    const end = new Date(booking.endDate);
 
-    const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
-    const last   = new Date(Date.UTC(end.getUTCFullYear(),   end.getUTCMonth(),   end.getUTCDate()));
+    const cursor = new Date(
+      Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()),
+    );
+    const last = new Date(
+      Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()),
+    );
 
     while (cursor <= last) {
-      const y  = cursor.getUTCFullYear();
-      const m  = String(cursor.getUTCMonth() + 1).padStart(2, '0');
-      const d  = String(cursor.getUTCDate()).padStart(2, '0');
+      const y = cursor.getUTCFullYear();
+      const m = String(cursor.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(cursor.getUTCDate()).padStart(2, '0');
       dates.add(`${y}-${m}-${d}`);
       cursor.setUTCDate(cursor.getUTCDate() + 1);
     }
   }
 
   return Object.fromEntries(
-    [...dates].map(date => [date, { marked: true, dotColor: LIME_DARK }])
+    [...dates].map(date => [date, {marked: true, dotColor: LIME_DARK}]),
   );
 }
 
@@ -863,7 +872,10 @@ function getNotifications(notification) {
     }
   }
 
-  const scheduleId = screenParams.scheduleId || notification.relatedTo?._id || notification.relatedTo;
+  const scheduleId =
+    screenParams.scheduleId ||
+    notification.relatedTo?._id ||
+    notification.relatedTo;
 
   return {
     id: scheduleId,
@@ -882,7 +894,39 @@ function getNotifications(notification) {
     completeAddress: screenParams.completeAddress,
     projectId: screenParams.projectId,
     projectName: screenParams.projectName,
-    projectDescription: screenParams?.projectDescription
+    projectDescription: screenParams?.projectDescription,
+  };
+}
+
+function transformToProjectGeofence(jsonData) {
+  return {
+    projectId: jsonData.projectId,
+    integratorId: jsonData.integratorId,
+    id: jsonData.id || jsonData.scheduleId,
+    siteName: jsonData.siteName,
+    latitude: jsonData.latitude,
+    longitude: jsonData.longitude,
+    radius: jsonData.radius,
+
+    // Active time window
+    startDate: jsonData.startDate,
+    endDate: jsonData.endDate,
+    startTime: jsonData.startTime,
+    endTime: jsonData.endTime,
+
+    activeDays: jsonData.activeDays || [5], // Default to Friday if not provided
+
+    userId: jsonData.userId || 'system', // You'll need to provide this
+    firstName: jsonData.firstName || 'System',
+    lastName: jsonData.lastName || 'User',
+
+    completeAddress: jsonData.completeAddress,
+    status: jsonData.status || 'Pending',
+
+    // Optional fields
+    priority: jsonData.priority,
+    description: jsonData.description || jsonData.projectDescription,
+    action: jsonData.action || false,
   };
 }
 
@@ -940,5 +984,6 @@ export {
   toModel,
   formatShortDate,
   formatShortDateYYYMMD,
-  formatOnlyDate
+  formatOnlyDate,
+  transformToProjectGeofence
 };

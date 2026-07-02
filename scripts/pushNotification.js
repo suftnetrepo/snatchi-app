@@ -5,6 +5,7 @@ import {add, store, SCHEDULE_KEY} from '../src/utils/asyncStorage';
 import {geofencingSingleton} from './geofencing';
 import {localNotificationService} from '../Notification/LocalNotificationService';
 import {NotificationBus} from './notificationBus';
+import {transformToProjectGeofence} from '../src/utils/help';
 
 const parseScreenParams = value => {
   if (!value) return {};
@@ -222,22 +223,17 @@ export function registerListenerWithFCM() {
 
     if (remoteMessage?.data) {
       try {
-        console.log('Handling geofence push notification data:', remoteMessage.data);
-        // 🔹 ADD_PROJECTS
-        if (remoteMessage.data.addProjects) {
-          const projects = parseMaybeJson(remoteMessage?.data?.addProjects);
-          console.log('Adding projects from push:', projects);
-          if (Array.isArray(projects)) {
-            await geofencingSingleton.addProjects(projects);
-          }
-          NotificationBus.emit('new-notification', projects);
-          if (__DEV__) console.log('✅ Projects added from push');
-        }
+        console.log(
+          'Handling geofence push notification data:',
+          remoteMessage.data,
+        );
 
         // 🔹 REMOVE_PROJECTS
-        if (remoteMessage.data.removeProjects) {
-          const ids = JSON.parse(remoteMessage.data.removeProjects);
-          await geofencingSingleton.removeProjects(ids);
+        if (remoteMessage.data.screen === 'project') {
+          const screenParams = parseScreenParams(
+            remoteMessage.data.screenParams,
+          );
+          await geofencingSingleton.removeProjects(screenParams?.projectId);
           if (__DEV__) console.log('🗑️ Projects removed from push');
         }
 
@@ -248,7 +244,9 @@ export function registerListenerWithFCM() {
         }
 
         if (remoteMessage.data.screen === 'calendar') {
-            const screenParams = parseScreenParams(remoteMessage.data.screenParams);
+          const screenParams = parseScreenParams(
+            remoteMessage.data.screenParams,
+          );
           const scheduleId = screenParams.scheduleId;
 
           const body = {
@@ -264,22 +262,27 @@ export function registerListenerWithFCM() {
             status: screenParams.status,
             startTime: screenParams.startTime,
             endTime: screenParams.endTime,
-            scheduleId: screenParams.scheduleId,  
+            scheduleId: screenParams.scheduleId,
             latitude: screenParams.latitude,
             longitude: screenParams.longitude,
-            completeAddress : screenParams.completeAddress,
-            radius : screenParams.radius,
+            completeAddress: screenParams.completeAddress,
+            radius: screenParams.radius,
             projectId: screenParams.projectId,
             projectName: screenParams.projectName,
             projectDescription: screenParams?.projectDescription,
             activeDays: screenParams?.activeDays,
+            integratorId: screenParams?.integratorId,
+            priority: screenParams?.priority,
           };
 
-          console.log('Adding notification to storage:', body);
+          // await geofencingSingleton.clearAllProjects();
 
-          await add(SCHEDULE_KEY, body);
+          const transformedGeofence = transformToProjectGeofence(body);
+          await geofencingSingleton.addProjects([transformedGeofence]);
+          if (__DEV__)
+            console.log('✅ Geofence added from push:', transformedGeofence);
+
           NotificationBus.emit('new-notification', body);
-          // navigationRef.current?.navigate(remoteMessage.data.screen, params);
         }
       } catch (err) {
         console.error('❌ Failed to handle geofence push:', err);
