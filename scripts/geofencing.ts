@@ -214,7 +214,7 @@ class GeofencingSingleton {
   async addProjects(projects: ProjectGeofence[]) {
 
     for (const p of projects) {
-      const geofenceId = `${p.projectId}_${p.userId}`;
+      const geofenceId = `${p.projectId}`;
 
       await BackgroundGeolocation.addGeofence({
         identifier: geofenceId,
@@ -254,6 +254,11 @@ class GeofencingSingleton {
     await BackgroundGeolocation.stopSchedule();
     await BackgroundGeolocation.stop();
     await BackgroundGeolocation.destroyLocations()
+  }
+
+   async removeProject(projectId: string) {
+    const geofenceId = `${projectId}`;
+    await BackgroundGeolocation.removeGeofence(geofenceId);
   }
 
   addEventListener(listener: (event: GeofenceEvent) => void) {

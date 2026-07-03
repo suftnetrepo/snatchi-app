@@ -233,7 +233,7 @@ export function registerListenerWithFCM() {
           const screenParams = parseScreenParams(
             remoteMessage.data.screenParams,
           );
-          await geofencingSingleton.removeProjects(screenParams?.projectId);
+          await geofencingSingleton.removeProject(screenParams?.projectId);
           if (__DEV__) console.log('🗑️ Projects removed from push');
         }
 
