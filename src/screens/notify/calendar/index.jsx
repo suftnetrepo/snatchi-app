@@ -4,11 +4,9 @@ import {Swipeable} from 'react-native-gesture-handler';
 import {Text, VStack, HStack, Pressable, Divider} from '@gluestack-ui/themed';
 import {StyledSpinner, StyledOkDialog} from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import BottomSheet from '@gorhom/bottom-sheet';
-import {useStorage, SCHEDULE_KEY} from '../../../hooks/useStorage';
+import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {theme} from '../../../utils/theme';
-import {getRelativeTimeString, truncate} from '../../../utils/help';
-import {useScheduler} from '../../../hooks/useScheduler';
+import {getRelativeTimeString} from '../../../utils/help';
 import {Dimensions} from 'react-native';
 import JobCard from '../../../components/notifyCard';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -18,16 +16,17 @@ export default function CalendarNotification() {
   const bottomSheetRef = useRef(null);
   const [selectedJobId, setSelectedJobId] = useState('');
   const snapPoints = useMemo(() => ['90%', '100%'], []);
-  const {data, loading, error: notificationsError, fetchNotifications, handleEdit: handleNotificationEdit, handleDelete: handleNotificationDelete} = useNotification();
-  const {handleMarkAsRead, handleUpdate, handleDelete} =
-    useStorage(SCHEDULE_KEY);
   const {
-    handleReset,
-    handlNotifyChange,
+    data,
+    loading,
     error,
-    success,
-    handleUpdateStatus,
-  } = useScheduler(SCHEDULE_KEY);
+    success,  
+    fetchNotifications,
+    handleEdit,
+    handleDelete,
+    handleReset,
+    handleUpdateStatus
+  } = useNotification();
 
   useEffect(() => {
     fetchNotifications();
@@ -48,10 +47,8 @@ export default function CalendarNotification() {
     );
   }, [data, selectedJobId]);
 
-  console.log('CalendarNotification selectedJobId:', selectedJobId);
-
   const onhandleDelete = id => {
-    handleDelete(SCHEDULE_KEY, id);
+    handleDelete(id);
   };
 
   const close = () => {
@@ -59,18 +56,13 @@ export default function CalendarNotification() {
   };
 
   const onUpdateStatus = (status, id) => {
-    handleUpdateStatus(status, id).then(() => {
-      const job = data.find(job => {
-        const jobId = job?.id;
-        return jobId === selectedJobId;
-      });
-      handleUpdate(SCHEDULE_KEY, id, {...job, status: status});
+    handleUpdateStatus({status}, id).then(() => {
       close();
       handleReset();
     });
   };
 
-  const renderRightActions = (dragX, onPress) => {
+  const renderRightActions = (progress, dragX, onPress) => {
     const scale = dragX.interpolate({
       inputRange: [-80, 0],
       outputRange: [1, 0],
@@ -98,24 +90,36 @@ export default function CalendarNotification() {
   return (
     <>
       <ScrollView style={{backgroundColor: '#fff'}}>
-        <VStack height={SCREEN_HEIGHT} p={'$4'} space="lg">
+        <VStack minHeight={SCREEN_HEIGHT} p={'$4'} space="lg">
           {data?.map((body, index) => (
             <Swipeable
               key={index}
-              renderRightActions={dragX =>
-                renderRightActions(dragX, () => {
+              renderRightActions={(progress, dragX) =>
+                renderRightActions(progress, dragX, () => {
                   onhandleDelete(body.id);
                 })
               }>
               <Pressable
                 onPress={() => {
-                  handleMarkAsRead(SCHEDULE_KEY, body.id).then(() => {
-                    handlNotifyChange(body);
+                  if (!body.read) {
+                  
+                  handleEdit(body, body.id, 'read').then(() => {
                     setSelectedJobId(body?.id);
-                    bottomSheetRef.current?.snapToIndex(1);
-                  });
+                    bottomSheetRef.current?.snapToIndex(0);
+                  })} else {
+                    setSelectedJobId(body?.id);
+                    bottomSheetRef.current?.snapToIndex(0);
+                  }
                 }}>
-                <HStack alignItems="flex-start">
+                <HStack
+                  alignItems="flex-start"
+                  style={{
+                    borderLeftWidth: body.read ? 4 : 0,
+                    borderLeftColor: body.read
+                      ? theme.colors.green[500]
+                      : 'transparent',
+                    paddingLeft: body.read ? 12 : 0,
+                  }}>
                   <VStack flex={1}>
                     <HStack justifyContent="flex-start" alignItems="center">
                       <Text
@@ -135,7 +139,7 @@ export default function CalendarNotification() {
                   </VStack>
                 </HStack>
               </Pressable>
-              <Divider mt={'$8'} />
+              <Divider mt={'$2'} />
             </Swipeable>
           ))}
         </VStack>
@@ -147,13 +151,17 @@ export default function CalendarNotification() {
         enablePanDownToClose={true}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore">
-        <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 56}}>
+        <BottomSheetScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: 120,
+          }}>
           <JobCard
             job={selectedJob}
             onAccept={id => onUpdateStatus('Accepted', id)}
             onDecline={id => onUpdateStatus('Declined', id)}
           />
-        </ScrollView>
+        </BottomSheetScrollView>
       </BottomSheet>
       {error && (
         <StyledOkDialog

@@ -182,12 +182,8 @@ function SectionRow({
 // ═══════════════════════════════════════════════════════════
 
 export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [status, setStatus] = useState<'pending' | 'accepted' | 'declined'>(
-    'pending',
-  );
 
-  const jobId = job?.id ?? '';
+  const jobId = job?.scheduleId;
 
   const handleAccept = useCallback(() => {
     if (!jobId) {
@@ -232,19 +228,6 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
   }
 
   console.log('JobCard job data:', job); // Debugging log
-
-  // Derived data
-  const {title: jobTitle, subtitle: jobSubtitle} = truncateSiteName(
-    job.siteName,
-  );
-
-  // const location = parseLocation(job.siteLocation);
-  // const tasks = parseDescription(job.projectDescription);
-  const duration = getDurationHours(job.startTime, job.endTime);
-  // const visibleTasks = expanded ? tasks : tasks.slice(0, 3);
-  // const hiddenCount = tasks.length - 3;
-
-  // ─── Main card ──────────────────────────────────────
 
   return (
     <Card size="lg" borderRadius={16} bg="$background0" overflow="hidden">

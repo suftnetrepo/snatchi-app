@@ -5,26 +5,21 @@ import { theme } from '../../utils/theme';
 import { useFocus } from '../../hooks/useFocus';
 import { getUnReadCount } from '../../utils/asyncStorage';
 import { NotificationBus } from '../../../scripts/notificationBus';
+import { useNotification } from '../../hooks/useNotification';
+
 
 export const Bell = ({ onPress }) => {
   const { key } = useFocus();
-  const [count, setCount] = useState(0);
+  const { fetchUnReadNotifications, count } = useNotification();
+
+  console.log('Unread notification count:', count); // Debugging line
 
   const loadCount = async () => {
-    const count = await getUnReadCount();
-     setCount(count);
+    await fetchUnReadNotifications();
   };
 
   useEffect(() => {
     loadCount();
-
-    const sub = NotificationBus.on('new-notification', () => {
-      loadCount();
-    });
-
-    return () => {
-      sub.remove();
-    };
   }, [key]); 
 
   return (

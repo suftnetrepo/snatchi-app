@@ -6,6 +6,7 @@ import { getNotifications } from '../utils/help';
 const useNotification = () => {
   const [state, setState] = useState({
     data: [],
+    count: 0,
     loading: false,
     error: null,
     success: false,
@@ -19,7 +20,7 @@ const useNotification = () => {
 
   const handleReset = () => {
     setState(pre => {
-      return {...pre, data: null, error: null};
+      return {...pre, data: [], count: 0, error: null};
     });
   };
 
@@ -31,11 +32,7 @@ const useNotification = () => {
       VERBS.GET,
     );
 
-      console.log('Fetched notifications:', data);
-
     const notifications = data?.notifications?.map(getNotifications)
-
-    console.log('Processed notifications:', notifications);
 
     if (success) {
       setState(prevState => ({
@@ -46,6 +43,26 @@ const useNotification = () => {
       }));
     } else {
       handleError(errorMessage || 'Failed to fetch the notifications.');
+    }
+  }, [handleError]);
+
+    const fetchUnReadNotifications = useCallback(async () => {
+    setState(prev => ({...prev, loading: true}));
+    const {success, data, errorMessage} = await zat(
+      NOTIFICATION.fetchUnReadCount,
+      null,
+      VERBS.GET,
+    );
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        count: data?.count || 0,
+        loading: false,
+        success: true,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the unread notifications.');
     }
   }, [handleError]);
 
@@ -71,6 +88,25 @@ const useNotification = () => {
     }
   }
 
+  async function handleUpdateStatus(body, id, action = 'status') {
+    setState(prev => ({...prev, loading: true, error: null, success: false}));
+    const {success, errorMessage, data} = await zat(
+      NOTIFICATION.updateOne,
+      body,
+      VERBS.PUT,
+      {id: id, action: action},
+    );
+
+    if (success) {
+      setState(prev => ({...prev,
+         success: true, loading: false}));
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the job status.');
+      return false;
+    }
+  }
+
    const handleDelete = async notification_id => {
          setState(prev => ({...prev, loading: true, error: null}));
       const {success, errorMessage} = await zat(
@@ -85,7 +121,7 @@ const useNotification = () => {
       if (success) {
         setState(pre => ({
           ...pre,
-          data: pre.data.filter(notification => notification._id !== notification_id),
+          data: pre.data.filter(notification => notification.id !== notification_id),
           loading: false,
         }));
         return true;
@@ -101,6 +137,8 @@ const useNotification = () => {
     handleReset,
     handleEdit,
     handleDelete,
+    fetchUnReadNotifications,
+    handleUpdateStatus,
   };
 };
 

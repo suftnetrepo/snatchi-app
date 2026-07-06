@@ -878,7 +878,7 @@ function getNotifications(notification) {
     notification.relatedTo;
 
   return {
-    id: scheduleId,
+    id: notification._id,
     siteName: notification.title || '',
     description: notification.body || '',
     action: false,
@@ -895,6 +895,7 @@ function getNotifications(notification) {
     projectId: screenParams.projectId,
     projectName: screenParams.projectName,
     projectDescription: screenParams?.projectDescription,
+    read : notification.status.read || false,
   };
 }
 
