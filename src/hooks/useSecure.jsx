@@ -46,7 +46,7 @@ const useSecure = () => {
       token = await refreshFCMToken();
       store("fcm", token).catch(() => {});
     }
-    console.log('Retrieved STORE......:', token);
+
     setState(pre => {
       return {...pre, token, error: null};
     });

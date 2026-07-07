@@ -183,6 +183,8 @@ function SectionRow({
 
 export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
 
+  console.log('JobCard received job prop:', job); // Debugging log
+
   const jobId = job?.scheduleId;
 
   const handleAccept = useCallback(() => {

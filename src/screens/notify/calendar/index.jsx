@@ -56,7 +56,7 @@ export default function CalendarNotification() {
   };
 
   const onUpdateStatus = (status, id) => {
-    handleUpdateStatus({status}, id).then(() => {
+    handleUpdateStatus(status, id).then(() => {
       close();
       handleReset();
     });

@@ -1,5 +1,5 @@
 import React, {useState, useCallback} from 'react';
-import {NOTIFICATION, VERBS} from '../../config';
+import {NOTIFICATION, SCHEDULER, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import { getNotifications } from '../utils/help';
 
@@ -39,7 +39,7 @@ const useNotification = () => {
         ...prevState,
         data: notifications,
         loading: false,
-        success: true,
+        success: false,
       }));
     } else {
       handleError(errorMessage || 'Failed to fetch the notifications.');
@@ -88,11 +88,11 @@ const useNotification = () => {
     }
   }
 
-  async function handleUpdateStatus(body, id, action = 'status') {
+  async function handleUpdateStatus(status, id, action = 'status') {
     setState(prev => ({...prev, loading: true, error: null, success: false}));
     const {success, errorMessage, data} = await zat(
-      NOTIFICATION.updateOne,
-      body,
+      SCHEDULER.updateOne,
+      {status: status},
       VERBS.PUT,
       {id: id, action: action},
     );
