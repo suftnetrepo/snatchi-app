@@ -33,6 +33,8 @@ export default function CalendarNotification() {
   }, []);
 
   console.log('CalendarNotification data:', data);
+  console.log('CalendarNotification loading:', loading);
+  console.log('CalendarNotification error:', error);
 
   const selectedJob = useMemo(() => {
     if (!selectedJobId || !Array.isArray(data)) {

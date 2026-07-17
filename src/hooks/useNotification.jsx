@@ -80,7 +80,7 @@ const useNotification = () => {
          data: prev.data.map(notification =>
           notification._id === id ? { ...notification, ...getNotifications(data) } : notification
         ),
-         success: true, loading: false}));
+         success: false, loading: false}));
       return true;
     } else {
       handleError(errorMessage || 'Failed to update the task.');
@@ -89,8 +89,8 @@ const useNotification = () => {
   }
 
   async function handleUpdateStatus(status, id, action = 'status') {
-    setState(prev => ({...prev, loading: true, error: null, success: false}));
-    const {success, errorMessage, data} = await zat(
+     setState(prev => ({...prev, loading: true, error: null}));
+    const {success, errorMessage} = await zat(
       SCHEDULER.updateOne,
       {status: status},
       VERBS.PUT,

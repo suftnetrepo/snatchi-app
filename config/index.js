@@ -38,7 +38,7 @@ export const RATE = {
 export const SCHEDULER = {
   createOne: `${HOST_API_ADDRESS}scheduler`,
   updateOne: `${HOST_API_ADDRESS}scheduler`,
-  updatestatus: `${HOST_API_ADDRESS}scheduler`,
+  updatestatus: `${HOST_API_ADDRESS}scheduler/`,
   removeOne: `${HOST_API_ADDRESS}scheduler`,
   getByUser: `${HOST_API_ADDRESS}scheduler`,
   getEngineerSchedules: `${HOST_API_ADDRESS}scheduler`,
