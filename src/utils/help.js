@@ -863,6 +863,9 @@ function getMarkedDates(schedules) {
 }
 
 function getNotifications(notification) {
+
+  console.log('notification', notification);
+
   let screenParams = notification.screenParams;
   if (typeof screenParams === 'string') {
     try {
@@ -874,8 +877,7 @@ function getNotifications(notification) {
 
   const scheduleId =
     screenParams.scheduleId ||
-    notification.relatedTo?._id ||
-    notification.relatedTo;
+    notification.relatedTo?._id
 
   return {
     id: notification._id,
@@ -888,6 +890,7 @@ function getNotifications(notification) {
     endDate: screenParams.endDate,
     dateString: screenParams.startDate,
     status: screenParams.status || notification.status,
+    scheduleStatus: screenParams?.scheduleStatus,
     startTime: screenParams.startTime,
     endTime: screenParams.endTime,
     scheduleId: scheduleId,

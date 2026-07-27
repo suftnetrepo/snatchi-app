@@ -10,7 +10,7 @@ import {getRelativeTimeString} from '../../../utils/help';
 import {Dimensions} from 'react-native';
 import JobCard from '../../../components/notifyCard';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-import {useNotification} from '../../../hooks/useNotification';
+import {useScheduler} from '../../../hooks/useScheduler';
 
 export default function CalendarNotification() {
   const bottomSheetRef = useRef(null);
@@ -20,22 +20,18 @@ export default function CalendarNotification() {
     data,
     loading,
     error,
-    success,  
-    fetchNotifications,
-    handleEdit,
-    handleDelete,
+    success,
     handleReset,
-    handleUpdateStatus
-  } = useNotification();
+    handleUpdateStatus,
+    handleMarkAsRead,
+    handleAllSchedules,
+  } = useScheduler();
 
   useEffect(() => {
-    fetchNotifications();
+    handleAllSchedules();
   }, []);
 
-  console.log('CalendarNotification data:', data);
-  console.log('CalendarNotification loading:', loading);
-  console.log('CalendarNotification error:', error);
-
+ 
   const selectedJob = useMemo(() => {
     if (!selectedJobId || !Array.isArray(data)) {
       return null;
@@ -43,15 +39,11 @@ export default function CalendarNotification() {
 
     return (
       data.find(job => {
-        const jobId = job?.id;
+        const jobId = job?._id;
         return jobId === selectedJobId;
       }) || null
     );
   }, [data, selectedJobId]);
-
-  const onhandleDelete = id => {
-    handleDelete(id);
-  };
 
   const close = () => {
     bottomSheetRef.current?.close();
@@ -97,19 +89,17 @@ export default function CalendarNotification() {
             <Swipeable
               key={index}
               renderRightActions={(progress, dragX) =>
-                renderRightActions(progress, dragX, () => {
-                  onhandleDelete(body.id);
-                })
+                renderRightActions(progress, dragX, () => {})
               }>
               <Pressable
                 onPress={() => {
                   if (!body.read) {
-                  
-                  handleEdit(body, body.id, 'read').then(() => {
-                    setSelectedJobId(body?.id);
-                    bottomSheetRef.current?.snapToIndex(0);
-                  })} else {
-                    setSelectedJobId(body?.id);
+                    handleMarkAsRead(body._id).then(() => {
+                      setSelectedJobId(body?._id);
+                      bottomSheetRef.current?.snapToIndex(0);
+                    });
+                  } else {
+                    setSelectedJobId(body?._id);
                     bottomSheetRef.current?.snapToIndex(0);
                   }
                 }}>
@@ -123,18 +113,21 @@ export default function CalendarNotification() {
                     paddingLeft: body.read ? 12 : 0,
                   }}>
                   <VStack flex={1}>
-                    <HStack justifyContent="flex-start" alignItems="center">
+                    {!body.read && (
                       <Text
                         flex={6}
                         fontWeight="$bold"
                         fontSize="$md"
                         color="$black">
-                        {body.siteName}
+                        New Booking Request
+                      </Text>
+                    )}
+                    <HStack justifyContent="flex-start" alignItems="center">
+                      <Text flex={6} fontSize="$md" color="$black">
+                        {body.title}
                       </Text>
                     </HStack>
-                    <Text color="$coolGray600" mb={'$1'} fontSize="$sm">
-                      {body.description || 'No description provided'}
-                    </Text>
+                   
                     <Text color="$coolGray800" fontSize="$xs">
                       {getRelativeTimeString(body.createdAt)}
                     </Text>

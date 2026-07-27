@@ -42,7 +42,10 @@ export const SCHEDULER = {
   removeOne: `${HOST_API_ADDRESS}scheduler`,
   getByUser: `${HOST_API_ADDRESS}scheduler`,
   getEngineerSchedules: `${HOST_API_ADDRESS}scheduler`,
+  getSchedulesByEngineer: `${HOST_API_ADDRESS}scheduler`,
   engineerStatusAggregate: `${HOST_API_ADDRESS}scheduler`,
+  getUnreadByEngineer: `${HOST_API_ADDRESS}scheduler`,
+  markAsRead: `${HOST_API_ADDRESS}scheduler`,
 };
 
 export const TASK_COMMENTS = {
@@ -99,7 +102,8 @@ export const VERBS = {
   POST: 'POST',
   GET: 'GET',
   DELETE: 'DELETE',
-  PUT: 'PUT'
+  PUT: 'PUT',
+  PATCH: 'PATCH'
 };
 
 const CLOUDINARY_CLOUD_NAME = "dwjjtakfs";

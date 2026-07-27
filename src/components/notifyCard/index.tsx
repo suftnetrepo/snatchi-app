@@ -42,7 +42,7 @@ import {
 
 export interface JobNotification {
   id: string;
-  scheduleId: string;
+  _id: string;
   projectId: string;
   startDate: string;
   endDate: string;
@@ -56,8 +56,10 @@ export interface JobNotification {
   createdAt: number;
   dateString: string;
   read: boolean;
-  projectName: string;
-  projectDescription: string;
+  title: string;
+  project: {
+    completeAddress: string;
+  };
   status: 'pending' | 'accepted' | 'declined' | 'completed' | 'approved';
 }
 
@@ -129,7 +131,9 @@ function SectionRow({
 // ═══════════════════════════════════════════════════════════
 
 export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
-  const jobId = job?.scheduleId;
+  const jobId = job?._id;
+
+  console.log('JobCard rendered with job:', job);
 
   const handleAccept = useCallback(() => {
     if (!jobId) {
@@ -177,18 +181,20 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
     <Card size="lg" borderRadius={16} bg="$background0" overflow="hidden">
       {/* ── Header ────────────────────────────────────── */}
       <HStack alignItems="center" justifyContent="space-between">
-        <VStack>
-          <Text
-            size="xs"
-            color="$textLight400"
-            textTransform="uppercase"
-            fontWeight="$medium">
-            Incoming request
-          </Text>
-          <Heading size="lg" mt="$0.5">
-            New job
-          </Heading>
-        </VStack>
+        {!job.read && (
+          <VStack>
+            <Text
+              size="xs"
+              color="$textLight400"
+              textTransform="uppercase"
+              fontWeight="$medium">
+              Incoming request
+            </Text>
+            <Heading size="lg" mt="$0.5">
+              New job
+            </Heading>
+          </VStack>
+        )}
 
         {!job.read && (
           <Badge
@@ -221,7 +227,7 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
       <SectionRow icon={MapPin} iconBg="$info50" iconColor="$info600">
         <Heading size="sm">Site Location</Heading>
         <Text size="sm" color="$textLight500" mt="$0.5">
-          {job.completeAddress}
+          {job?.project?.completeAddress}
         </Text>
       </SectionRow>
 
@@ -229,25 +235,15 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
 
       {/* ── Job details ───────────────────────────────── */}
       <SectionRow icon={Wrench} iconBg="$warning50" iconColor="$warning600">
-        <Heading size="sm">{job.projectName}</Heading>
+        <Heading size="sm">{job.title}</Heading>
         {/* Task checklist */}
-        <VStack space="xs" mt="$2.5">
-          <HStack space="sm" alignItems="flex-start">
-            <Box
-              width={6}
-              height={6}
-              borderRadius={999}
-              bg="$primary400"
-              mt="$1.5"
-              opacity={0.6}
-            />
-            <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">
-              {job?.projectDescription}
-            </Text>
-          </HStack>
-        </VStack>
       </SectionRow>
-      {job.status === 'pending' && (
+      <HStack space="sm" px={'$2'} pb={'$2'} alignItems="flex-start">
+        <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">
+          {job?.description}
+        </Text>
+      </HStack>
+      {job?.status?.toLowerCase() === 'pending' && (
         <HStack space="md" px="$5" pt="$2" pb="$5">
           {/* Decline */}
           <Button

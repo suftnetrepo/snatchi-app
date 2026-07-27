@@ -1,47 +1,9 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {SCHEDULER, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {schedulerValidator} from '../validator/schedulerValidator';
-import {getScheduleStatusTheme} from '../constants/scheduleStatusTheme';
 
 const ymd = iso => iso?.slice(0, 10);
-
-const getMarkedDatesFromEvents = eventOrArray => {
-  const marked = {};
-  if (!eventOrArray) return marked;
-  const events = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
-
-  events.forEach(event => {
-    if (!event?.startDate || !event?.endDate || !event?.status) return;
-    const color = getScheduleStatusTheme(event.status).text;
-
-    const start = ymd(event.startDate);
-    const end = ymd(event.endDate);
-
-    // iterate from start..end using plain dates
-    let cur = start;
-    while (cur <= end) {
-      const isStart = cur === start;
-      const isEnd = cur === end;
-
-      marked[cur] = {
-        ...(marked[cur] || {}),
-        ...(isStart ? {startingDay: true} : {}),
-        ...(isEnd ? {endingDay: true} : {}),
-        color: marked[cur]?.color || color,
-        textColor: 'white',
-        id: event._id,
-      };
-
-      // increment cur (YYYY-MM-DD) by 1 day
-      const d = new Date(cur);
-      d.setDate(d.getDate() + 1);
-      cur = d.toISOString().slice(0, 10);
-    }
-  });
-
-  return marked;
-};
 
 const useScheduler = key => {
   const [state, setState] = useState({
@@ -111,7 +73,7 @@ const useScheduler = key => {
 
   const handleError = useCallback(error => {
     setState(pre => {
-      return {...pre, error: error, data:[], rawData:[], loading: false};
+      return {...pre, error: error, data: [], rawData: [], loading: false};
     });
   }, []);
 
@@ -340,7 +302,7 @@ const useScheduler = key => {
       VERBS.GET,
       {
         action: 'engineerStatusAggregate',
-         status: [
+        status: [
           'Ready',
           'ReadyToStart',
           'InProgress',
@@ -367,7 +329,7 @@ const useScheduler = key => {
     }
   }
 
-   async function handleUpdateStatus(status, id) {
+  async function handleUpdateStatus(status, id) {
     setState(prev => ({...prev, loading: true, error: null, success: false}));
     const {success, errorMessage} = await zat(
       SCHEDULER.updateOne,
@@ -378,8 +340,12 @@ const useScheduler = key => {
 
     if (success) {
       setState(prev => {
+        const newRawData = prev.data.map(item =>
+          item._id === id ? {...item, status: status} : item,
+        );
         return {
           ...prev,
+          data: newRawData,
           success: true,
           loading: false,
         };
@@ -391,7 +357,7 @@ const useScheduler = key => {
     }
   }
 
-    async function handleScheduleFilterByStatus({status, engineerId}) {
+  async function handleScheduleFilterByStatus({status, engineerId}) {
     setState(prev => ({...prev, loading: true}));
     const {success, data, errorMessage} = await zat(
       SCHEDULER.engineerStatusAggregate,
@@ -399,7 +365,7 @@ const useScheduler = key => {
       VERBS.GET,
       {
         action: 'engineerSchedulesByStatus',
-         status: status,
+        status: status,
         engineerId: engineerId,
       },
     );
@@ -411,6 +377,84 @@ const useScheduler = key => {
         success: true,
         loading: false,
       }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
+  async function handleUnReadSchedule({engineerId}) {
+    setState(prev => ({...prev, loading: true}));
+    const {success, data, errorMessage} = await zat(
+      SCHEDULER.getUnreadByEngineer,
+      null,
+      VERBS.GET,
+      {
+        action: 'getUnreadByEngineer',
+        engineerId: engineerId,
+      },
+    );
+
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: data.data || 0,
+        success: true,
+        loading: false,
+      }));
+    } else {
+      handleError(errorMessage || 'Failed to fetch the task.');
+    }
+  }
+
+  async function handleMarkAsRead(id) {
+    setState(prev => ({...prev, loading: true, error: null, success: false}));
+    const {success, errorMessage} = await zat(
+      SCHEDULER.markAsRead,
+      null,
+      VERBS.PATCH,
+      {id: id, action: 'markAsRead'},
+    );
+
+    if (success) {
+      
+      setState(prev => {
+         const newRawData = prev.data.map(item =>
+          item._id === id ? {...item, read: true} : item,
+        );
+        return {
+          ...prev,
+          data: newRawData,
+          success: false,
+          loading: false,
+        };
+      });
+      return true;
+    } else {
+      handleError(errorMessage || 'Failed to update the schedule.');
+      return false;
+    }
+  }
+
+  async function handleAllSchedules() {
+    setState(prev => ({...prev, loading: true}));
+    const {success, data, errorMessage} = await zat(
+      SCHEDULER.getSchedulesByEngineer,
+      null,
+      VERBS.GET,
+      {
+        action: 'getSchedulesByEngineer',
+      },
+    );
+
+    if (success) {
+      setState(prevState => ({
+        ...prevState,
+        data: data,
+        success: false,
+        loading: false,
+      }));
+      return true;
     } else {
       handleError(errorMessage || 'Failed to fetch the task.');
     }
@@ -432,7 +476,10 @@ const useScheduler = key => {
     handleNotifySave,
     handleSchedules,
     handleScheduleStatus,
-    handleUpdateStatus
+    handleUpdateStatus,
+    handleMarkAsRead,
+    handleUnReadSchedule,
+    handleAllSchedules,
   };
 };
 

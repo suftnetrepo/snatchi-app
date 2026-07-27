@@ -5,17 +5,17 @@ import { theme } from '../../utils/theme';
 import { useFocus } from '../../hooks/useFocus';
 import { getUnReadCount } from '../../utils/asyncStorage';
 import { NotificationBus } from '../../../scripts/notificationBus';
-import { useNotification } from '../../hooks/useNotification';
+import { useScheduler } from '../../hooks/useScheduler';
 
 
-export const Bell = ({ onPress }) => {
+export const Bell = ({ user_id, onPress }) => {
   const { key } = useFocus();
-  const { fetchUnReadNotifications, count } = useNotification();
+  const { handleUnReadSchedule, data } = useScheduler();
 
-  console.log('Unread notification count:', count); // Debugging line
+  console.log('Unread notification count:', data); // Debugging line
 
   const loadCount = async () => {
-    await fetchUnReadNotifications();
+    await handleUnReadSchedule({ engineerId: user_id });
   };
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export const Bell = ({ onPress }) => {
             fontWeight="$bold"
             textAlign="center"
           >
-            {count}
+            {data}
           </Text>
         </Badge>
       </Box>
