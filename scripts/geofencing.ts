@@ -16,6 +16,7 @@ import {
   PROJECT_KEY,
 } from '../src/utils/asyncStorage';
 import { FENCE } from '../config';
+import { getJWT } from '../src/store/secure';
 
 class GeofencingSingleton {
   private static instance: GeofencingSingleton;
@@ -48,8 +49,7 @@ class GeofencingSingleton {
     try {
       const status = await BackgroundGeolocation.requestPermission();
       return (
-        status === BackgroundGeolocation.AuthorizationStatus.Always ||
-        status === BackgroundGeolocation.AuthorizationStatus.WhenInUse
+        status === BackgroundGeolocation.AuthorizationStatus.Always
       );
     } catch (error) {
       if (__DEV__) console.error('RequestPermissions failed:', error);
@@ -76,7 +76,7 @@ class GeofencingSingleton {
   public async storage(projects: ProjectGeofence[]) {
     const existing = await this.loadProjects();
     const filtered = existing.filter(
-      p => !projects.some(np => np.projectId === p.projectId),
+      p => !projects.some(np => (np.scheduleId || np.id) === (p.scheduleId || p.id)),
     );
 
     const updated = [...filtered, ...projects];
@@ -88,13 +88,24 @@ class GeofencingSingleton {
   }
 
   async handleState() {
-    const state = await BackgroundGeolocation.getState()
-    return state.enabled
+    const state = await BackgroundGeolocation.getState();
+    if (state.enabled) return true;
+
+    const provider = await BackgroundGeolocation.getProviderState();
+    return (
+      provider.status === BackgroundGeolocation.AuthorizationStatus.Always ||
+      provider.status === BackgroundGeolocation.AuthorizationStatus.WhenInUse
+    );
   }
 
   async handleClearSchedules() {
     const geofences = await BackgroundGeolocation.getGeofences();
-    this.clearSchedules(geofences)
+    await this.clearSchedules(geofences);
+    const remaining = await BackgroundGeolocation.getGeofences();
+    const state = await BackgroundGeolocation.getState();
+    if (remaining.length === 0 && state.enabled) {
+      await BackgroundGeolocation.stop();
+    }
   }
 
   private setupEventListeners() {
@@ -110,6 +121,17 @@ class GeofencingSingleton {
         let transition: GeofenceTransition = 'ENTER';
         if (action === 'EXIT') transition = 'EXIT';
         if (action === 'DWELL') transition = 'DWELL';
+
+        const extras = (event.extras || {}) as Partial<ProjectGeofence>;
+        const geofenceEvent: GeofenceEvent = {
+          ...extras,
+          id: identifier,
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          transition,
+          timestamp: new Date(location.timestamp || Date.now()).toISOString(),
+        };
+        this.eventListeners.forEach(listener => listener(geofenceEvent));
 
         if (action == "ENTER") {
           // Entering the danger-zone, we want to aggressively track location.
@@ -137,14 +159,12 @@ class GeofencingSingleton {
 
   async initialize(debug = true) {
     try {
-
-
+      const token = await getJWT();
       const config: Config = {
         geolocation: {
           desiredAccuracy: BackgroundGeolocation.DesiredAccuracy.High,
           distanceFilter: 50,
           stopTimeout: 5,
-          stopAfterElapsedMinutes: 120,
           showsBackgroundLocationIndicator: true,
           filter: {
             maxImpliedSpeed: 60,
@@ -161,6 +181,10 @@ class GeofencingSingleton {
           batchSync: true,
           maxBatchSize: 10,
           method: "POST",
+          headers: {
+            'x-app-route': 'mobile',
+            ...(token ? {'x-access-token': `Bearer ${token}`} : {}),
+          },
         },
         app: {
           stopOnTerminate: false,
@@ -186,35 +210,83 @@ class GeofencingSingleton {
         },
       };
 
-      BackgroundGeolocation.ready(config)
-        .then(async state => {
-          this.handleClearSchedules().catch((error) => {
-            if (__DEV__) console.error('Error clearing geofences:', error);
-          }
-          )
-          this.setupEventListeners();
-
-          if (!state.enabled) {
-            await BackgroundGeolocation.startGeofences();
-          }
-
-          return true;
-        })
-        .catch(error => {
-          if (__DEV__) console.error('Error starting geofences:', error);
-        });
-
-      return true
+      await BackgroundGeolocation.ready(config);
+      await BackgroundGeolocation.setConfig({
+        http: {
+          headers: {
+            'x-app-route': 'mobile',
+            ...(token ? {'x-access-token': `Bearer ${token}`} : {}),
+          },
+        },
+      });
+      await this.handleClearSchedules();
+      this.setupEventListeners();
+      this.state = {...this.state, isInitialized: true, error: null};
+      return true;
     } catch (err) {
       if (__DEV__) console.error('Init failed:', err);
-      return false
+      this.state = {...this.state, isInitialized: false, error: String(err)};
+      return false;
+    }
+  }
+
+  async startBooking(schedule: any): Promise<boolean> {
+    try {
+      const scheduleId = schedule?._id || schedule?.id;
+      const project = schedule?.project;
+      const coordinates = project?.location?.coordinates;
+      const latitude = Number(project?.latitude ?? coordinates?.[1]);
+      const longitude = Number(project?.longitude ?? coordinates?.[0]);
+
+      if (!scheduleId || !project?._id || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        throw new Error('This booking does not have a valid job-site location.');
+      }
+
+      const initialized = await this.initialize(false);
+      if (!initialized) return false;
+
+      const endDate = new Date(schedule.endDate || schedule.startDate);
+      const [endHour = 23, endMinute = 59] = String(schedule.endTime || '23:59').split(':').map(Number);
+      endDate.setHours(endHour, endMinute, 0, 0);
+      const remainingMinutes = Math.max(1, Math.ceil((endDate.getTime() - Date.now()) / 60000));
+      await BackgroundGeolocation.setConfig({
+        geolocation: {stopAfterElapsedMinutes: Math.min(remainingMinutes, 24 * 60)},
+      });
+
+      await this.addProjects([{
+        scheduleId: String(scheduleId),
+        projectId: String(project._id),
+        integratorId: String(schedule.integrator?._id || schedule.integrator || project.integrator?._id || project.integrator),
+        id: String(scheduleId),
+        siteName: project.name || schedule.title || 'Job site',
+        latitude,
+        longitude,
+        radius: Number(schedule.radius) || 200,
+        startDate: schedule.startDate,
+        endDate: schedule.endDate,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        userId: String(schedule.engineer?._id || schedule.engineer || ''),
+        firstName: schedule.engineer?.first_name || '',
+        lastName: schedule.engineer?.last_name || '',
+        completeAddress: project.completeAddress || '',
+        status: 'InProgress',
+        priority: project.priority,
+        description: project.description || schedule.description,
+        action: true,
+      }]);
+      await BackgroundGeolocation.startGeofences();
+      return true;
+    } catch (error) {
+      if (__DEV__) console.error('Failed to start booking geofence:', error);
+      return false;
     }
   }
 
   async addProjects(projects: ProjectGeofence[]) {
 
     for (const p of projects) {
-      const geofenceId = `${p.projectId}`;
+      const geofenceId = `${p.scheduleId || p.id}`;
 
       await BackgroundGeolocation.addGeofence({
         identifier: geofenceId,
@@ -230,20 +302,6 @@ class GeofencingSingleton {
       });
     }
 
-    const schedule = projects.map(p => {
-      const days = p.activeDays?.length
-        ? p.activeDays.join(',')
-        : '1-7';
-      return `${days} ${p.startTime}-${p.endTime} geofence`;
-    });
-
-    BackgroundGeolocation.setConfig({
-      app: {
-        schedule,
-        scheduleUseAlarmManager: true,
-      },
-    });
-
     this.storage(projects).catch((error) => {
       console.log(error)
     })
@@ -253,12 +311,34 @@ class GeofencingSingleton {
     await BackgroundGeolocation.removeGeofences();
     await BackgroundGeolocation.stopSchedule();
     await BackgroundGeolocation.stop();
-    await BackgroundGeolocation.destroyLocations()
+    await BackgroundGeolocation.destroyLocations();
+    await this.saveProjects([]);
+  }
+
+  async stopBooking(scheduleId: string) {
+    try {
+      await BackgroundGeolocation.removeGeofence(String(scheduleId));
+      const remaining = (await this.loadProjects()).filter(
+        project => String(project.scheduleId || project.id) !== String(scheduleId),
+      );
+      await this.saveProjects(remaining);
+      await BackgroundGeolocation.sync().catch(() => {});
+      const nativeGeofences = await BackgroundGeolocation.getGeofences();
+      if (nativeGeofences.length === 0) {
+        await BackgroundGeolocation.stop();
+      }
+      return true;
+    } catch (error) {
+      if (__DEV__) console.error('Failed to stop booking geofence:', error);
+      return false;
+    }
   }
 
    async removeProject(projectId: string) {
-    const geofenceId = `${projectId}`;
-    await BackgroundGeolocation.removeGeofence(geofenceId);
+    const matches = (await this.loadProjects()).filter(
+      project => String(project.projectId) === String(projectId),
+    );
+    await Promise.all(matches.map(project => this.stopBooking(project.scheduleId || project.id)));
   }
 
   addEventListener(listener: (event: GeofenceEvent) => void) {
@@ -270,14 +350,25 @@ class GeofencingSingleton {
     const now = new Date();
 
     for (const schedule of schedules) {
-      if (schedule.extras && schedule.extras.endDate) {
+      const isBookingFence = Boolean(schedule.extras?.scheduleId);
+      const isActiveBooking = schedule.extras?.status === 'InProgress';
+      if (!isBookingFence || !isActiveBooking) {
+        await BackgroundGeolocation.removeGeofence(schedule.identifier);
+        continue;
+      }
+      if (schedule.extras?.endDate) {
         const endDate = new Date(schedule.extras.endDate as string | number);
+        const [hours = 23, minutes = 59] = String(schedule.extras.endTime || '23:59').split(':').map(Number);
+        endDate.setHours(hours, minutes, 0, 0);
 
         if (endDate < now) {
           await BackgroundGeolocation.removeGeofence(schedule.identifier);
         }
       }
     }
+
+    const stored = await this.loadProjects();
+    await this.saveProjects(stored.filter(project => project.scheduleId && project.status === 'InProgress'));
   }
 }
 

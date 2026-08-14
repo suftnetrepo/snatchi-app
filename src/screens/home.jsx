@@ -34,8 +34,10 @@ const Home = ({ route }) => {
   const scrollViewRef = useRef(null);
 
   const signOut = async () => {
-    await handleLogout();
+    // Update navigation immediately; secure/server cleanup continues without
+    // making the user wait for a network round trip.
     await logout();
+    handleLogout().catch(() => {});
   };
 
   useFocusEffect(

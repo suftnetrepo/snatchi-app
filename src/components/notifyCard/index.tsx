@@ -1,5 +1,5 @@
-import React, {useState, useCallback} from 'react';
-import {Alert, ScrollView} from 'react-native';
+import React, {useCallback} from 'react';
+import {Alert} from 'react-native';
 
 // ── gluestack-ui v3 component imports ────────────────────
 
@@ -8,7 +8,6 @@ import {
   Text,
   VStack,
   HStack,
-  Pressable,
   Divider,
   Card,
   Icon,
@@ -24,16 +23,12 @@ import {
 // ── lucide-react-native icons ────────────────────────────
 import {
   Calendar,
-  Clock,
   MapPin,
   Wrench,
-  ChevronDown,
-  ChevronUp,
   ArrowRight,
   X,
   CircleDot,
   CheckCircle2,
-  XCircle,
 } from 'lucide-react-native';
 
 // ═══════════════════════════════════════════════════════════
@@ -60,13 +55,16 @@ export interface JobNotification {
   project: {
     completeAddress: string;
   };
-  status: 'pending' | 'accepted' | 'declined' | 'completed' | 'approved';
+  status: string;
 }
 
 interface JobCardProps {
   job: JobNotification | null;
   onAccept?: (jobId: string) => void;
   onDecline?: (jobId: string) => void;
+  onCancel?: (jobId: string) => void;
+  onStart?: (jobId: string) => void;
+  onComplete?: (jobId: string) => void;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -130,10 +128,9 @@ function SectionRow({
 // Main component
 // ═══════════════════════════════════════════════════════════
 
-export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
+export default function JobCard({job, onAccept, onDecline, onCancel, onStart, onComplete}: JobCardProps) {
   const jobId = job?._id;
-
-  console.log('JobCard rendered with job:', job);
+  const status = String(job?.status || '').toLowerCase().replace(/[\s_-]/g, '');
 
   const handleAccept = useCallback(() => {
     if (!jobId) {
@@ -164,6 +161,11 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
     );
   }, [jobId, onDecline]);
 
+  const confirm = useCallback((title: string, message: string, action: string, callback?: (jobId: string) => void, destructive = false) => {
+    if (!jobId) return;
+    Alert.alert(title, message, [{text: 'Not now', style: 'cancel'}, {text: action, style: destructive ? 'destructive' : 'default', onPress: () => callback?.(jobId)}]);
+  }, [jobId]);
+
   if (!job) {
     return (
       <Card size="lg" mx="$4" borderRadius={16} bg="$background0">
@@ -181,20 +183,18 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
     <Card size="lg" borderRadius={16} bg="$background0" overflow="hidden">
       {/* ── Header ────────────────────────────────────── */}
       <HStack alignItems="center" justifyContent="space-between">
-        {!job.read && (
-          <VStack>
+          <VStack flex={1}>
             <Text
               size="xs"
               color="$textLight400"
               textTransform="uppercase"
               fontWeight="$medium">
-              Incoming request
+              Booking details
             </Text>
-            <Heading size="lg" mt="$0.5">
-              New job
+            <Heading size="lg" mt="$0.5" numberOfLines={2}>
+              {job.title || 'Scheduled job'}
             </Heading>
           </VStack>
-        )}
 
         {!job.read && (
           <Badge
@@ -235,14 +235,14 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
 
       {/* ── Job details ───────────────────────────────── */}
       <SectionRow icon={Wrench} iconBg="$warning50" iconColor="$warning600">
-        <Heading size="sm">{job.title}</Heading>
+        <Heading size="sm">Work summary</Heading>
       </SectionRow>
       <HStack space="sm" px={'$2'} pb={'$2'} alignItems="flex-start">
         <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">
           {job?.description}
         </Text>
       </HStack>
-      {job?.status?.toLowerCase() === 'pending' && (
+      {status === 'pending' && (
         <HStack space="md" px="$5" pt="$2" pb="$5">
           {/* Decline */}
           <Button
@@ -270,6 +270,20 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
             <ButtonIcon as={ArrowRight} ml="$1.5" />
           </Button>
         </HStack>
+      )}
+
+      {status === 'accepted' && (
+        <HStack px="$5" pt="$2" pb="$5">
+          <Button variant="outline" size="lg" flex={1} borderRadius={12} borderColor="$rose400" onPress={() => confirm('Cancel accepted booking?', 'The integrator will need to arrange another engineer.', 'Cancel booking', onCancel, true)}><ButtonIcon color="$rose600" as={X} mr="$1.5" /><ButtonText color="$rose600">Cancel booking</ButtonText></Button>
+        </HStack>
+      )}
+
+      {(status === 'readytostart' || status === 'ready') && (
+        <HStack px="$5" pt="$2" pb="$5"><Button size="lg" flex={1} borderRadius={12} backgroundColor="#4f46e5" onPress={() => confirm('Start this job?', 'The booking will be marked as in progress.', 'Start job', onStart)}><ButtonText color="$white">Start job</ButtonText><ButtonIcon as={ArrowRight} ml="$1.5" /></Button></HStack>
+      )}
+
+      {(status === 'inprogress' || status === 'progress') && (
+        <HStack px="$5" pt="$2" pb="$5"><Button size="lg" flex={1} borderRadius={12} backgroundColor="#4f46e5" onPress={() => confirm('Complete this job?', 'Only complete the booking when the scheduled work is finished.', 'Complete job', onComplete)}><ButtonIcon as={CheckCircle2} mr="$1.5" /><ButtonText color="$white">Complete job</ButtonText></Button></HStack>
       )}
 
       {/* ── Action buttons ────────────────────────────── */}

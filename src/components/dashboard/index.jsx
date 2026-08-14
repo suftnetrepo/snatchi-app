@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {
   YStack,
   XStack,
@@ -9,7 +9,7 @@ import {
   StyledBadge,
   StyledCycle,
 } from 'fluent-styles';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {Pressable, ScrollView} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -28,9 +28,11 @@ const Dashboard = ({userId}) => {
   const navigator = useNavigation();
   const {data, handleScheduleStatus} = useScheduler();
 
-  useEffect(() => {
+  useFocusEffect(React.useCallback(() => {
     handleScheduleStatus({engineerId: userId});
-  }, [userId]);
+    // Refresh whenever Dashboard regains focus after a booking change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]));
 
   const getAggregate = (data, status) => {
     return data?.byStatus?.[status] || 0;
@@ -46,6 +48,7 @@ const Dashboard = ({userId}) => {
         onPress={() => {
           navigator.navigate('project-details', {
             id: data?.metta?.project,
+            schedule: data?.metta?.schedule,
           });
         }}>
       <StyledCard
@@ -103,10 +106,10 @@ const Dashboard = ({userId}) => {
         <Icon name="bell" size={28} color="#8bc34a" />
       </XStack>
       <StyledText fontSize={18} fontWeight="800" color="#1a1a1e">
-        No Schedule Day
+        No jobs in progress
       </StyledText>
       <StyledText fontSize={14} color="#9ca3af" textAlign="center">
-        Recovery is part of the plan.{'\n'}Rest up and come back stronger 💚
+        Jobs appear here after you tap Start job.
       </StyledText>
     </YStack>
   );
@@ -116,12 +119,15 @@ const Dashboard = ({userId}) => {
     const recentSchedules = schedulesTransformal(data);
     const currentDate = new Date().toISOString().slice(0, 10);
 
-    useEffect(() => {
+    useFocusEffect(React.useCallback(() => {
       handleSchedules({
         date: currentDate,
         engineerId: userId,
+        statuses: ['InProgress'],
       });
-    }, [userId]);
+      // Refresh today's timeline whenever Dashboard regains focus.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId]));
 
     return (
       <>
@@ -133,11 +139,11 @@ const Dashboard = ({userId}) => {
               fontWeight={theme.fontWeight.light}
               fontSize={theme.fontSize.small}
               color={theme.colors.gray[500]}>
-              Today {currentDate}
+              Jobs in progress
             </StyledText>
           }
           right={
-            <Pressable onPress={() => navigator.navigate('project')}>
+            <Pressable onPress={() => navigator.navigate('project', {status: 'InProgress'})}>
               <StyledText
                 fontFamily={fontStyles.Roboto_Regular}
                 fontWeight={theme.fontWeight.light}

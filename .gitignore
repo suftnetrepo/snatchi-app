@@ -89,3 +89,4 @@ service-account*.json
 *.mobileprovision
 *.dSYM.zip
 android/key.properties
+.env.example

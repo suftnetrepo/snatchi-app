@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, Platform } from 'react-native';
+import React from 'react';
+import { Platform } from 'react-native';
 import {
   HStack,
   Pressable,
@@ -22,28 +22,30 @@ export default function Notify() {
 
   const RenderHeader = () => (
     <HStack
-      paddingHorizontal={8}
-      paddingVertical={8}
+      paddingHorizontal={16}
+      paddingVertical={10}
       justifyContent="flex-start"
       alignItems="center"
-      backgroundColor={theme.colors.gray[50]}>
+      backgroundColor={theme.colors.gray[1]}
+      borderBottomWidth={1}
+      borderColor={theme.colors.gray[200]}>
       <Pressable onPress={() => {
-        navigator.navigate("bottom-tabs")
+        navigator.goBack()
       }}>
         <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.gray[400]}>
-          <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
+          height={42}
+          width={42}
+          borderColor={theme.colors.gray[200]}>
+          <Icon name="arrow-back" size={24} color={theme.colors.gray[900]} />
         </StyledCycle>
       </Pressable>
       <StyledSpacer marginHorizontal={8} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
-        fontWeight={theme.fontWeight.normal}
-        color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
-        Notifications
+        fontWeight={theme.fontWeight.bold}
+        color={theme.colors.gray[900]}
+        fontSize={theme.fontSize.large}>
+        Bookings
       </StyledText>
       <StyledSpacer flex={1} />
     </HStack>
@@ -60,11 +62,9 @@ export default function Notify() {
         </StyledHeader.Full>
       </StyledHeader>
 
-      <ScrollView style={{ flex: 1, backgroundColor: theme.colors.gray[1] }}>
-        <YStack flex={1} paddingHorizontal={16} backgroundColor={theme.colors.gray[100]}>
+        <YStack flex={1} backgroundColor={theme.colors.gray[1]}>
           <CalendarNotification />
         </YStack>
-      </ScrollView>
     </StyledSafeAreaView>
   );
 }

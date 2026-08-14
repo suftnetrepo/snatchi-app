@@ -536,18 +536,14 @@ function haversineDistance(coords1, coords2) {
 }
 
 const convertTimestampToDate = timestamp => {
-  if (!timestamp) return;
-  const date = new Date(
-    timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000,
-  );
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-
-  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+  if (!timestamp) return new Date();
+  if (typeof timestamp.toDate === 'function') return timestamp.toDate();
+  if (typeof timestamp.seconds === 'number') {
+    return new Date(
+      timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000,
+    );
+  }
+  return new Date(timestamp);
 };
 
 const isSameDay = (storedDate, currentDate) => {
@@ -794,8 +790,12 @@ const FileIcon = ({fileType}) => {
 const Status_data = [
   'Pending',
   'Accepted',
-  'Progress',
+  'Approved',
+  'AwaitingPayment',
+  'ReadyToStart',
+  'InProgress',
   'Completed',
+  'Declined',
   'Cancelled',
 ];
 
@@ -816,7 +816,7 @@ function schedulesTransformal(data) {
       title: item.title,
       time: item.startTime,
       endTime: item.endTime,
-      metta: {status: item.status, project: item.project},
+      metta: {status: item.status, project: item.project?._id || item.project, schedule: item},
       startDate: item.startDate,
       endDate: item.endDate,
     };

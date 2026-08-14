@@ -1,11 +1,9 @@
 import messaging from '@react-native-firebase/messaging';
 import {Platform, PermissionsAndroid} from 'react-native';
 import {navigationRef} from '../src/navigation/NavigationRef';
-import {add, store, SCHEDULE_KEY} from '../src/utils/asyncStorage';
-import {geofencingSingleton} from './geofencing';
+import {store} from '../src/utils/asyncStorage';
 import {localNotificationService} from '../Notification/LocalNotificationService';
 import {NotificationBus} from './notificationBus';
-import {transformToProjectGeofence} from '../src/utils/help';
 
 const parseScreenParams = value => {
   if (!value) return {};
@@ -188,19 +186,6 @@ export const checkApplicationNotificationPermission = async () => {
     return false;
   }
 };
-const parseMaybeJson = value => {
-  if (!value) return null;
-
-  if (typeof value === 'string') {
-    try {
-      return JSON.parse(value);
-    } catch {
-      return value; // plain string
-    }
-  }
-
-  return value; // already an object/array
-};
 export function registerListenerWithFCM() {
   const unsubscribe = messaging().onMessage(async remoteMessage => {
     if (__DEV__) {
@@ -219,25 +204,7 @@ export function registerListenerWithFCM() {
 
     if (remoteMessage?.data) {
       try {
-        console.log(
-          'Handling geofence push notification data:',
-          remoteMessage.data,
-        );
-
-        // 🔹 REMOVE_PROJECTS
-        if (remoteMessage.data.screen === 'project') {
-          const screenParams = parseScreenParams(
-            remoteMessage.data.screenParams,
-          );
-          await geofencingSingleton.removeProject(screenParams?.projectId);
-          if (__DEV__) console.log('🗑️ Projects removed from push');
-        }
-
-        // 🔹 CLEAR_ALL_PROJECTS
-        if (remoteMessage.data.clearAllProjects === 'true') {
-          await geofencingSingleton.clearAllProjects();
-          if (__DEV__) console.log('🧹 All projects cleared from push');
-        }
+        if (__DEV__) console.log('Handling booking notification data:', remoteMessage.data);
 
         if (remoteMessage.data.screen === 'calendar') {
           const screenParams = parseScreenParams(
@@ -270,13 +237,6 @@ export function registerListenerWithFCM() {
             integratorId: screenParams?.integratorId,
             priority: screenParams?.priority,
           };
-
-          // await geofencingSingleton.clearAllProjects();
-
-          const transformedGeofence = transformToProjectGeofence(body);
-          await geofencingSingleton.addProjects([transformedGeofence]);
-          if (__DEV__)
-            console.log('✅ Geofence added from push:', transformedGeofence);
 
           NotificationBus.emit('new-notification', body);
         }

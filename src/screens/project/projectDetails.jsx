@@ -38,12 +38,15 @@ import {
   FileIcon,
 } from '../../utils/help';
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {Pressable, Platform, Linking, Dimensions} from 'react-native';
+import {Alert, Pressable, Platform, Linking, Dimensions} from 'react-native';
 import ProgressCircleSvg from '../../components/progressCircle';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useProject} from '../../hooks/useProject';
+import {useScheduler} from '../../hooks/useScheduler';
 import {ContactCard} from '../../components/projectCard/contact';
 import ImageViewerWithZoom from '../../components/imageViewer';
+import ScheduleStatusBadge from '../../components/shared/ScheduleStatusBadge';
+import {getScheduleStatusLabel, normalizeScheduleStatus} from '../../constants/scheduleStatusTheme';
 
 export const ProjectDetails = () => {
   const {width} = Dimensions.get('window');
@@ -51,13 +54,47 @@ export const ProjectDetails = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const route = useRoute();
-  const {id} = route.params;
+  const {id, schedule: routeSchedule} = route.params;
+  const [schedule, setSchedule] = useState(routeSchedule || null);
   const {data, error, loading, fetchOneProject} = useProject();
+  const {loading: statusLoading, error: statusError, handleUpdateStatus, handleReset: resetSchedule} = useScheduler();
   const themeProgress = getStatusTheme(data?.status);
 
   useEffect(() => {
     fetchOneProject(id);
+    // Project identity is the request key; the hook owns its request state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    setSchedule(routeSchedule || null);
+  }, [routeSchedule]);
+
+  const updateSchedule = async nextStatus => {
+    const updated = await handleUpdateStatus(nextStatus, schedule?._id);
+    if (updated) setSchedule(previous => ({...previous, ...(typeof updated === 'object' ? updated : {}), status: nextStatus}));
+  };
+
+  const confirmStatus = (title, message, nextStatus, destructive = false) => {
+    Alert.alert(title, message, [{text: 'Not now', style: 'cancel'}, {text: title, style: destructive ? 'destructive' : 'default', onPress: () => updateSchedule(nextStatus)}]);
+  };
+
+  const ScheduleActions = () => {
+    if (!schedule?._id) return null;
+    const status = normalizeScheduleStatus(schedule.status);
+    return (
+      <StyledCard marginHorizontal={16} marginTop={14} padding={16} borderRadius={18} borderWidth={1} borderColor={theme.colors.gray[200]} backgroundColor={theme.colors.gray[1]}>
+        <XStack alignItems="center"><YStack flex={1}><StyledText fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>BOOKING STATUS</StyledText><StyledText marginTop={5} fontWeight={theme.fontWeight.bold} fontSize={theme.fontSize.medium} color={theme.colors.gray[900]}>{getScheduleStatusLabel(status)}</StyledText></YStack><ScheduleStatusBadge status={status} size="sm" /></XStack>
+        <XStack marginTop={14} paddingTop={14} borderTopWidth={1} borderColor={theme.colors.gray[200]} alignItems="center"><Icon name="event" size={20} color="#4f46e5" /><StyledText marginLeft={8} color={theme.colors.gray[700]}>{formatDateTime(schedule.startDate)} · {schedule.startTime}–{schedule.endTime}</StyledText></XStack>
+        {status === 'Pending' && <XStack marginTop={15} gap={10}><StyledButton flex={1} borderRadius={13} borderColor={theme.colors.red[300]} backgroundColor={theme.colors.gray[1]} onPress={() => confirmStatus('Decline booking', 'The integrator will be told that you are unavailable.', 'Declined', true)}><StyledText paddingVertical={10} color={theme.colors.red[600]}>Decline</StyledText></StyledButton><StyledButton flex={1.3} borderRadius={13} borderColor="#4f46e5" backgroundColor="#4f46e5" onPress={() => confirmStatus('Accept booking', 'Confirm that you are available for this job.', 'Accepted')}><StyledText paddingVertical={10} color="#fff">Accept booking</StyledText></StyledButton></XStack>}
+        {status === 'Accepted' && <StyledButton marginTop={15} borderRadius={13} borderColor={theme.colors.red[300]} backgroundColor={theme.colors.gray[1]} onPress={() => confirmStatus('Cancel booking', 'The integrator will need to arrange another engineer.', 'Cancelled', true)}><StyledText paddingVertical={10} color={theme.colors.red[600]}>Cancel booking</StyledText></StyledButton>}
+        {status === 'ReadyToStart' && <StyledButton marginTop={15} borderRadius={13} borderColor="#4f46e5" backgroundColor="#4f46e5" onPress={() => confirmStatus('Start job', 'The booking will be marked as in progress.', 'InProgress')}><StyledText paddingVertical={10} color="#fff">Start job</StyledText></StyledButton>}
+        {status === 'InProgress' && <StyledButton marginTop={15} borderRadius={13} borderColor="#4f46e5" backgroundColor="#4f46e5" onPress={() => confirmStatus('Complete job', 'Confirm all scheduled work has been completed.', 'Completed')}><StyledText paddingVertical={10} color="#fff">Complete job</StyledText></StyledButton>}
+        {['Approved', 'AwaitingPayment'].includes(status) && <XStack marginTop={14} padding={12} borderRadius={12} backgroundColor={theme.colors.orange[50]}><Icon name="info-outline" size={20} color={theme.colors.orange[600]} /><StyledText flex={1} marginLeft={8} fontSize={theme.fontSize.small} color={theme.colors.orange[800]}>The integrator is completing approval and payment. You can start when this booking becomes Ready to Start.</StyledText></XStack>}
+        {['Completed', 'Declined', 'Cancelled'].includes(status) && <StyledText marginTop={13} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>No further booking actions are available.</StyledText>}
+      </StyledCard>
+    );
+  };
 
   const openGoogleSearch = () => {
     const encodedQuery = encodeURIComponent(`hotels near ${data?.postcode}`);
@@ -183,6 +220,7 @@ export const ProjectDetails = () => {
       </StyledHeader>
 
       <ScrollView showsVerticalScrollIndicator={false}>
+        <ScheduleActions />
         {/* Rounded white card */}
         <Box bg="$white" borderTopRadius={30} py={'$3'} px={'$4'} flex={1}>
           {/* Category badges */}
@@ -530,6 +568,8 @@ export const ProjectDetails = () => {
         />
       )}
       {loading && <StyledSpinner />}
+      {statusLoading && <StyledSpinner />}
+      {statusError && <StyledOkDialog title="Unable to update booking" description={typeof statusError === 'string' ? statusError : statusError?.message || 'Please refresh and try again.'} visible onOk={resetSchedule} />}
       {modalVisible && (
         <StyledDialog visible>
           <ImageViewerWithZoom

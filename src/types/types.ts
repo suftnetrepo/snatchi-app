@@ -10,8 +10,9 @@ export interface GeofenceRegion {
 
 // 🔹 Full project-aware geofence
 export interface ProjectGeofence {
+  scheduleId: string;
   projectId: string;
-  intergatorId: string;       // Integrator system ID
+  integratorId: string;       // Integrator system ID
   id: string;                 // Site ID
   siteName: string;
   latitude: number;

@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, Box, Badge, Text } from '@gluestack-ui/themed';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { theme } from '../../utils/theme';
 import { useFocus } from '../../hooks/useFocus';
-import { getUnReadCount } from '../../utils/asyncStorage';
-import { NotificationBus } from '../../../scripts/notificationBus';
 import { useScheduler } from '../../hooks/useScheduler';
 
 
@@ -12,15 +10,15 @@ export const Bell = ({ user_id, onPress }) => {
   const { key } = useFocus();
   const { handleUnReadSchedule, data } = useScheduler();
 
-  console.log('Unread notification count:', data); // Debugging line
-
   const loadCount = async () => {
     await handleUnReadSchedule({ engineerId: user_id });
   };
 
   useEffect(() => {
     loadCount();
-  }, [key]); 
+    // Refresh the server-backed unread count when Home regains focus.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   return (
     <Pressable onPress={onPress}>
@@ -31,7 +29,7 @@ export const Bell = ({ user_id, onPress }) => {
           color={theme.colors.gray[800]}
         />
 
-        <Badge
+        {Number(data) > 0 && <Badge
           position="absolute"
           top={-2}
           right={-2}
@@ -50,9 +48,9 @@ export const Bell = ({ user_id, onPress }) => {
             fontWeight="$bold"
             textAlign="center"
           >
-            {data}
+            {Number(data) > 99 ? '99+' : data}
           </Text>
-        </Badge>
+        </Badge>}
       </Box>
     </Pressable>
   );

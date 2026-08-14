@@ -1,16 +1,17 @@
-import React, {useRef, useMemo, useState, useEffect} from 'react';
-import {ScrollView, Animated} from 'react-native';
-import {Swipeable} from 'react-native-gesture-handler';
-import {Text, VStack, HStack, Pressable, Divider} from '@gluestack-ui/themed';
+import React, {useRef, useMemo, useState} from 'react';
+import {ScrollView} from 'react-native';
+import {Text, VStack, HStack, Pressable} from '@gluestack-ui/themed';
 import {StyledSpinner, StyledOkDialog} from 'fluent-styles';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {theme} from '../../../utils/theme';
 import {getRelativeTimeString} from '../../../utils/help';
+import ScheduleStatusBadge from '../../../components/shared/ScheduleStatusBadge';
 import {Dimensions} from 'react-native';
 import JobCard from '../../../components/notifyCard';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 import {useScheduler} from '../../../hooks/useScheduler';
+import {useFocusEffect} from '@react-navigation/native';
 
 export default function CalendarNotification() {
   const bottomSheetRef = useRef(null);
@@ -27,11 +28,11 @@ export default function CalendarNotification() {
     handleAllSchedules,
   } = useScheduler();
 
-  useEffect(() => {
+  useFocusEffect(React.useCallback(() => {
     handleAllSchedules();
-    // The hook owns request state; loading it once on mount avoids a request loop.
+    // Booking centre may remain mounted; refresh every time it regains focus.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const selectedJob = useMemo(() => {
     if (!selectedJobId || !Array.isArray(data)) {
@@ -46,6 +47,17 @@ export default function CalendarNotification() {
     );
   }, [data, selectedJobId]);
 
+  const bookings = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return (Array.isArray(data) ? data : [])
+      .filter(job => ['Pending', 'Accepted'].includes(job.status) || new Date(job.endDate || job.startDate) >= today)
+      .sort((a, b) => {
+        if (Boolean(a.read) !== Boolean(b.read)) return a.read ? 1 : -1;
+        return new Date(a.startDate) - new Date(b.startDate) || String(a.startTime || '').localeCompare(String(b.startTime || ''));
+      });
+  }, [data]);
+
   const close = () => {
     bottomSheetRef.current?.close();
   };
@@ -57,87 +69,47 @@ export default function CalendarNotification() {
     }
   };
 
-  const renderRightActions = (progress, dragX, onPress) => {
-    const scale = dragX.interpolate({
-      inputRange: [-80, 0],
-      outputRange: [1, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <Pressable onPress={onPress}>
-        <Animated.View
-          style={{
-            transform: [{scale}],
-            backgroundColor: theme.colors.red[500],
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 80,
-            height: '100%',
-            borderRadius: 8,
-          }}>
-          <Icon name="delete" size={22} color="#fff" />
-        </Animated.View>
-      </Pressable>
-    );
-  };
-
   return (
     <>
       <ScrollView style={{backgroundColor: '#fff'}}>
         <VStack minHeight={SCREEN_HEIGHT} p={'$4'} space="lg">
-          {data?.map((body, index) => (
-            <Swipeable
-              key={index}
-              renderRightActions={(progress, dragX) =>
-                renderRightActions(progress, dragX, () => {})
-              }>
+          {bookings.map(body => (
               <Pressable
+                key={body._id}
                 onPress={() => {
+                  setSelectedJobId(body?._id);
+                  bottomSheetRef.current?.snapToIndex(0);
                   if (!body.read) {
-                    handleMarkAsRead(body._id).then(() => {
-                      setSelectedJobId(body?._id);
-                      bottomSheetRef.current?.snapToIndex(0);
-                    });
-                  } else {
-                    setSelectedJobId(body?._id);
-                    bottomSheetRef.current?.snapToIndex(0);
+                    handleMarkAsRead(body._id);
                   }
                 }}>
                 <HStack
+                  backgroundColor={body.read ? '$white' : '$indigo50'}
+                  borderRadius="$lg"
+                  px="$4"
+                  py="$4"
                   alignItems="flex-start"
                   style={{
-                    borderLeftWidth: body.read ? 4 : 0,
-                    borderLeftColor: body.read
-                      ? theme.colors.green[500]
-                      : 'transparent',
-                    paddingLeft: body.read ? 12 : 0,
+                    borderWidth: 1,
+                    borderColor: body.read ? theme.colors.gray[200] : theme.colors.indigo[200],
                   }}>
+                  <VStack width={42} height={42} borderRadius={12} backgroundColor="$indigo100" alignItems="center" justifyContent="center"><Icon name="event" size={22} color="#4f46e5" /></VStack>
                   <VStack flex={1}>
-                    {!body.read && (
-                      <Text
-                        flex={6}
-                        fontWeight="$bold"
-                        fontSize="$md"
-                        color="$black">
-                        New Booking Request
-                      </Text>
-                    )}
-                    <HStack justifyContent="flex-start" alignItems="center">
-                      <Text flex={6} fontSize="$md" color="$black">
+                    <HStack marginLeft="$3" justifyContent="space-between" alignItems="center">
+                      <Text flex={1} numberOfLines={1} fontWeight="$semibold" fontSize="$md" color="$black">
                         {body.title}
                       </Text>
+                      <ScheduleStatusBadge status={body.status} size="sm" />
                     </HStack>
-
-                    <Text color="$coolGray800" fontSize="$xs">
+                    <Text marginLeft="$3" marginTop="$1" color="$coolGray600" fontSize="$xs">
                       {getRelativeTimeString(body.createdAt)}
                     </Text>
                   </VStack>
                 </HStack>
+                <VStack height={10} />
               </Pressable>
-              <Divider mt={'$2'} />
-            </Swipeable>
           ))}
+          {!loading && bookings.length === 0 && <VStack flex={1} paddingTop="$32" alignItems="center"><Icon name="event-available" size={46} color={theme.colors.gray[300]} /><Text marginTop="$4" fontWeight="$bold" fontSize="$lg">No current bookings</Text><Text marginTop="$2" color="$coolGray500" textAlign="center">New booking requests and upcoming jobs will appear here.</Text></VStack>}
         </VStack>
       </ScrollView>
       <BottomSheet
@@ -156,6 +128,9 @@ export default function CalendarNotification() {
             job={selectedJob}
             onAccept={id => onUpdateStatus('Accepted', id)}
             onDecline={id => onUpdateStatus('Declined', id)}
+            onCancel={id => onUpdateStatus('Cancelled', id)}
+            onStart={id => onUpdateStatus('InProgress', id)}
+            onComplete={id => onUpdateStatus('Completed', id)}
           />
         </BottomSheetScrollView>
       </BottomSheet>

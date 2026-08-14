@@ -66,6 +66,8 @@ const Login = () => {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.container}>
@@ -97,7 +99,11 @@ const Login = () => {
                 <TextInput
                   style={styles.input}
                   keyboardType="email-address"
+                  autoComplete="email"
                   autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="emailAddress"
+                  importantForAutofill="yes"
                   returnKeyType="done"
                   maxLength={50}
                   placeholder="you@company.com"

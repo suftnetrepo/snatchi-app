@@ -144,7 +144,7 @@ const useChatRoom = user_id => {
       const chatRoomsRef = collection(db, 'chats');
       const chatRoomsQuery = query(
         chatRoomsRef,
-        where('users', 'array-contains', userId || 0),
+        where('users', 'array-contains', userId),
       );
 
       const unsubscribe = onSnapshot(chatRoomsQuery, snapshot => {
@@ -155,11 +155,10 @@ const useChatRoom = user_id => {
             const bTime = b.lastMessageTimestamp?.toMillis?.() || 0;
             return bTime - aTime;
           });
-
         setState(prev => ({
           ...prev,
           data: chatRooms,
-          dataCopy :chatRooms,
+          dataCopy: chatRooms,
           loading: false,
           error: null,
         }));

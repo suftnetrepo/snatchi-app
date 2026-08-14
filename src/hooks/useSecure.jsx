@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {ACCOUNT_HOST_ADDRESS, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {forgotValidator} from '../validator/loginValidator';
@@ -6,6 +6,8 @@ import {storeJWT, removeJWT} from '../store/secure';
 import {getStore, store} from '../utils/asyncStorage';
 import {Platform} from 'react-native';
 import {refreshFCMToken} from '../../scripts/pushNotification';
+import {auth} from '../../firebase';
+import {signOut as firebaseSignOut} from 'firebase/auth';
 
 
 const useSecure = () => {
@@ -15,7 +17,6 @@ const useSecure = () => {
     error: null,
     fields: forgotValidator.fields,
     success: false,
-    token: null,
   });
 
   const handleError = error => {
@@ -37,18 +38,6 @@ const useSecure = () => {
   const handleReset = () => {
     setState(pre => {
       return {...pre, data: null, error: null};
-    });
-  };
-
-  const handleJwt = async () => {
-    let token = await getStore("fcm");
-    if (!token) {
-      token = await refreshFCMToken();
-      store("fcm", token).catch(() => {});
-    }
-
-    setState(pre => {
-      return {...pre, token, error: null};
     });
   };
 
@@ -74,7 +63,19 @@ const useSecure = () => {
 
   const handleVerifyCode = async fields => {
     try {
-    const token = state.token || await getStore('fcm');
+    let token = await getStore('fcm');
+    if (!token) {
+      try {
+        token = await refreshFCMToken();
+        if (token) {
+          store('fcm', token).catch(() => {});
+        }
+      } catch (tokenError) {
+        // Push registration must not block authentication. The device can
+        // register its token after sign-in when notification access is ready.
+        token = null;
+      }
+    }
 
     setState(pre => {
       return {...pre, error: null, loading: true};
@@ -113,23 +114,23 @@ const useSecure = () => {
   };
 
   const handleLogout = async () => {
-    const {success} = await zat(
+    // Start the optional server logout while the current token is still
+    // available, but never block local sign-out on network latency.
+    const serverLogout = zat(
       ACCOUNT_HOST_ADDRESS.logout,
       null,
       VERBS.POST,
     );
 
-    // JWT authentication is device-held; local sign-out must always complete,
-    // even when the optional server logout endpoint is unavailable.
-    await removeJWT();
-    await store('user_', null);
-    setState(pre => ({...pre, data: success || true, error: null, loading: false}));
+    await Promise.all([
+      removeJWT(),
+      store('user_', null),
+      firebaseSignOut(auth).catch(() => {}),
+    ]);
+    serverLogout.catch(() => {});
+    setState(pre => ({...pre, data: true, error: null, loading: false}));
     return true;
   };
-
-  useEffect(() => {
-    handleJwt().then(() => {});
-  }, []);
 
   return {
     ...state,
@@ -138,7 +139,6 @@ const useSecure = () => {
     handleChange,
     handleReset,
     handleVerifyCode,
-    handleJwt,
   };
 };
 

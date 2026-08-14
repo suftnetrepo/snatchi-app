@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {FlatList, KeyboardAvoidingView, Platform, Pressable} from 'react-native';
+import {FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput} from 'react-native';
 import {
   YStack, XStack, StyledHeader, StyledSafeAreaView, StyledSpacer, StyledText,
-  StyledInput, StyledCycle, StyledSpinner, StyledOkDialog,
+  StyledCycle, StyledSpinner, StyledOkDialog,
 } from 'fluent-styles';
 import {theme} from '../../../utils/theme';
 import {useNavigation} from '@react-navigation/native';
@@ -63,12 +63,12 @@ const MyChat = ({route}) => {
     const showDay = !previous || new Date(previous.createdAt).toDateString() !== new Date(message.createdAt).toDateString();
     return (
       <YStack>
-        {showDay && <XStack justifyContent="center" marginVertical={16}><YStack paddingHorizontal={12} paddingVertical={5} borderRadius={14} backgroundColor={theme.colors.gray[200]}><StyledText fontSize={theme.fontSize.small} color={theme.colors.gray[600]}>{dayLabel(message.createdAt)}</StyledText></YStack></XStack>}
+        {showDay && <XStack justifyContent="center" marginVertical={18}><YStack paddingHorizontal={12} paddingVertical={5} borderRadius={14} backgroundColor={theme.colors.gray[200]}><StyledText fontSize={theme.fontSize.micro} fontWeight={theme.fontWeight.semiBold} color={theme.colors.gray[600]}>{dayLabel(message.createdAt)}</StyledText></YStack></XStack>}
         <XStack justifyContent={mine ? 'flex-end' : 'flex-start'} marginBottom={endsGroup ? 10 : 3}>
           <YStack maxWidth="82%" alignItems={mine ? 'flex-end' : 'flex-start'}>
             {!mine && isGroup && startsGroup && <StyledText marginLeft={8} marginBottom={3} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>{message.user?.name || 'Team member'}</StyledText>}
-            <YStack paddingHorizontal={14} paddingVertical={10} borderRadius={18} borderTopRightRadius={mine && startsGroup ? 5 : 18} borderTopLeftRadius={!mine && startsGroup ? 5 : 18} backgroundColor={mine ? INDIGO : theme.colors.gray[1]} borderWidth={mine ? 0 : 1} borderColor={theme.colors.gray[200]}>
-              <StyledText fontSize={theme.fontSize.normal} color={mine ? theme.colors.gray[1] : theme.colors.gray[900]}>{message.text}</StyledText>
+            <YStack paddingHorizontal={15} paddingVertical={11} borderRadius={18} borderTopRightRadius={mine && startsGroup ? 6 : 18} borderTopLeftRadius={!mine && startsGroup ? 6 : 18} backgroundColor={mine ? INDIGO : theme.colors.gray[1]} borderWidth={mine ? 0 : 1} borderColor={theme.colors.gray[200]}>
+              <StyledText lineHeight={23} fontSize={theme.fontSize.medium} color={mine ? theme.colors.gray[1] : theme.colors.gray[900]}>{message.text}</StyledText>
             </YStack>
             {endsGroup && <StyledText marginTop={3} marginHorizontal={7} fontSize={theme.fontSize.micro} color={theme.colors.gray[400]}>{formatTime(message.createdAt)}{mine ? (message.isRead ? '  ·  Read' : '  ·  Sent') : ''}</StyledText>}
           </YStack>
@@ -78,15 +78,17 @@ const MyChat = ({route}) => {
   };
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[50]}>
+    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{flex: 1}} keyboardVerticalOffset={0}>
         <StyledHeader skipAndroid={Platform.OS !== 'android'}>
           <StyledHeader.Full>
-            <XStack paddingHorizontal={16} paddingVertical={10} alignItems="center" backgroundColor={theme.colors.gray[1]} borderBottomWidth={1} borderColor={theme.colors.gray[200]}>
-              <Pressable onPress={() => navigation.goBack()} hitSlop={12}><Icon name="arrow-back" size={26} color={theme.colors.gray[900]} /></Pressable>
-              <StyledSpacer marginHorizontal={7} />
-              <Cycle width={44} height={44} borderColor={isGroup ? '#e0e7ff' : '#eef2f6'} bgColor={isGroup ? '#e0e7ff' : '#eef2f6'}><Icon name={isGroup ? 'groups' : 'person'} size={24} color={isGroup ? INDIGO : theme.colors.gray[700]} /></Cycle>
-              <YStack flex={1} marginLeft={11}><StyledText numberOfLines={1} fontSize={theme.fontSize.normal} fontWeight={theme.fontWeight.bold} color={theme.colors.gray[900]}>{room?.name || 'Conversation'}</StyledText><StyledText marginTop={2} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>{isGroup ? `${room?.users?.length || 0} members` : 'Direct message'}</StyledText></YStack>
+            <XStack paddingHorizontal={14} paddingVertical={10} alignItems="center" backgroundColor={theme.colors.gray[1]} borderBottomWidth={1} borderColor={theme.colors.gray[200]}>
+              <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Back to messages">
+                <StyledCycle height={42} width={42} borderColor={theme.colors.gray[200]} backgroundColor={theme.colors.gray[1]}><Icon name="arrow-back" size={23} color={theme.colors.gray[900]} /></StyledCycle>
+              </Pressable>
+              <StyledSpacer marginHorizontal={5} />
+              <Cycle width={46} height={46} borderColor={isGroup ? '#c7d2fe' : '#e0e7ff'} bgColor={isGroup ? '#eef2ff' : '#f5f7ff'}><Icon name={isGroup ? 'groups' : 'work-outline'} size={23} color={INDIGO} /></Cycle>
+              <YStack flex={1} marginLeft={11}><StyledText numberOfLines={1} fontSize={theme.fontSize.medium} fontWeight={theme.fontWeight.bold} color={theme.colors.gray[900]}>{room?.name || room?.title || 'Conversation'}</StyledText><XStack marginTop={3} alignItems="center"><YStack width={7} height={7} borderRadius={4} backgroundColor="#22c55e" /><StyledText marginLeft={6} fontSize={theme.fontSize.micro} color={theme.colors.gray[500]}>{isGroup ? `${room?.users?.length || 0} members` : 'Booking conversation'}</StyledText></XStack></YStack>
             </XStack>
           </StyledHeader.Full>
         </StyledHeader>
@@ -96,19 +98,20 @@ const MyChat = ({route}) => {
           data={messages}
           keyExtractor={item => item._id || item.id}
           renderItem={renderMessage}
-          contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 18, flexGrow: 1}}
+          style={styles.messageList}
+          contentContainerStyle={styles.messageContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => listRef.current?.scrollToEnd({animated: true})}
           ListEmptyComponent={!loading ? <YStack flex={1} justifyContent="center" alignItems="center" padding={30}><StyledCycle height={70} width={70} borderColor="#e0e7ff" backgroundColor="#e0e7ff"><Icon name="waving-hand" size={29} color={INDIGO} /></StyledCycle><StyledText marginTop={16} fontSize={theme.fontSize.large} fontWeight={theme.fontWeight.bold} color={theme.colors.gray[900]}>Start the conversation</StyledText><StyledText marginTop={6} textAlign="center" color={theme.colors.gray[500]}>Send a message about the booking or work.</StyledText></YStack> : null}
         />
 
-        <XStack paddingHorizontal={12} paddingTop={10} paddingBottom={Platform.OS === 'ios' ? 10 : 12} alignItems="flex-end" backgroundColor={theme.colors.gray[1]} borderTopWidth={1} borderColor={theme.colors.gray[200]}>
-          <XStack flex={1} minHeight={48} maxHeight={120} paddingHorizontal={12} borderRadius={24} borderWidth={1} borderColor={theme.colors.gray[300]} backgroundColor={theme.colors.gray[1]} alignItems="center">
-            <StyledInput flex={1} value={text} onChangeText={setText} placeholder="Message" placeholderTextColor={theme.colors.gray[400]} borderWidth={0} backgroundColor={theme.colors.gray[1]} multiline maxLength={2000} />
+        <XStack paddingHorizontal={14} paddingTop={10} paddingBottom={Platform.OS === 'ios' ? 10 : 12} alignItems="flex-end" backgroundColor={theme.colors.gray[1]} borderTopWidth={1} borderColor={theme.colors.gray[200]}>
+          <XStack flex={1} minHeight={50} maxHeight={120} paddingHorizontal={15} borderRadius={25} borderWidth={1} borderColor={text ? '#c7d2fe' : theme.colors.gray[300]} backgroundColor={theme.colors.gray[50]} alignItems="center">
+            <TextInput style={styles.composerInput} value={text} onChangeText={setText} placeholder="Write a message…" placeholderTextColor={theme.colors.gray[400]} multiline maxLength={2000} returnKeyType="default" />
           </XStack>
           <Pressable onPress={send} disabled={!text.trim() || sending}>
-            <StyledCycle marginLeft={9} height={48} width={48} borderColor={text.trim() ? INDIGO : theme.colors.gray[200]} backgroundColor={text.trim() ? INDIGO : theme.colors.gray[200]}><Icon name={sending ? 'more-horiz' : 'arrow-upward'} size={24} color={text.trim() ? '#fff' : theme.colors.gray[400]} /></StyledCycle>
+            <StyledCycle marginLeft={9} height={50} width={50} borderColor={text.trim() ? INDIGO : theme.colors.gray[200]} backgroundColor={text.trim() ? INDIGO : theme.colors.gray[100]}><Icon name={sending ? 'more-horiz' : 'send'} size={22} color={text.trim() ? '#fff' : theme.colors.gray[400]} /></StyledCycle>
           </Pressable>
         </XStack>
         {loading && <StyledSpinner />}
@@ -120,3 +123,25 @@ const MyChat = ({route}) => {
 
 const Chat = ({route}) => <ChatContextProvider><MyChat route={route} /></ChatContextProvider>;
 export default Chat;
+
+const styles = StyleSheet.create({
+  messageList: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  messageContent: {
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    paddingBottom: 20,
+    flexGrow: 1,
+  },
+  composerInput: {
+    flex: 1,
+    minHeight: 48,
+    maxHeight: 112,
+    paddingVertical: 12,
+    color: '#111827',
+    fontSize: 16,
+    lineHeight: 22,
+  },
+});

@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   XStack,
   YStack,
@@ -9,7 +9,7 @@ import {
 } from 'fluent-styles';
 import {Pressable} from 'react-native';
 import {CalendarProvider} from 'react-native-calendars';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {theme, fontStyles} from '../../utils/theme';
 import {useScheduler} from '../../hooks/useScheduler';
@@ -43,12 +43,15 @@ export default function CalendarStrip({userId}) {
   const {data, handleSchedules} = useScheduler();
   const recentSchedules = schedulesTransformal(data);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     handleSchedules({
-      date: new Date().toISOString().slice(0, 10),
+      date: selectedDate,
       engineerId: userId,
+      statuses: ['InProgress'],
     });
-  }, []);
+    // Refresh when Home/Schedules regains focus after a booking is created.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, userId]));
 
   const onDateChanged = useCallback(date => {
     setSelectedDate(date);
@@ -56,7 +59,10 @@ export default function CalendarStrip({userId}) {
     handleSchedules({
       date: new Date(date).toISOString().slice(0, 10),
       engineerId: userId,
+      statuses: ['InProgress'],
     });
+  // The Scheduler hook owns request state; selected user changes remount Home.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const RenderRecentCard = ({data}) => {
@@ -67,6 +73,7 @@ export default function CalendarStrip({userId}) {
         onPress={() => {
           navigator.navigate('project-details', {
             id: data?.metta?.project,
+            schedule: data?.metta?.schedule,
           });
         }}>
         <StyledCard
@@ -107,6 +114,7 @@ export default function CalendarStrip({userId}) {
               onPress={() => {
                 navigator.navigate('project-details', {
                   id: data?.metta?.project,
+                  schedule: data?.metta?.schedule,
                 });
               }}
             />
@@ -148,23 +156,35 @@ export default function CalendarStrip({userId}) {
         <StyledScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: 24}}>
-          <StyledTimeline
-            items={recentSchedules}
-            renderItem={item => <RenderRecentCard data={item} />}
-            getItemColors={item =>
-              getScheduleTimelineColors(item?.metta?.status)
-            }
-            variant="default"
-            dotShape="filled"
-            dotSize={20}
-            timeColumnWidth={58}
-            timeGap={1}
-            animated
-            colors={{
-              timeText: theme.colors.gray[800],
-              endTimeText: theme.colors.gray[500],
-            }}
-          />
+          {recentSchedules.length === 0 ? (
+            <YStack alignItems="center" paddingVertical={48}>
+              <Icon name="work-outline" size={34} color={theme.colors.gray[300]} />
+              <StyledText marginTop={12} fontWeight={theme.fontWeight.bold} color={theme.colors.gray[800]}>
+                No jobs in progress
+              </StyledText>
+              <StyledText marginTop={5} textAlign="center" fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>
+                Started jobs for this date will appear here.
+              </StyledText>
+            </YStack>
+          ) : (
+            <StyledTimeline
+              items={recentSchedules}
+              renderItem={item => <RenderRecentCard data={item} />}
+              getItemColors={item =>
+                getScheduleTimelineColors(item?.metta?.status)
+              }
+              variant="default"
+              dotShape="filled"
+              dotSize={20}
+              timeColumnWidth={58}
+              timeGap={1}
+              animated
+              colors={{
+                timeText: theme.colors.gray[800],
+                endTimeText: theme.colors.gray[500],
+              }}
+            />
+          )}
         </StyledScrollView>
       </CalendarProvider>
     </YStack>

@@ -6,6 +6,7 @@ import Home from '../screens/home';
 import Invoices from '../screens/invoice';
 import Settings from '../screens/settings';
 import Messaging from '../screens/messaging';
+import Project from '../screens/project';
 import { Platform } from 'react-native';
 
 const Tab = createBottomTabNavigator();
@@ -61,6 +62,21 @@ export default function BottomTabs() {
               />
             );
           },
+        }}
+      />
+
+      <Tab.Screen
+        name="Bookings"
+        component={Project}
+        initialParams={{setTabBarVisible}}
+        options={{
+          tabBarIcon: ({focused}) => (
+            <Icon
+              size={30}
+              color={focused ? theme.colors.gray[1] : theme.colors.gray[600]}
+              name="event-note"
+            />
+          ),
         }}
       />
 

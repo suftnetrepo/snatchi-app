@@ -13,7 +13,11 @@ const ChatRoomScrollView = ({onPress}) => {
   };
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 8}}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{height: 54, flexGrow: 0, flexShrink: 0}}
+      contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 8}}>
       <XStack gap={8} alignItems="center">
         {['All', 'direct', 'group'].map(room => {
           const active = selected === room;
