@@ -12,7 +12,7 @@ import {
 import { StyledMIcon } from '../components/icon';
 import { theme } from '../utils/theme';
 import { fontStyles } from '../utils/fontStyles';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../hooks/appContext';
 import { getGreetings, toWordCase } from '../utils/help';
 import { useFocus } from '../hooks/useFocus';
@@ -22,14 +22,21 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import { Bell } from '../components/badges/bell';
 import CalendarStrip from '../components/calender/calendarStripe';
+import {useSecure} from '../hooks/useSecure';
 
 const Home = ({ route }) => {
   const { setTabBarVisible } = route.params || {};
   const navigate = useNavigation();
-  const { user } = useAppContext();
+  const { user, logout } = useAppContext();
+  const {handleLogout} = useSecure();
   const { key } = useFocus();
   const [selected, setSelected] = useState('dashboard');
   const scrollViewRef = useRef(null);
+
+  const signOut = async () => {
+    await handleLogout();
+    await logout();
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -78,14 +85,7 @@ const Home = ({ route }) => {
           />
           <StyledSpacer marginHorizontal={8} />
           <Pressable
-            onPress={() => {
-              navigate.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'login' }],
-                }),
-              );
-            }}>
+            onPress={signOut}>
             <StyledCycle
               paddingHorizontal={10}
               borderWidth={1}
@@ -96,14 +96,6 @@ const Home = ({ route }) => {
                 size={24}
                 name="exit-to-app"
                 color={theme.colors.gray[800]}
-                onPress={() => {
-                  navigate.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [{ name: 'login' }],
-                    }),
-                  );
-                }}
               />
             </StyledCycle>
           </Pressable>

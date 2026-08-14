@@ -147,6 +147,8 @@ const useServiceRate = (flag=false) => {
 
   useEffect(() => {
      flag && handleFetchRates();
+     // Fetch once when the list hook is enabled.
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flag]);
 
   return {

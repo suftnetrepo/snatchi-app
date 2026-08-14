@@ -6,12 +6,13 @@ const invoiceValidator = {
         message: 'description is required',
       },
       {
-        pattern: /^.{0,50}$/,
-        message: 'description must not be more than 50 characters',
+        pattern: /^[\s\S]{0,500}$/,
+        message: 'description must not be more than 500 characters',
       },
     ],
   },
   fields: {
+    scheduler: '',
     issueDate: new Date(),
     due_on: '',
     status: 'Unpaid',
@@ -22,7 +23,7 @@ const invoiceValidator = {
     discount: 0,
     totalAmount: 0,
     notes: '',
-    invoice_type: '',
+    invoice_type: 'Invoice',
   },
 };
 

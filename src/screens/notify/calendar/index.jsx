@@ -29,9 +29,10 @@ export default function CalendarNotification() {
 
   useEffect(() => {
     handleAllSchedules();
+    // The hook owns request state; loading it once on mount avoids a request loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
- 
   const selectedJob = useMemo(() => {
     if (!selectedJobId || !Array.isArray(data)) {
       return null;
@@ -49,11 +50,11 @@ export default function CalendarNotification() {
     bottomSheetRef.current?.close();
   };
 
-  const onUpdateStatus = (status, id) => {
-    handleUpdateStatus(status, id).then(() => {
+  const onUpdateStatus = async (status, id) => {
+    const updated = await handleUpdateStatus(status, id);
+    if (updated) {
       close();
-      handleReset();
-    });
+    }
   };
 
   const renderRightActions = (progress, dragX, onPress) => {
@@ -127,7 +128,7 @@ export default function CalendarNotification() {
                         {body.title}
                       </Text>
                     </HStack>
-                   
+
                     <Text color="$coolGray800" fontSize="$xs">
                       {getRelativeTimeString(body.createdAt)}
                     </Text>

@@ -56,7 +56,8 @@ const useUserDocuments = (key, userId) => {
 
       return true;
     } else {
-      handleError(errorMessage);
+      handleError(errorMessage || 'Unable to upload the document.');
+      return false;
     }
   };
 
@@ -75,12 +76,12 @@ const useUserDocuments = (key, userId) => {
     if (success) {
       setState(pre => ({
         ...pre,
-        data: pre.data.filter(document => document._id !== document_id),
+        data: (pre.data || []).filter(document => document._id !== document_id),
         loading: false,
       }));
       return true;
     } else {
-      handleError(errorMessage || 'Failed to delete the user.');
+      handleError(errorMessage || 'Unable to delete the document.');
       return false;
     }
   };
@@ -98,16 +99,18 @@ const useUserDocuments = (key, userId) => {
 
     if (success) {
       setState(pre => {
-        return {...pre, data: data, loading: false};
+        return {...pre, data: Array.isArray(data) ? data : [], loading: false};
       });
       return true;
     } else {
-      handleError(errorMessage);
+      handleError(errorMessage || 'Unable to retrieve your documents.');
     }
   };
 
   useEffect(()=> {
    key && userId && handleFetch(userId)
+   // Refresh whenever the document list receives focus.
+   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[userId, key])
 
   return {

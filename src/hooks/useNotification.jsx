@@ -83,7 +83,7 @@ const useNotification = () => {
          success: false, loading: false}));
       return true;
     } else {
-      handleError(errorMessage || 'Failed to update the task.');
+      handleError(errorMessage || 'Failed to update the notification.');
       return false;
     }
   }

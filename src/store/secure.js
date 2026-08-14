@@ -3,11 +3,10 @@ import * as Keychain from 'react-native-keychain';
 // Store JWT
 const storeJWT = async (token) => {
   try {
-    console.log('🔐 Saving JWT securely');
     await Keychain.setGenericPassword('auth', token, {
-      accessible: Keychain.ACCESSIBLE.ALWAYS,
+      accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      service: 'com.suftnet.snatchi.auth',
     });
-    console.log('✅ JWT stored successfully');
   } catch (error) {
     console.error('❌ Error storing token:', error);
   }
@@ -16,12 +15,23 @@ const storeJWT = async (token) => {
 // Retrieve JWT
 const getJWT = async () => {
   try {
-    const credentials = await Keychain.getGenericPassword();
+    let credentials = await Keychain.getGenericPassword({
+      service: 'com.suftnet.snatchi.auth',
+    });
+
+    // Migrate sessions saved by older builds under Keychain's default service.
+    if (!credentials) {
+      const legacyCredentials = await Keychain.getGenericPassword();
+      if (legacyCredentials) {
+        await storeJWT(legacyCredentials.password);
+        await Keychain.resetGenericPassword();
+        credentials = legacyCredentials;
+      }
+    }
+
     if (credentials) {
-      console.log('🔑 Retrieved JWT');
       return credentials.password;
     }
-    console.log('⚪ No token found');
     return null;
   } catch (error) {
     console.error('❌ Error retrieving token:', error);
@@ -32,8 +42,7 @@ const getJWT = async () => {
 // Remove JWT
 const removeJWT = async () => {
   try {
-    await Keychain.resetGenericPassword();
-    console.log('🗑️ Token removed successfully');
+    await Keychain.resetGenericPassword({service: 'com.suftnet.snatchi.auth'});
   } catch (error) {
     console.error('❌ Error removing token:', error);
   }

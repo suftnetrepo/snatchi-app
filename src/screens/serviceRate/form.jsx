@@ -29,6 +29,7 @@ import {useAppContext} from '../../hooks/appContext';
 import {ServiceOptions} from '../../constants';
 
 const RateForm = () => {
+  const INDIGO = '#4f46e5';
   const navigation = useNavigation();
   const {user} = useAppContext();
   const [errorMessages, setErrorMessages] = useState({});
@@ -50,9 +51,11 @@ const RateForm = () => {
 
    useEffect(() => {
       params?.rate && handleEditItem(params?.rate);
+      // Populate the form only when a different rate is opened.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params?.rate]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setErrorMessages({});
     const {hasError, errors} = validate(fields, rules);
 
@@ -62,16 +65,15 @@ const RateForm = () => {
     }
 
     if (fields?._id) {
-      handleEditRate(fields, fields?._id).then(() => {
+      const updated = await handleEditRate(fields, fields?._id);
+      if (updated) {
         navigation.reset({
           index: 0,
           routes: [{name: 'service-rate'}],
         });
-      });
+      }
     } else {
-      handleAddRate(fields).then(() => {
-       
-      });
+      await handleAddRate(fields);
     }
   };
 
@@ -86,7 +88,9 @@ const RateForm = () => {
       paddingVertical={8}
       justifyContent="flex-start"
       alignItems="center"
-      backgroundColor={theme.colors.gray[50]}>
+      backgroundColor={theme.colors.gray[1]}
+      borderBottomWidth={1}
+      borderColor={theme.colors.gray[200]}>
       <Pressable onPress={() => {
         clearState();
         navigation.reset({
@@ -95,18 +99,18 @@ const RateForm = () => {
         });
       }}>
         <StyledCycle
-          height={48}
-          width={48}
+          height={42}
+          width={42}
           borderColor={theme.colors.gray[200]}>
-          <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
+          <Icon name="arrow-back" size={24} color={theme.colors.gray[900]} />
         </StyledCycle>
       </Pressable>
       <StyledSpacer marginHorizontal={2} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
-        fontWeight={theme.fontWeight.normal}
-        color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
+        fontWeight={theme.fontWeight.bold}
+        color={theme.colors.gray[900]}
+        fontSize={theme.fontSize.large}>
             {fields?._id ? 'Edit Service Rate' : 'Create Service Rate'}
         </StyledText>
         <StyledSpacer flex={1} />
@@ -127,27 +131,29 @@ const RateForm = () => {
             <RenderHeader />
           </StyledHeader.Full>
         </StyledHeader>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 40}}>
           <YStack
             flex={1}
             paddingHorizontal={16}
             justifyContent="flex-start"
             alignItems="center"
-            backgroundColor={theme.colors.gray[100]}>
-            <StyledSpacer marginVertical={8} />
+            backgroundColor={theme.colors.gray[1]}>
+            <YStack width="100%" marginTop={16} marginBottom={18} padding={16} borderRadius={16} backgroundColor="#eef2ff">
+              <XStack alignItems="center"><StyledCycle height={42} width={42} borderColor="#c7d2fe" backgroundColor="#e0e7ff"><Icon name="payments" size={22} color={INDIGO} /></StyledCycle><YStack flex={1} marginLeft={12}><StyledText fontWeight={theme.fontWeight.bold} color={theme.colors.gray[900]}>Set clear pricing</StyledText><StyledText marginTop={3} fontSize={theme.fontSize.small} color={theme.colors.gray[600]}>This rate can be used when preparing quotes and invoices.</StyledText></YStack></XStack>
+            </YStack>
             <Dropdown
-              borderRadius={8}
-              borderColor={theme.colors.gray[400]}
+              borderRadius={12}
+              borderColor={theme.colors.gray[300]}
               data={ServiceOptions.map(option => ({
                 label: option.label,
                 value: option.label,
               }))}
-              fontSize={theme.fontSize.small}
+              fontSize={theme.fontSize.normal}
               backgroundColor={theme.colors.gray[1]}
               placeholderTextColor={theme.colors.gray[300]}
               value={fields.serviceName}
               onChange={item => { handleChange('serviceName', item.value)}}
-              placeholder={'Select service type ...'}
+              placeholder={'Select service type'}
               ></Dropdown>
             <StyledSpacer marginVertical={4} />
             <StyledInput
@@ -160,10 +166,10 @@ const RateForm = () => {
               returnKeyType="next"
               maxLength={50}
               fontSize={theme.fontSize.small}
-              borderColor={theme.colors.gray[400]}
+              borderColor={theme.colors.gray[300]}
               backgroundColor={theme.colors.gray[1]}
-              borderRadius={8}
-              height={48}
+              borderRadius={12}
+              height={52}
               textAlignVertical="center"
               paddingHorizontal={16}
               value={fields.serviceName}
@@ -175,18 +181,18 @@ const RateForm = () => {
             <StyledSpacer marginVertical={4} /> 
              <Dropdown
               label="Rate Type"
-              borderRadius={8}
-              borderColor={theme.colors.gray[400]}
+              borderRadius={12}
+              borderColor={theme.colors.gray[300]}
               data={["hourly", "daily", "fixed"].map(option => ({
                 label: option,
                 value: option,
               }))}
-              fontSize={theme.fontSize.small}
+              fontSize={theme.fontSize.normal}
               backgroundColor={theme.colors.gray[1]}
               placeholderTextColor={theme.colors.gray[300]}
               value={fields.rateType}
               onChange={item => { handleChange('rateType', item.value)}}
-              placeholder={'Select rate type ...'}
+              placeholder={'Select rate type'}
                error={!!errorMessages?.rate}
               errorMessage={errorMessages?.rate?.message}
               ></Dropdown>
@@ -201,11 +207,11 @@ const RateForm = () => {
               returnKeyType="done"
               maxLength={50}
               fontSize={theme.fontSize.small}
-              borderColor={theme.colors.gray[400]}
+              borderColor={theme.colors.gray[300]}
               backgroundColor={theme.colors.gray[1]}
-              borderRadius={8}
+              borderRadius={12}
               marginTop={8}
-              height={48}
+              height={52}
               textAlignVertical="center"
               paddingHorizontal={16}
               value={fields.rate}
@@ -224,11 +230,11 @@ const RateForm = () => {
               returnKeyType="next"
               maxLength={200}
               fontSize={theme.fontSize.small}
-              borderColor={theme.colors.gray[400]}
+              borderColor={theme.colors.gray[300]}
               backgroundColor={theme.colors.gray[1]}
-              borderRadius={8}
-              height={80}
-              textAlignVertical="center"
+              borderRadius={12}
+              height={110}
+              textAlignVertical="top"
               paddingHorizontal={16}
               value={fields.description}
               placeholderTextColor={theme.colors.gray[300]}
@@ -240,18 +246,16 @@ const RateForm = () => {
             <XStack justifyContent="center" alignItems="center" gap={4}>
               <StyledButton
                 flex={2}
-                backgroundColor={
-                 theme.colors.cyan[500]
-                }
-                borderColor={
-                  theme.colors.cyan[500]
-                }
-                onPress={() => handleSubmit()}>
+                backgroundColor={INDIGO}
+                borderColor={INDIGO}
+                borderRadius={14}
+                disabled={loading}
+                onPress={handleSubmit}>
                 <StyledText
                   paddingHorizontal={20}
                   paddingVertical={10}
                   color={ theme.colors.gray[1]}>
-                  Submit
+                  {loading ? 'Saving…' : fields?._id ? 'Save rate' : 'Add service rate'}
                 </StyledText>
               </StyledButton>
             </XStack>
@@ -260,8 +264,8 @@ const RateForm = () => {
 
         {error && (
           <StyledOkDialog
-            title={error?.message}
-            description="please try again"
+            title="Unable to save service rate"
+            description={typeof error === 'string' ? error : error?.message || 'Please try again.'}
             visible={!!error}
             onOk={() => {
               clearState();
@@ -270,11 +274,12 @@ const RateForm = () => {
         )}
         {success && (
           <StyledOkDialog
-            title="Confirmation"
-            description="Rate was successfully submitted"
+            title="Service rate added"
+            description="Your new service rate is ready to use."
             visible={!!success}
             onOk={() => {
               clearState();
+              navigation.reset({index: 0, routes: [{name: 'service-rate'}]});
             }}
           />
         )}

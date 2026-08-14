@@ -3,8 +3,10 @@ import {Platform, PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import {store} from '../utils/asyncStorage';
 
-const useLocation = () => {
+const useLocation = (enabled = true) => {
   useEffect(() => {
+    if (!enabled) return;
+
     const requestLocationPermission = async () => {
       if (Platform.OS === 'android') {
         try {
@@ -89,7 +91,7 @@ const useLocation = () => {
     };
 
     requestLocationPermission();
-  }, []);
+  }, [enabled]);
 
   return;
 };

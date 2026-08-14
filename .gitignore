@@ -59,6 +59,7 @@ ios/fastlane/.env.default
 
 # Bundle artifact
 *.jsbundle
+android/app/src/main/assets/index.android.bundle
 
 # Ruby / CocoaPods
 **/Pods/
@@ -78,4 +79,13 @@ ios/fastlane/.env.default
 !.yarn/sdks
 !.yarn/versions
 
-.env.local
+.env
+.env.*
+!.env.example
+service-account*.json
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+*.dSYM.zip
+android/key.properties

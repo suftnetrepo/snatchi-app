@@ -1,242 +1,122 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
+import {FlatList, KeyboardAvoidingView, Platform, Pressable} from 'react-native';
 import {
-  YStack,
-  XStack,
-  StyledHeader,
-  StyledSafeAreaView,
-  StyledSpacer,
-  StyledText,
-  StyledInput,
-  StyledCycle,
+  YStack, XStack, StyledHeader, StyledSafeAreaView, StyledSpacer, StyledText,
+  StyledInput, StyledCycle, StyledSpinner, StyledOkDialog,
 } from 'fluent-styles';
-import { theme } from '../../../utils/theme';
-import { fontStyles } from '../../../utils/fontStyles';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useChatContext, ChatContextProvider } from '../../../hooks/ChatContext';
-import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { useChatMessage } from '../../../hooks/useChat';
-import { StyledMIcon } from '../../../components/icon';
-import { Pressable, Platform, ScrollView } from 'react-native';
-import { Cycle } from '../../../components/gluestack/cycle';
+import {theme} from '../../../utils/theme';
+import {useNavigation} from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useChatContext, ChatContextProvider} from '../../../hooks/ChatContext';
+import {useChatMessage} from '../../../hooks/useChat';
+import {Cycle} from '../../../components/gluestack/cycle';
 
-const isSameSender = (a, b) =>
-  a && b && a.user?._id === b.user?._id;
+const INDIGO = '#4f46e5';
 
-const isSameMinute = (a, b) =>
-  a && b && Math.abs(+new Date(a.createdAt) - +new Date(b.createdAt)) < 60000;
-
-const formatTime = date => {
-  const d = new Date(date);
-  const h = d.getHours();
-  const m = d.getMinutes().toString().padStart(2, '0');
-  return `${h % 12 || 12}:${m} ${h >= 12 ? 'PM' : 'AM'}`;
+const isSameSender = (a, b) => a && b && (a.senderId || a.user?._id) === (b.senderId || b.user?._id);
+const isSameMinute = (a, b) => a && b && Math.abs(+new Date(a.createdAt) - +new Date(b.createdAt)) < 60000;
+const formatTime = value => new Date(value).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+const dayLabel = value => {
+  const date = new Date(value);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return 'Today';
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return date.toLocaleDateString([], {day: 'numeric', month: 'short', year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined});
 };
 
-const MyChat = ({ route }) => {
-  const navigator = useNavigation();
-  const { messages, room_id, handleFetchMessages, handleSend } = useChatMessage();
-  const { currentChatUser } = useChatContext();
-  const { room } = route.params;
+const MyChat = ({route}) => {
+  const navigation = useNavigation();
+  const room = route.params?.room;
+  const listRef = useRef(null);
+  const {currentChatUser} = useChatContext();
+  const {messages, loading, error, handleSend, handleMarkMessagesAsRead, handleReset} = useChatMessage(room?.id);
   const [text, setText] = useState('');
+  const [sending, setSending] = useState(false);
+  const isGroup = room?.type === 'group';
 
   useEffect(() => {
-    room && handleFetchMessages(room?.id);
-  }, [room]);
+    if (room?.id && currentChatUser?.uid) {
+      handleMarkMessagesAsRead(room.id, currentChatUser.uid);
+    }
+    // Mark once when the room/user becomes available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.id, currentChatUser?.uid]);
 
-  const RenderHeader = () => (
-    <XStack
-      paddingHorizontal={16}
-      paddingVertical={8}
-      alignItems="center"
-      backgroundColor={theme.colors.gray[50]}
-    >
-      <Pressable onPress={() => navigator.goBack()}>
-        <StyledMIcon
-          name="arrow-back"
-          size={30}
-          color={theme.colors.gray[800]}
-          onPress={() => navigator.goBack()}
-        />
-      </Pressable>
+  const send = async () => {
+    const message = text.trim();
+    if (!message || sending) return;
+    setSending(true);
+    const sent = await handleSend(room.id, currentChatUser?.uid, [{text: message}]);
+    if (sent) setText('');
+    setSending(false);
+  };
 
-      <StyledSpacer marginHorizontal={6} />
-
-      <Cycle
-        width={40}
-        height={40}
-        borderColor={
-          room?.type === 'group'
-            ? theme.colors.yellow[400]
-            : theme.colors.rose[400]
-        }
-        bgColor={
-          room?.type === 'group'
-            ? theme.colors.yellow[400]
-            : theme.colors.rose[400]
-        }
-      >
-        <StyledMIcon
-          name={room?.type === 'group' ? 'people' : 'person'}
-          size={22}
-          color={theme.colors.gray[800]}
-        />
-      </Cycle>
-
-      <StyledText
-        paddingHorizontal={8}
-        fontSize={theme.fontSize.small}
-        color={theme.colors.gray[700]}
-      >
-        {room?.name}
-      </StyledText>
-
-      <StyledSpacer flex={1} />
-    </XStack>
-  );
+  const renderMessage = ({item: message, index}) => {
+    const previous = messages[index - 1];
+    const next = messages[index + 1];
+    const senderId = message.senderId || message.user?._id;
+    const mine = senderId === currentChatUser?.uid;
+    const startsGroup = !isSameSender(previous, message) || !isSameMinute(previous, message);
+    const endsGroup = !isSameSender(next, message) || !isSameMinute(next, message);
+    const showDay = !previous || new Date(previous.createdAt).toDateString() !== new Date(message.createdAt).toDateString();
+    return (
+      <YStack>
+        {showDay && <XStack justifyContent="center" marginVertical={16}><YStack paddingHorizontal={12} paddingVertical={5} borderRadius={14} backgroundColor={theme.colors.gray[200]}><StyledText fontSize={theme.fontSize.small} color={theme.colors.gray[600]}>{dayLabel(message.createdAt)}</StyledText></YStack></XStack>}
+        <XStack justifyContent={mine ? 'flex-end' : 'flex-start'} marginBottom={endsGroup ? 10 : 3}>
+          <YStack maxWidth="82%" alignItems={mine ? 'flex-end' : 'flex-start'}>
+            {!mine && isGroup && startsGroup && <StyledText marginLeft={8} marginBottom={3} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>{message.user?.name || 'Team member'}</StyledText>}
+            <YStack paddingHorizontal={14} paddingVertical={10} borderRadius={18} borderTopRightRadius={mine && startsGroup ? 5 : 18} borderTopLeftRadius={!mine && startsGroup ? 5 : 18} backgroundColor={mine ? INDIGO : theme.colors.gray[1]} borderWidth={mine ? 0 : 1} borderColor={theme.colors.gray[200]}>
+              <StyledText fontSize={theme.fontSize.normal} color={mine ? theme.colors.gray[1] : theme.colors.gray[900]}>{message.text}</StyledText>
+            </YStack>
+            {endsGroup && <StyledText marginTop={3} marginHorizontal={7} fontSize={theme.fontSize.micro} color={theme.colors.gray[400]}>{formatTime(message.createdAt)}{mine ? (message.isRead ? '  ·  Read' : '  ·  Sent') : ''}</StyledText>}
+          </YStack>
+        </XStack>
+      </YStack>
+    );
+  };
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[100]}>
-      <StyledHeader
-        skipAndroid={Platform.OS === 'android' ? false : true}
-        marginHorizontal={8}
-      >
-        <StyledHeader.Full>
-          <RenderHeader />
-        </StyledHeader.Full>
-      </StyledHeader>
-
-      {/* MESSAGE LIST */}
-      <ScrollView showsVerticalScrollIndicator={false}>
-  <YStack flex={1} paddingHorizontal={12} paddingVertical={8}>
-        {[...messages].map((msg, index, arr) => {
-          const prev = arr[index - 1];
-          const next = arr[index + 1];
-
-          const isMe = msg.user?._id === currentChatUser?.uid;
-
-          const startsGroup =
-            !isSameSender(prev, msg) || !isSameMinute(prev, msg);
-
-          const endsGroup =
-            !isSameSender(next, msg) || !isSameMinute(next, msg);
-
-          return (
-            <XStack
-              key={msg._id}
-              justifyContent={isMe ? 'flex-end' : 'flex-start'}
-              marginBottom={endsGroup ? 10 : 2}
-            >
-              <YStack maxWidth="80%" alignItems={isMe ? 'flex-end' : 'flex-start'}>
-                {/* Sender name once */}
-                {!isMe && startsGroup && (
-                  <StyledText
-                    fontSize={11}
-                    color={theme.colors.gray[500]}
-                    marginBottom={2}
-                    marginLeft={6}
-                  >
-                    {msg.user?.name}
-                  </StyledText>
-                )}
-
-                {/* Bubble */}
-                <YStack
-                  padding={10}
-                  borderRadius={14}
-                  backgroundColor={
-                    isMe
-                      ? theme.colors.cyan[500]
-                      : theme.colors.gray[200]
-                  }
-                  borderTopRightRadius={isMe && startsGroup ? 4 : 14}
-                  borderTopLeftRadius={!isMe && startsGroup ? 4 : 14}
-                >
-                  <StyledText
-                    color={isMe ? '#fff' : theme.colors.gray[800]}
-                    fontSize={14}
-                  >
-                    {msg.text}
-                  </StyledText>
-                </YStack>
-
-                {/* Time once per group */}
-                {endsGroup && (
-                  <StyledText
-                    fontSize={10}
-                    color={theme.colors.gray[500]}
-                    marginTop={2}
-                    marginHorizontal={6}
-                  >
-                    {formatTime(msg.createdAt)}
-                  </StyledText>
-                )}
-              </YStack>
+    <StyledSafeAreaView backgroundColor={theme.colors.gray[50]}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{flex: 1}} keyboardVerticalOffset={0}>
+        <StyledHeader skipAndroid={Platform.OS !== 'android'}>
+          <StyledHeader.Full>
+            <XStack paddingHorizontal={16} paddingVertical={10} alignItems="center" backgroundColor={theme.colors.gray[1]} borderBottomWidth={1} borderColor={theme.colors.gray[200]}>
+              <Pressable onPress={() => navigation.goBack()} hitSlop={12}><Icon name="arrow-back" size={26} color={theme.colors.gray[900]} /></Pressable>
+              <StyledSpacer marginHorizontal={7} />
+              <Cycle width={44} height={44} borderColor={isGroup ? '#e0e7ff' : '#eef2f6'} bgColor={isGroup ? '#e0e7ff' : '#eef2f6'}><Icon name={isGroup ? 'groups' : 'person'} size={24} color={isGroup ? INDIGO : theme.colors.gray[700]} /></Cycle>
+              <YStack flex={1} marginLeft={11}><StyledText numberOfLines={1} fontSize={theme.fontSize.normal} fontWeight={theme.fontWeight.bold} color={theme.colors.gray[900]}>{room?.name || 'Conversation'}</StyledText><StyledText marginTop={2} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>{isGroup ? `${room?.users?.length || 0} members` : 'Direct message'}</StyledText></YStack>
             </XStack>
-          );
-        })}
-      </YStack>
-      </ScrollView>
-    
-      {/* INPUT */}
-      <XStack
-        padding={8}
-        alignItems="center"
-        backgroundColor={theme.colors.gray[50]}
-      >
-        <XStack
-          flex={1}
-          padding={8}
-          borderRadius={30}
-          backgroundColor={theme.colors.gray[200]}
-        >
-          <StyledInput
-            value={text}
-            onChangeText={setText}
-            borderRadius={30}
-            placeholder="Type a message…"
-            placeholderTextColor={theme.colors.gray[500]}
-            style={{
-              flex: 1,
-              fontSize: 14,
-              color: theme.colors.gray[800],
-              paddingVertical: Platform.OS === 'ios' ? 8 : 4,
-            }}
-            multiline
-          />
-        </XStack>
+          </StyledHeader.Full>
+        </StyledHeader>
 
-        <Pressable
-          onPress={() => {
-            handleSend(room_id, currentChatUser?.uid, [
-              {
-                _id: Date.now().toString(),
-                text: text.trim(),
-                user: { _id: currentChatUser?.uid },
-                createdAt: new Date(),
-              },
-            ])
-             setText('');
-          }}
-        >
-          <Icon
-            name="send-circle"
-            size={48}
-            color={theme.colors.gray[800]}
-          />
-        </Pressable>
-      </XStack>
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={item => item._id || item.id}
+          renderItem={renderMessage}
+          contentContainerStyle={{paddingHorizontal: 16, paddingBottom: 18, flexGrow: 1}}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => listRef.current?.scrollToEnd({animated: true})}
+          ListEmptyComponent={!loading ? <YStack flex={1} justifyContent="center" alignItems="center" padding={30}><StyledCycle height={70} width={70} borderColor="#e0e7ff" backgroundColor="#e0e7ff"><Icon name="waving-hand" size={29} color={INDIGO} /></StyledCycle><StyledText marginTop={16} fontSize={theme.fontSize.large} fontWeight={theme.fontWeight.bold} color={theme.colors.gray[900]}>Start the conversation</StyledText><StyledText marginTop={6} textAlign="center" color={theme.colors.gray[500]}>Send a message about the booking or work.</StyledText></YStack> : null}
+        />
+
+        <XStack paddingHorizontal={12} paddingTop={10} paddingBottom={Platform.OS === 'ios' ? 10 : 12} alignItems="flex-end" backgroundColor={theme.colors.gray[1]} borderTopWidth={1} borderColor={theme.colors.gray[200]}>
+          <XStack flex={1} minHeight={48} maxHeight={120} paddingHorizontal={12} borderRadius={24} borderWidth={1} borderColor={theme.colors.gray[300]} backgroundColor={theme.colors.gray[1]} alignItems="center">
+            <StyledInput flex={1} value={text} onChangeText={setText} placeholder="Message" placeholderTextColor={theme.colors.gray[400]} borderWidth={0} backgroundColor={theme.colors.gray[1]} multiline maxLength={2000} />
+          </XStack>
+          <Pressable onPress={send} disabled={!text.trim() || sending}>
+            <StyledCycle marginLeft={9} height={48} width={48} borderColor={text.trim() ? INDIGO : theme.colors.gray[200]} backgroundColor={text.trim() ? INDIGO : theme.colors.gray[200]}><Icon name={sending ? 'more-horiz' : 'arrow-upward'} size={24} color={text.trim() ? '#fff' : theme.colors.gray[400]} /></StyledCycle>
+          </Pressable>
+        </XStack>
+        {loading && <StyledSpinner />}
+        {error && <StyledOkDialog title="Message not sent" description={error} visible onOk={handleReset} />}
+      </KeyboardAvoidingView>
     </StyledSafeAreaView>
   );
 };
 
-const Chat = ({ route }) => {
-  return (
-    <ChatContextProvider>
-      <MyChat route={route} />
-    </ChatContextProvider>
-  );
-};
-
+const Chat = ({route}) => <ChatContextProvider><MyChat route={route} /></ChatContextProvider>;
 export default Chat;

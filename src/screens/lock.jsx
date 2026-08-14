@@ -6,7 +6,7 @@ import {
   StyledSafeAreaView,
 } from 'fluent-styles';
 import { useSecure } from '../hooks/useSecure';
-import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -48,15 +48,9 @@ const Keypad = () => {
     const next = [...code, digit];
     setCode(next);
     if (next.length === CODE_LENGTH) {
-      handleVerifyCode({ email, code: next.join('') }).then(user => {
+      handleVerifyCode({ email, code: next.join('') }).then(async user => {
         if (user) {
-          login(user)
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: 'bottom-tabs', params: { screen: 'Home' } }],
-            })
-          );
+          await login(user);
         } else {
           setCode([]);
         }

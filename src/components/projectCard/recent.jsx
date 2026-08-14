@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  StyledCycle,
-  StyledSpacer,
-} from 'fluent-styles';
+import {StyledCycle} from 'fluent-styles';
 import {
   Box,
   Text,
@@ -17,9 +14,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { formatShortDate } from '../../utils/help';
 import { StyledMIcon } from '../../components/icon';
 import { theme } from '../../utils/theme';
-import { getPriorityColor, getStatusTheme, limitHtmlTextByWord } from '../../utils/help';
+import { getPriorityColor, limitHtmlTextByWord } from '../../utils/help';
 import { useNavigation } from '@react-navigation/native';
-import ProgressCircleSvg from '../../components/progressCircle';
 
 const ProjectCard = ({ data }) => {
   const navigator = useNavigation();
@@ -29,7 +25,6 @@ const ProjectCard = ({ data }) => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <VStack space="md" pb="$24">
           {data?.map((item, index) => {
-            const themeProgress = getStatusTheme(item.status);
             return (
               <Pressable key={index}>
                 <Box
@@ -57,8 +52,6 @@ const ProjectCard = ({ data }) => {
                         <Text fontSize="$sm" color="$gray600">{limitHtmlTextByWord(item.description)}</Text>
                       </HStack>
                     </VStack>
-                         <StyledSpacer marginHorizontal={3} />
-                    <ProgressCircleSvg progress={item.progress} color={themeProgress.progress} size={64} />
                   </HStack>
 
                   <HStack justifyContent="space-between" alignItems="center" mt="$4">
@@ -74,25 +67,6 @@ const ProjectCard = ({ data }) => {
                     </HStack>
 
                     <HStack justifyContent='' ml="$2">
-                      <StyledCycle
-                        paddingHorizontal={10}
-                        borderWidth={1}
-                        width={48}
-                        height={48}
-                        borderColor={theme.colors.gray[400]}>
-                        <MaterialIcons
-                          size={18}
-                          name="assignment"
-                          color={theme.colors.blueGray[500]}
-                          onPress={() => {
-                            navigator.navigate('task', {
-                              id: item?._id,
-                              from : 'bottom-tabs',
-                            });
-                          }}
-                        />
-                      </StyledCycle>
-                      <StyledSpacer marginHorizontal={6} />
                       <StyledCycle
                         paddingHorizontal={10}
                         borderWidth={1}

@@ -1,12 +1,11 @@
-import React, {Fragment, useState} from 'react';
-import {XStack, StyledText, StyledButton, StyledSpacer} from 'fluent-styles';
-import {ScrollView} from 'react-native';
+import React, {useState} from 'react';
+import {XStack, StyledText} from 'fluent-styles';
+import {Pressable, ScrollView} from 'react-native';
 import {fontStyles, theme} from '../../utils/theme';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {capitalizeFirstLetter} from '../../utils/help';
 
 const ChatRoomScrollView = ({onPress}) => {
-  const [selected, setSelected] = useState();
+  const [selected, setSelected] = useState('All');
 
   const handleSelect = room => {
     setSelected(room);
@@ -14,43 +13,39 @@ const ChatRoomScrollView = ({onPress}) => {
   };
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <XStack flex={1} paddingHorizontal={8} paddingVertical={6}>
-        {['All', 'direct', 'group'].map((room, index) => {
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 8}}>
+      <XStack gap={8} alignItems="center">
+        {['All', 'direct', 'group'].map(room => {
+          const active = selected === room;
           return (
-            <Fragment key={index}>
-              <StyledButton
-                key={index}
-                borderColor={theme.colors.gray[500]}
-                backgroundColor={theme.colors.gray[1]}
-                onPress={() => handleSelect(room)}>
+              <Pressable
+                key={room}
+                accessibilityRole="button"
+                accessibilityState={{selected: active}}
+                onPress={() => handleSelect(room)}
+                style={{
+                  height: 38,
+                  minWidth: 70,
+                  paddingHorizontal: 16,
+                  borderRadius: 19,
+                  borderWidth: 1,
+                  borderColor: active ? '#4f46e5' : theme.colors.gray[300],
+                  backgroundColor: active ? '#4f46e5' : theme.colors.gray[1],
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
                 <XStack
-                  paddingHorizontal={10}
-                  paddingVertical={5}
-                  key={index}
-                  justifyContent="flex-start"
+                  justifyContent="center"
                   alignItems="center">
-                  {selected === room && (
-                    <>
-                      <FontAwesome
-                        name="check-circle"
-                        size={24}
-                        color={theme.colors.gray[800]}
-                      />
-                      <StyledSpacer marginHorizontal={3} />
-                    </>
-                  )}
                   <StyledText
                     fontFamily={fontStyles.Roboto_Regular}
                     fontWeight={theme.fontWeight.medium}
                     fontSize={theme.fontSize.normal}
-                    color={theme.colors.gray[800]}>
+                    color={active ? theme.colors.gray[1] : theme.colors.gray[800]}>
                     {capitalizeFirstLetter(room)}
                   </StyledText>
                 </XStack>
-              </StyledButton>
-              <StyledSpacer marginLeft={4} />
-            </Fragment>
+              </Pressable>
           );
         })}
       </XStack>

@@ -28,7 +28,7 @@ const UploadJobDocuments = () => {
   const navigation = useNavigation();
   const [imageUrl, setImageUrl] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [taskStatus, setTaskStatus] = useState('');
+  const [documentType, setDocumentType] = useState('');
   const { project_id } = route.params;
   const {
     success,
@@ -71,7 +71,7 @@ const UploadJobDocuments = () => {
       name: file.fileName || 'upload.jpg',
     });
 
-    formData.append('document_type', taskStatus);
+    formData.append('document_type', documentType);
     formData.append('document_name', fields.document_name);
     formData.append('id', project_id);
   
@@ -84,7 +84,7 @@ const UploadJobDocuments = () => {
     handleReset();
     setFile(null);
     setImageUrl(null);
-    setTaskStatus('');
+    setDocumentType('');
   }
 
   const RenderHeader = () => (
@@ -160,8 +160,8 @@ const UploadJobDocuments = () => {
             <StyledDropdown
               borderRadius={8}
               items={jobPhotoCategories}
-              value={taskStatus}
-              setValue={setTaskStatus}
+              value={documentType}
+              setValue={setDocumentType}
               placeholder={'Select...'}
               listMode="SCROLLVIEW"></StyledDropdown>
             <StyledMultiInput

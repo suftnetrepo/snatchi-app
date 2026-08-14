@@ -7,11 +7,11 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { glueStackConfigUi } from './gluestack-ui.config';
 import { navigationRef } from './src/navigation/NavigationRef';
 import useLocation from './src/hooks/useLocation';
-import { useGeofenceForeground } from './src/hooks/useGeofencing';
+import {useAppContext} from './src/hooks/appContext';
 
-function App() {
-  useLocation()
-  // useGeofenceForeground(granted, debounceMs = 2000)
+function AppContent() {
+  const {user} = useAppContext();
+  useLocation(Boolean(user));
 
   useEffect(() => {
     const initFCM = async () => {
@@ -23,19 +23,25 @@ function App() {
     };
 
     const init = async () => {
-      await initFCM()
+      await initFCM();
     };
 
     init();
   }, []);
 
   return (
+    <GluestackUIProvider config={glueStackConfigUi}>
+      <NavigationContainer ref={navigationRef}>
+        <Navigator />
+      </NavigationContainer>
+    </GluestackUIProvider>
+  );
+}
+
+function App() {
+  return (
     <AppProvider>
-      <GluestackUIProvider config={glueStackConfigUi}>
-        <NavigationContainer ref={navigationRef}>
-          <Navigator />
-        </NavigationContainer>
-      </GluestackUIProvider>
+      <AppContent />
     </AppProvider>
   );
 }

@@ -1,172 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import {Platform, Pressable} from 'react-native';
 import {
-  YStack,
-  XStack,
-  StyledHeader,
-  StyledSafeAreaView,
-  StyledSpacer,
-  StyledText,
-  StyledImage,
-  StyledScrollView,
-  StyledCycle,
-  StyledSeparator,
+  XStack, YStack, StyledCycle, StyledHeader, StyledSafeAreaView,
+  StyledScrollView, StyledSpacer, StyledText,
 } from 'fluent-styles';
-import { theme } from '../../utils/theme';
-import { StyledMIcon } from '../../components/icon';
-import { fontStyles } from '../../utils/fontStyles';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Pressable, Platform } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {useAppContext} from '../../hooks/appContext';
+import {fontStyles, theme} from '../../utils/theme';
+
+const INDIGO = '#4f46e5';
 
 const Settings = () => {
-  const navigator = useNavigation();
+  const navigation = useNavigation();
+  const {user} = useAppContext();
+  const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Your account';
+  const location = [user?.address?.town, user?.address?.country].filter(Boolean).join(', ') || 'Add your business address';
 
-  const RenderHeader = () => (
-    <XStack
-      paddingHorizontal={16}
-      paddingVertical={8}
-      justifyContent="flex-start"
-      alignItems="center"
-      backgroundColor={theme.colors.gray[50]}>
-      <Pressable onPress={() => navigator.goBack()}>
-        <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.gray[400]}>
-          <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
-        </StyledCycle>
-      </Pressable>
-      <StyledSpacer marginHorizontal={4} />
-      <StyledText
-        fontFamily={fontStyles.Roboto_Regular}
-        fontWeight={theme.fontWeight.normal}
-        color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
-        Settings
-      </StyledText>
-      <StyledSpacer flex={1} />
-    </XStack>
-  );
-
-  const RenderRow = ({ icon = 'account-circle', title, screen }) => {
-    return (
-      <Pressable onPress={() => screen && navigator.navigate(screen)}>
-        <XStack
-          borderRadius={16}
-          marginHorizontal={8}
-          marginBottom={4}
-          zIndex={10}
-          backgroundColor={theme.colors.gray[1]}
-          justifyContent="flex-start"
-          alignItems="center"
-          paddingVertical={8}
-          paddingHorizontal={8}>
-          <StyledMIcon size={32} name={icon} color={theme.colors.gray[800]} />
-          <StyledSpacer marginHorizontal={2} />
-          <StyledText
-            paddingHorizontal={8}
-            fontFamily={fontStyles.Roboto_Regular}
-            fontWeight={theme.fontWeight.normal}
-            fontSize={theme.fontSize.normal}
-            color={theme.colors.gray[800]}>
-            {title}
-          </StyledText>
-          <StyledSpacer flex={1} />
-          <StyledMIcon
-            size={32}
-            name="chevron-right"
-            color={theme.colors.gray[600]}
-            onPress={
-              ()=>screen && navigator.navigate(screen)
-            }
-          />
-        </XStack>
-      </Pressable>
-    );
-  };
+  const rows = [
+    {icon: 'person-outline', title: 'Edit profile', subtitle: 'Personal details, contact information and photo', screen: 'profile'},
+    {icon: 'folder-open', title: 'My documents', subtitle: 'Upload and manage certificates and compliance records', screen: 'user-documents'},
+    {icon: 'location-on', title: 'Address', subtitle: 'Set your primary work and billing location', screen: 'profile-address'},
+    {icon: 'payments', title: 'Service rates', subtitle: 'Manage the rates used for quotes and invoices', screen: 'service-rate'},
+    {icon: 'help-outline', title: 'Help centre', subtitle: 'Guides and answers for common workflows', screen: 'help-center'},
+  ];
 
   return (
-    <StyledSafeAreaView backgroundColor={theme.colors.gray[100]}>
-      <StyledHeader
-        skipAndroid={Platform.OS === 'android' ? false : true}
-        marginHorizontal={8}
-        statusProps={{ translucent: true }}>
+    <StyledSafeAreaView backgroundColor={theme.colors.gray[1]}>
+      <StyledHeader skipAndroid={Platform.OS !== 'android'} statusProps={{translucent: true}}>
         <StyledHeader.Full>
-          <RenderHeader />
+          <XStack paddingHorizontal={16} paddingVertical={10} alignItems="center" backgroundColor={theme.colors.gray[1]} borderBottomWidth={1} borderColor={theme.colors.gray[200]}>
+            <Pressable onPress={() => navigation.navigate('Home')} hitSlop={12} accessibilityLabel="Back to home">
+              <StyledCycle height={42} width={42} borderColor={theme.colors.gray[200]} backgroundColor={theme.colors.gray[1]}>
+                <Icon name="arrow-back" size={24} color={theme.colors.gray[900]} />
+              </StyledCycle>
+            </Pressable>
+            <StyledSpacer marginHorizontal={7} />
+            <StyledText fontFamily={fontStyles.Roboto_Regular} fontWeight={theme.fontWeight.bold} fontSize={theme.fontSize.large} color={theme.colors.gray[900]}>Settings</StyledText>
+          </XStack>
         </StyledHeader.Full>
       </StyledHeader>
-      <StyledSpacer marginVertical={8} />
-      <XStack
-        paddingHorizontal={8}
-        paddingVertical={8}
-        borderRadius={16}
-        marginHorizontal={16}
-        justifyContent="flex-start"
-        borderColor={theme.colors.gray[200]}
-          backgroundColor={theme.colors.gray[1]}
-        alignItems="center">
-        <StyledImage
-          local
-          borderRadius={100}
-          borderWidth={5}
-          borderColor={theme.colors.gray[100]}
-          height={90}
-          width={90}
-          source={require('../../../assets/img/map.png')}
-        />
-        <YStack flex={1} marginHorizontal={4}>
-          <XStack justifyContent="space-between" alignItems="center">
-            <YStack flex={1}>
-              <StyledText
-                paddingHorizontal={2}
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.semiBold}
-                fontSize={theme.fontSize.normal}
-                color={theme.colors.gray[800]}>
-                Snatchi
-              </StyledText>
-              <StyledText
-                paddingHorizontal={2}
-                fontFamily={fontStyles.Roboto_Regular}
-                fontWeight={theme.fontWeight.normal}
-                fontSize={theme.fontSize.small}
-                color={theme.colors.gray[800]}>
-                2 Riseholme Orten Goldhay
-              </StyledText>
-            </YStack>
-          </XStack>
-        </YStack>
-      </XStack>
 
-      <StyledScrollView>
-        <YStack
-          flex={1}
-          marginHorizontal={8}
-          paddingBottom={8}
-          backgroundColor={theme.colors.gray[100]}
-          borderRadius={16}>
-          <StyledSpacer marginVertical={6} />
-          <RenderRow
-            icon="info-outline"
-            title="Help Center"
-            screen="help-center"
-          />
-      
-          <RenderRow
-            icon="account-circle"
-            title="Edit Profile"
-            screen="profile"
-          />
-             <RenderRow
-            icon="edit-location"
-            title="Address"
-            screen="profile-address"
-          />
-             <RenderRow
-            icon="monetization-on"
-            title="Services Rate"
-            screen="service-rate"
-          />
+      <StyledScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 100}}>
+        <YStack padding={16}>
+          <XStack padding={18} borderRadius={18} backgroundColor="#eef2ff" alignItems="center">
+            <StyledCycle height={58} width={58} borderColor="#c7d2fe" backgroundColor={INDIGO}>
+              <StyledText color="#fff" fontWeight={theme.fontWeight.bold} fontSize={theme.fontSize.large}>{displayName.charAt(0).toUpperCase()}</StyledText>
+            </StyledCycle>
+            <YStack flex={1} marginLeft={14}>
+              <StyledText numberOfLines={1} fontWeight={theme.fontWeight.bold} fontSize={theme.fontSize.medium} color={theme.colors.gray[900]}>{displayName}</StyledText>
+              <StyledText numberOfLines={1} marginTop={4} fontSize={theme.fontSize.small} color={theme.colors.gray[600]}>{user?.email || location}</StyledText>
+            </YStack>
+            <Icon name="verified" size={22} color={INDIGO} />
+          </XStack>
+
+          <StyledText marginTop={26} marginBottom={10} fontWeight={theme.fontWeight.bold} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>ACCOUNT &amp; WORK</StyledText>
+          <YStack borderRadius={18} borderWidth={1} borderColor={theme.colors.gray[200]} overflow="hidden" backgroundColor={theme.colors.gray[1]}>
+            {rows.map((row, index) => (
+              <Pressable key={row.title} onPress={() => navigation.navigate(row.screen)} accessibilityRole="button">
+                <XStack minHeight={78} paddingHorizontal={16} alignItems="center" borderBottomWidth={index === rows.length - 1 ? 0 : 1} borderColor={theme.colors.gray[200]}>
+                  <StyledCycle height={42} width={42} borderColor="#e0e7ff" backgroundColor="#eef2ff">
+                    <Icon name={row.icon} size={22} color={INDIGO} />
+                  </StyledCycle>
+                  <YStack flex={1} marginLeft={13}>
+                    <StyledText fontWeight={theme.fontWeight.semiBold} fontSize={theme.fontSize.normal} color={theme.colors.gray[900]}>{row.title}</StyledText>
+                    <StyledText marginTop={3} fontSize={theme.fontSize.small} color={theme.colors.gray[500]}>{row.subtitle}</StyledText>
+                  </YStack>
+                  <Icon name="chevron-right" size={25} color={theme.colors.gray[400]} />
+                </XStack>
+              </Pressable>
+            ))}
+          </YStack>
         </YStack>
       </StyledScrollView>
     </StyledSafeAreaView>

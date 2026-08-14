@@ -96,10 +96,17 @@ android {
         }
 
           release {
-            storeFile file('snatchi.jks')
-            storePassword "Kcmkcm12345!"
-            keyAlias "jerur02"
-            keyPassword "Kcmkcm12345!"
+            def releaseStoreFile = findProperty('SNATCHI_UPLOAD_STORE_FILE') ?: System.getenv('SNATCHI_UPLOAD_STORE_FILE')
+            def releaseStorePassword = findProperty('SNATCHI_UPLOAD_STORE_PASSWORD') ?: System.getenv('SNATCHI_UPLOAD_STORE_PASSWORD')
+            def releaseKeyAlias = findProperty('SNATCHI_UPLOAD_KEY_ALIAS') ?: System.getenv('SNATCHI_UPLOAD_KEY_ALIAS')
+            def releaseKeyPassword = findProperty('SNATCHI_UPLOAD_KEY_PASSWORD') ?: System.getenv('SNATCHI_UPLOAD_KEY_PASSWORD')
+
+            if (releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
         }
     }
     buildTypes {
@@ -109,7 +116,9 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.release
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -119,6 +128,20 @@ android {
         checkReleaseBuilds false
         abortOnError false
         disable 'NullSafeMutableLiveData'
+    }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def buildingRelease = taskGraph.allTasks.any { task ->
+        task.path.toLowerCase().contains('release')
+    }
+
+    if (buildingRelease && android.signingConfigs.release.storeFile == null) {
+        throw new GradleException(
+            'Release signing is not configured. Set SNATCHI_UPLOAD_STORE_FILE, ' +
+            'SNATCHI_UPLOAD_STORE_PASSWORD, SNATCHI_UPLOAD_KEY_ALIAS and ' +
+            'SNATCHI_UPLOAD_KEY_PASSWORD in CI or ~/.gradle/gradle.properties.'
+        )
     }
 }
 

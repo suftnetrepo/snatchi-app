@@ -236,7 +236,6 @@ export default function JobCard({job, onAccept, onDecline}: JobCardProps) {
       {/* ── Job details ───────────────────────────────── */}
       <SectionRow icon={Wrench} iconBg="$warning50" iconColor="$warning600">
         <Heading size="sm">{job.title}</Heading>
-        {/* Task checklist */}
       </SectionRow>
       <HStack space="sm" px={'$2'} pb={'$2'} alignItems="flex-start">
         <Text size="xs" color="$textLight500" flex={1} lineHeight="$sm">

@@ -40,7 +40,7 @@ const useUser = () => {
 
   const handleReset = () => {
     setState(pre => {
-      return {...pre, editData: null, error: null};
+      return {...pre, editData: null, error: null, success: false};
     });
   };
 

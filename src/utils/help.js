@@ -328,11 +328,16 @@ const backgroundColorHelper = status => {
       return theme.colors.amber[100];
     case 'Completed':
     case 'Paid':
+    case 'Approved':
       return theme.colors.green[100];
     case 'Pending':
     case 'Unpaid':
+    case 'Submitted':
+    case 'Verified':
+    case 'PaymentPending':
       return theme.colors.indigo[100];
     case 'Cancelled':
+    case 'Rejected':
       return theme.colors.red[100];
     default:
       return theme.colors.gray[100];
@@ -345,11 +350,16 @@ const textColorHelper = status => {
       return theme.colors.amber[800];
     case 'Completed':
     case 'Paid':
+    case 'Approved':
       return theme.colors.green[800];
     case 'Pending':
     case 'Unpaid':
+    case 'Submitted':
+    case 'Verified':
+    case 'PaymentPending':
       return theme.colors.indigo[800];
     case 'Cancelled':
+    case 'Rejected':
       return theme.colors.red[800];
     default:
       return theme.colors.gray[800];
@@ -394,13 +404,6 @@ const getPriorityColor = priority => {
       return '#9CA3AF';
   }
 };
-
-const taskStatusArray = [
-  {label: 'Pending', value: 'Pending'},
-  {label: 'Progress', value: 'Progress'},
-  {label: 'Completed', value: 'Completed'},
-  {label: 'Canceled', value: 'Canceled'},
-];
 
 const statusOptions = {
   empty: [
@@ -977,7 +980,6 @@ export {
   dateConverter,
   backgroundColorHelper,
   textColorHelper,
-  taskStatusArray,
   timeAgo,
   randomColor,
   formatReadableDate,

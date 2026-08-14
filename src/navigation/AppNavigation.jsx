@@ -3,11 +3,11 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../screens/login';
 import Keypad from '../screens/lock';
-import task from '../screens/task';
 import jobDocument from '../screens/project/uploadDocuments';
 import helpCenter from '../screens/settings/helpCenter';
 import BottomTabs from './BottomNavigation';
 import Invoice from '../screens/invoice/invoice';
+import InvoiceDetails from '../screens/invoice/details';
 import UserDocuments from '../screens/profile/document';
 import UploadUserDocument from '../screens/profile/document/upload';
 import Chat from '../screens/messaging/chat';
@@ -15,18 +15,32 @@ import Start from '../screens/start';
 import Notify from '../screens/notify';
 import ProjectDetails from '../screens/project/projectDetails';
 import Project from '../screens/project';
-import TaskDetails from '../screens/task/task-details';
 import Profile from '../screens/profile';
 import ProfileAddress from '../screens/settings/address';
 import {GeofencingDebug} from '../screens/geofence';
 import RateForm from '../screens/serviceRate/form';
 import ServiceRate from '../screens/serviceRate';
+import {useAppContext} from '../hooks/appContext';
+import {StyledIndicator} from '../components/indicator';
 
 const Stack = createStackNavigator();
 function Navigator() {
+  const {user, authStatus} = useAppContext();
+
+  if (authStatus === 'loading') {
+    return <StyledIndicator />;
+  }
 
   return (
-    <Stack.Navigator initialRouteName={'start'}>
+    <Stack.Navigator initialRouteName={user ? 'bottom-tabs' : 'login'}>
+      {!user ? (
+        <>
+          <Stack.Screen name="login" component={Login} options={{headerShown: false}} />
+          <Stack.Screen name="keypad" component={Keypad} options={{headerShown: false}} />
+          <Stack.Screen name="start" component={Start} options={{headerShown: false}} />
+        </>
+      ) : (
+        <>
       <Stack.Screen
         name="bottom-tabs"
         component={BottomTabs}
@@ -77,20 +91,6 @@ function Navigator() {
         }}
       />
       <Stack.Screen
-        name="task-details"
-        component={TaskDetails}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="start"
-        component={Start}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
         name="notify"
         component={Notify}
         options={{
@@ -126,27 +126,6 @@ function Navigator() {
         }}
       />
       <Stack.Screen
-        name="login"
-        component={Login}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="keypad"
-        component={Keypad}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="task"
-        component={task}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
         name="job-document"
         component={jobDocument}
         options={{
@@ -167,6 +146,13 @@ function Navigator() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="invoice-details"
+        component={InvoiceDetails}
+        options={{headerShown: false}}
+      />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

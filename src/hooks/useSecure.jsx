@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {ACCOUNT_HOST_ADDRESS, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {forgotValidator} from '../validator/loginValidator';
-import {storeJWT, getJWT} from '../store/secure';
+import {storeJWT, removeJWT} from '../store/secure';
 import {getStore, store} from '../utils/asyncStorage';
 import {Platform} from 'react-native';
 import {refreshFCMToken} from '../../scripts/pushNotification';
@@ -75,7 +75,6 @@ const useSecure = () => {
   const handleVerifyCode = async fields => {
     try {
     const token = state.token || await getStore('fcm');
-    console.log('Verifying code with token:', token);
 
     setState(pre => {
       return {...pre, error: null, loading: true};
@@ -114,20 +113,18 @@ const useSecure = () => {
   };
 
   const handleLogout = async () => {
-    const {success, errorMessage} = await zat(
+    const {success} = await zat(
       ACCOUNT_HOST_ADDRESS.logout,
       null,
       VERBS.POST,
     );
 
-    if (success) {
-      setState(pre => {
-        return {...pre, data: success, loading: false};
-      });
-      return success;
-    } else {
-      handleError(errorMessage);
-    }
+    // JWT authentication is device-held; local sign-out must always complete,
+    // even when the optional server logout endpoint is unavailable.
+    await removeJWT();
+    await store('user_', null);
+    setState(pre => ({...pre, data: success || true, error: null, loading: false}));
+    return true;
   };
 
   useEffect(() => {

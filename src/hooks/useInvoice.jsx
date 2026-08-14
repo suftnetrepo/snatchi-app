@@ -1,12 +1,12 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {INVOICE, VERBS} from '../../config';
 import {zat} from '../utils/zap';
 import {invoiceValidator} from '../validator/invoiceValidator';
 import {INVOICES} from '../../assets/data/invoice';
 
-const useInvoice = (flag=false) => {
+const useInvoice = (flag = false) => {
   const [state, setState] = useState({
-    data: INVOICES | [],
+    data: Array.isArray(INVOICES) ? INVOICES : [],
     loading: false,
     error: null,
     success: false,
@@ -82,7 +82,6 @@ const useInvoice = (flag=false) => {
       return {
         ...pre,
         error: error,
-        fields: invoiceValidator.fields,
         loading: false,
       };
     });
@@ -93,7 +92,6 @@ const useInvoice = (flag=false) => {
       return {
         ...pre,
         success: false,
-        fields: invoiceValidator.fields,
         loading: false,
         error: null,
       };
@@ -189,6 +187,8 @@ const useInvoice = (flag=false) => {
 
   useEffect(() => {
      flag && handleFetchInvoices();
+    // The initial-fetch flag is intentionally the lifecycle trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flag]);
 
   return {

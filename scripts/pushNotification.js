@@ -34,13 +34,12 @@ export const fcmStart = async () => {
       // Handle navigation or other actions here
     });
 
-    // 2️⃣ Register the device for remote messages (required for iOS)j
+    // Register the device for remote messages (required for iOS).
     await messaging().registerDeviceForRemoteMessages();
 
     const token = await messaging().getToken();
 
     if (token) {
-      console.log('success to get FCM token', token);
       await store('fcm', token);
     }
 
@@ -64,12 +63,9 @@ export const refreshFCMToken = async () => {
 
     // Get new token
     const token = await messaging().getToken();
-    console.error('Failed to get FCM token', token);
-
     if (token) {
       await store('fcm', token);
       // await syncToken(token);
-      console.log('✅ FCM token refreshed successfully');
       return token;
     }
 

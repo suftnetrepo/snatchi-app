@@ -13,7 +13,8 @@ import {
   serverTimestamp,
   updateDoc,
   getDoc,
-  Timestamp
+  Timestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
@@ -139,6 +140,7 @@ const useChatRoom = user_id => {
 
   const handleFetchChatRooms = userId => {
     try {
+      setState(previous => ({...previous, loading: true, error: null}));
       const chatRoomsRef = collection(db, 'chats');
       const chatRoomsQuery = query(
         chatRoomsRef,
@@ -146,18 +148,22 @@ const useChatRoom = user_id => {
       );
 
       const unsubscribe = onSnapshot(chatRoomsQuery, snapshot => {
-        const chatRooms = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const chatRooms = snapshot.docs
+          .map(roomDoc => ({id: roomDoc.id, ...roomDoc.data()}))
+          .sort((a, b) => {
+            const aTime = a.lastMessageTimestamp?.toMillis?.() || 0;
+            const bTime = b.lastMessageTimestamp?.toMillis?.() || 0;
+            return bTime - aTime;
+          });
 
         setState(prev => ({
           ...prev,
           data: chatRooms,
           dataCopy :chatRooms,
+          loading: false,
           error: null,
         }));
-      });
+      }, error => handleError(error.message));
 
       return unsubscribe;
     } catch (error) {
@@ -166,7 +172,8 @@ const useChatRoom = user_id => {
   };
 
   useEffect(() => {
-    user_id && handleFetchChatRooms(user_id);
+    if (!user_id) return undefined;
+    return handleFetchChatRooms(user_id);
   }, [user_id]);
 
   return {
@@ -187,36 +194,42 @@ const useChatMessage = chatRoomId => {
   });
 
   const handleError = error => {
-    console.log("..........................error", error)
     setState(pre => {
       return {...pre, error: error, loading: false};
     });
   };
 
-  const handleFetchMessages = async chatRoomId => {
+  const handleFetchMessages = roomId => {
     try {
-      const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
+      setState(previous => ({...previous, loading: true, error: null, room_id: roomId}));
+      const messagesRef = collection(db, 'chats', roomId, 'messages');
       const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
 
       const unsubscribe = onSnapshot(messagesQuery, snapshot => {
-        const messages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const messages = snapshot.docs.map(messageDoc => {
+          const value = messageDoc.data();
+          const senderId = value.senderId || value.user?._id;
+          return {
+            ...value,
+            id: messageDoc.id,
+            _id: value._id || messageDoc.id,
+            senderId,
+            user: {...(value.user || {}), _id: senderId},
+            createdAt: value.timestamp
+              ? convertTimestampToDate(value.timestamp)
+              : new Date(),
+          };
+        });
         setState(pre => {
           return {
             ...pre,
-            messages: messages.map(message => {
-              return {
-                ...message,
-                createdAt: convertTimestampToDate(message.timestamp),
-              };
-            }),
+            messages,
             loading: false,
-            room_id: chatRoomId,
+            room_id: roomId,
+            error: null,
           };
         });
-      });
+      }, error => handleError(error.message));
 
       return unsubscribe;
     } catch (error) {
@@ -228,20 +241,22 @@ const useChatMessage = chatRoomId => {
     let imageURL = null;
 
     const message = newMessages[0];
+    const messageText = String(message?.text || '').trim();
+    if (!chatRoomId || !senderId || !messageText) return false;
 
     try {
       const timestamp = Timestamp.now();
       const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
       const roomRef = doc(db, 'chats', chatRoomId);
       const roomSnap = await getDoc(roomRef);
-
+      if (!roomSnap.exists()) throw new Error('Conversation no longer exists');
       const roomData = roomSnap.data();
       const usersInRoom = roomData.users || [];
 
       const newMessage = {
         _id: new Date().getTime().toString(),
         senderId,
-        text: message?.text || '',
+        text: messageText,
         imageURL: imageURL || null,
         timestamp: serverTimestamp(),
         isRead: false,
@@ -253,8 +268,6 @@ const useChatMessage = chatRoomId => {
       await addDoc(messagesRef, newMessage);
 
 
-      console.log(".....................usersInRoom", usersInRoom)
-
       const unreadCountUpdates = {};
       usersInRoom.forEach((userId) => {
         if (userId !== senderId) {
@@ -264,7 +277,7 @@ const useChatMessage = chatRoomId => {
       });
 
       await updateDoc(roomRef, {
-        lastMessage: truncate(message?.text),
+        lastMessage: truncate(messageText),
         lastMessageTimestamp: timestamp,
         lastMessageSentBy: senderId,
         ...unreadCountUpdates
@@ -273,6 +286,7 @@ const useChatMessage = chatRoomId => {
       return true;
     } catch (error) {
       handleError(error.message);
+      return false;
     }
   };
 
@@ -280,19 +294,15 @@ const useChatMessage = chatRoomId => {
     try {
       const messagesRef = collection(db, 'chats', chatRoomId, 'messages');
 
-      const querySnapshot = await getDocs(
-        query(
-          messagesRef,
-          where('isRead', '==', false),
-          where('senderId', '!=', userId),
-        ),
-      );
+      const querySnapshot = await getDocs(query(messagesRef, where('isRead', '==', false)));
 
       const batch = writeBatch(db);
-      querySnapshot.forEach(doc => {
-        batch.update(doc.ref, {isRead: true});
+      querySnapshot.forEach(messageDoc => {
+        if (messageDoc.data().senderId !== userId) {
+          batch.update(messageDoc.ref, {isRead: true});
+        }
       });
-
+      batch.update(doc(db, 'chats', chatRoomId), {[`unreadCount.${userId}`]: 0});
       await batch.commit();
 
       return true;
@@ -302,6 +312,7 @@ const useChatMessage = chatRoomId => {
   };
 
   useEffect(() => {
+    if (!chatRoomId) return undefined;
     const unsubscribe = handleFetchMessages(chatRoomId);
     return () => {
       if (typeof unsubscribe === 'function') {
@@ -315,6 +326,7 @@ const useChatMessage = chatRoomId => {
     handleFetchMessages,
     handleSend,
     handleMarkMessagesAsRead,
+    handleReset: () => setState(previous => ({...previous, error: null})),
   };
 };
 

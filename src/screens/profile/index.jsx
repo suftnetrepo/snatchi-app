@@ -22,6 +22,9 @@ import { useAppContext } from '../../hooks/appContext';
 import { validate } from '../../validator';
 import { ImagePickerModal } from '../../components/imagePickerModal';
 import { Pressable, Platform } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+
+const INDIGO = '#4f46e5';
 
 const Profile = () => {
   const navigator = useNavigation();
@@ -44,6 +47,8 @@ const Profile = () => {
 
   useEffect(() => {
     user && handleEdit(user);
+    // Initialise the editable form when this screen mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onHandleImageSelect = async response => {
@@ -93,37 +98,26 @@ const Profile = () => {
       paddingVertical={8}
       justifyContent="flex-start"
       alignItems="center"
-      backgroundColor={theme.colors.gray[50]}>
+      backgroundColor={theme.colors.gray[1]}
+      borderBottomWidth={1}
+      borderColor={theme.colors.gray[200]}>
       <Pressable onPress={() => navigator.goBack()}>
         <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.gray[400]}>
-          <Icon name="arrow-back" size={15} color={theme.colors.gray[800]} />
+          height={42}
+          width={42}
+          borderColor={theme.colors.gray[200]}>
+          <Icon name="arrow-back" size={24} color={theme.colors.gray[900]} />
         </StyledCycle>
       </Pressable>
       <StyledSpacer marginHorizontal={4} />
       <StyledText
         fontFamily={fontStyles.Roboto_Regular}
-        fontWeight={theme.fontWeight.normal}
-        color={theme.colors.gray[600]}
-        fontSize={theme.fontSize.normal}>
-        My Profile
+        fontWeight={theme.fontWeight.bold}
+        color={theme.colors.gray[900]}
+        fontSize={theme.fontSize.large}>
+        Edit profile
       </StyledText>
       <StyledSpacer flex={1} />
-      <Pressable onPress={() => navigator.navigate('user-documents')}>
-        <StyledCycle
-          height={48}
-          width={48}
-          borderColor={theme.colors.cyan[500]}
-          backgroundColor={theme.colors.cyan[500]}>
-          <Icon
-            name="file-upload"
-            size={24}
-            color={theme.colors.gray[1]}
-          />
-        </StyledCycle>
-      </Pressable>
     </XStack>
   );
 
@@ -137,6 +131,7 @@ const Profile = () => {
           <RenderHeader />
         </StyledHeader.Full>
       </StyledHeader>
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" enableOnAndroid showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 44}}>
       <StyledSpacer marginVertical={16} />
       <XStack justifyContent="center" alignItems="center">
         <FlexStyledBackgroundImage
@@ -158,7 +153,6 @@ const Profile = () => {
         </FlexStyledBackgroundImage>
       </XStack>
       <YStack
-        flex={1}
         paddingHorizontal={16}
         justifyContent="flex-start"
         alignItems="flex-start">
@@ -171,9 +165,10 @@ const Profile = () => {
           fontSize={theme.fontSize.normal}
           borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
-          borderRadius={32}
-          paddingHorizontal={8}
-          marginVertical={4}
+          borderRadius={12}
+          height={52}
+          paddingHorizontal={14}
+          marginVertical={6}
           value={fields.first_name}
           placeholderTextColor={theme.colors.gray[300]}
           onChangeText={text => handleChange('first_name', text)}
@@ -189,9 +184,10 @@ const Profile = () => {
           fontSize={theme.fontSize.normal}
           borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
-          borderRadius={32}
-          paddingHorizontal={8}
-          marginVertical={4}
+          borderRadius={12}
+          height={52}
+          paddingHorizontal={14}
+          marginVertical={6}
           value={fields.last_name}
           placeholderTextColor={theme.colors.gray[300]}
           onChangeText={text => handleChange('last_name', text)}
@@ -200,16 +196,17 @@ const Profile = () => {
         />
         <StyledInput
           label={'Mobile'}
-          keyboardType="default"
+          keyboardType="phone-pad"
           placeholder="Enter your mobile"
           returnKeyType="next"
           maxLength={50}
           fontSize={theme.fontSize.normal}
           borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
-          borderRadius={32}
-          paddingHorizontal={8}
-          marginVertical={4}
+          borderRadius={12}
+          height={52}
+          paddingHorizontal={14}
+          marginVertical={6}
           value={fields.mobile}
           placeholderTextColor={theme.colors.gray[300]}
           onChangeText={text => handleChange('mobile', text)}
@@ -218,16 +215,18 @@ const Profile = () => {
         />
         <StyledInput
           label={'Email'}
-          keyboardType="default"
+          keyboardType="email-address"
+          autoCapitalize="none"
           placeholder="Enter your email"
           returnKeyType="next"
           maxLength={50}
           fontSize={theme.fontSize.normal}
           borderColor={theme.colors.gray[400]}
           backgroundColor={theme.colors.gray[1]}
-          borderRadius={32}
-          paddingHorizontal={8}
-          marginVertical={4}
+          borderRadius={12}
+          height={52}
+          paddingHorizontal={14}
+          marginVertical={6}
           value={fields.email}
           placeholderTextColor={theme.colors.gray[300]}
           onChangeText={text => handleChange('email', text)}
@@ -237,30 +236,35 @@ const Profile = () => {
         <StyledSpacer marginVertical={8} />
         <StyledButton
           width="100%"
-          backgroundColor={theme.colors.cyan[500]}
-          onPress={() => onSubmit()}>
+          borderColor={INDIGO}
+          borderRadius={14}
+          backgroundColor={INDIGO}
+          disabled={loading}
+          onPress={onSubmit}>
           <StyledText
             paddingHorizontal={20}
             paddingVertical={10}
             color={theme.colors.gray[1]}>
-            Submit
+            {loading ? 'Saving…' : 'Save profile'}
           </StyledText>
         </StyledButton>
       </YStack>
+      </KeyboardAwareScrollView>
       {success && (
         <StyledOkDialog
-          title="Confirmation"
-          description="Your profile was updated successfully"
+          title="Profile updated"
+          description="Your changes have been saved successfully."
           visible={true}
           onOk={() => {
-
+            handleReset();
+            navigator.goBack();
           }}
         />
       )}
       {error && (
         <StyledOkDialog
-          title={error?.message}
-          description="please try again"
+          title="Unable to update profile"
+          description={typeof error === 'string' ? error : error?.message || 'Please try again.'}
           visible={true}
           onOk={() => {
             handleReset();

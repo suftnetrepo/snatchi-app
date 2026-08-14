@@ -1,9 +1,8 @@
-//LIVE
+const normalizeBaseUrl = value => `${String(value || '').replace(/\/+$/, '')}/`;
 
-// STAGING
-const HOST_ADDRESS = "https://snatchi-web.onrender.com/";
-// const HOST_API_ADDRESS = "https://snatchi-web.onrender.com/api/";
-const HOST_API_ADDRESS = "http://192.168.1.74:3000/api/";
+const PRODUCTION_HOST_ADDRESS = 'http://192.168.1.74:3000/';
+const HOST_ADDRESS = PRODUCTION_HOST_ADDRESS;
+const HOST_API_ADDRESS = normalizeBaseUrl(`${PRODUCTION_HOST_ADDRESS}api`);
 
 // END POINTS
 
@@ -48,12 +47,6 @@ export const SCHEDULER = {
   markAsRead: `${HOST_API_ADDRESS}scheduler`,
 };
 
-export const TASK_COMMENTS = {
-  addOne: `${HOST_API_ADDRESS}task_comment`,
-  fetch: `${HOST_API_ADDRESS}task_comment/`,
-  removeOne: `${HOST_API_ADDRESS}task_comment/`
-};
-
 export const USER_HOST_ADDRESS = {
   updateOne: `${HOST_API_ADDRESS}user`,
   updateFcm: `${HOST_API_ADDRESS}user/fcm`,
@@ -62,18 +55,6 @@ export const USER_HOST_ADDRESS = {
   getById: `${HOST_API_ADDRESS}user/`,
     updateAddress: `${HOST_API_ADDRESS}user/`,
  }
-
- export const MYTASK_HOST_ADDRESS = {
-  myTasks: `${HOST_API_ADDRESS}task`,
-  updateOne: `${HOST_API_ADDRESS}task`,
-  aggregate: `${HOST_API_ADDRESS}task?action=aggregate`,
- }
- 
- export const TASK_DOCUMENT = {
-  uploadOne: `${HOST_API_ADDRESS}task_document`,
-  fetch: `${HOST_API_ADDRESS}task_document/`,
-  removeOne: `${HOST_API_ADDRESS}task_document/`
-}
 
 export const USER_DOCUMENTS = {
   uploadOne: `${HOST_API_ADDRESS}user/document`,
@@ -106,10 +87,8 @@ export const VERBS = {
   PATCH: 'PATCH'
 };
 
-const CLOUDINARY_CLOUD_NAME = "dwjjtakfs";
-const CLOUDINARY_API_KEY = 992935722916518;
-const CLOUDINARY_API_SECRET = "C07VzBp8zn8A5NlZ9QcELB-B25w";
-const CLOUDINARY_UPLOAD_PRESET = "uo6l2ljb_realse_client_preset";
+const CLOUDINARY_CLOUD_NAME = 'dwjjtakfs';
+const CLOUDINARY_UPLOAD_PRESET = 'uo6l2ljb_realse_client_preset';
 const CLOUDINARY_UPLOAD_URL =
   "https://api.cloudinary.com/v1_1/dwjjtakfs/image/upload";
 
@@ -118,7 +97,5 @@ export {
   HOST_API_ADDRESS,
   CLOUDINARY_UPLOAD_URL,
   CLOUDINARY_CLOUD_NAME,
-  CLOUDINARY_API_KEY,
-  CLOUDINARY_API_SECRET,
   CLOUDINARY_UPLOAD_PRESET
 };

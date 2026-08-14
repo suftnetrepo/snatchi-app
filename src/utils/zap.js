@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { getJWT } from '../store/secure';
+import { getJWT, removeJWT } from '../store/secure';
+import {notifySessionExpired} from './authSession';
 
 const api = axios.create({
   headers: {
@@ -11,7 +12,6 @@ const api = axios.create({
 export const zat = async (url, body, method, queryParams = null) => {
   try {
     const token = await getJWT();
-    console.log("🔑 JWT TOKEN:", token);
 
     // Add mobile token to header
     const headers = {
@@ -32,7 +32,9 @@ export const zat = async (url, body, method, queryParams = null) => {
       ...(body && { data: body instanceof FormData ? body : JSON.stringify(body) }),
     };
 
-    console.log("📡 AXIOS REQUEST:", config);
+    if (__DEV__) {
+      console.log(`[API] ${String(method || 'GET').toUpperCase()} ${url}`);
+    }
 
     // Perform request
     const response = await api(config);
@@ -45,10 +47,20 @@ export const zat = async (url, body, method, queryParams = null) => {
       totalCount: data?.totalCount,
     };
   } catch (error) {
-    console.log("❌ AXIOS ERROR:", error.response?.data || error.message);
+    if (__DEV__) {
+      console.warn('[API] Request failed', {
+        url,
+        status: error.response?.status,
+        message: error.response?.data?.error || error.message,
+      });
+    }
 
     // Axios error shape
     if (error.response) {
+      if (error.response.status === 401) {
+        await removeJWT();
+        notifySessionExpired();
+      }
       return {
         success: false,
         status: error.response.status,
