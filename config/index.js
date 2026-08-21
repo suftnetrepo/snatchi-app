@@ -1,7 +1,7 @@
 const normalizeBaseUrl = value => `${String(value || '').replace(/\/+$/, '')}/`;
 
-const BASE_HOST_ADDRESS = 'http://192.168.1.74:3000/';
-// const BASE_HOST_ADDRESS = 'https://snatchi-web.onrender.com/';
+//const BASE_HOST_ADDRESS = 'http://192.168.1.74:3000/';
+const BASE_HOST_ADDRESS = 'https://snatchi-web.onrender.com/';
 const HOST_ADDRESS = BASE_HOST_ADDRESS;
 const HOST_API_ADDRESS = normalizeBaseUrl(`${BASE_HOST_ADDRESS}api`);
 
